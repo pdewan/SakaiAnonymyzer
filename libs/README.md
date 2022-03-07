@@ -1,0 +1,1 @@
+The java-faker.jar is adopted from this repo: https://github.com/DiUS/java-faker
