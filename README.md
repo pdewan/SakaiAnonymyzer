@@ -1,0 +1,2 @@
+# SakaiAnonymyzer
+anonymizes sakai projects
