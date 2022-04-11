@@ -223,7 +223,7 @@ public class Anon {
 //			}
 //			folderName = findFolderWithCSV(new File(folderName)).getPath();
 //			unzipAllZipFiles(new File(folderName));
-			System.out.println("Anonymizing Course Folder" + folderName);
+			System.out.println("Anonymizing Course Folder: " + folderName);
 			logger.write("Anonymizing Course Folder" + folderName);
 			clearHeaders_Windows(folderName);
 			Anon_ize_Windows(1, folderName);

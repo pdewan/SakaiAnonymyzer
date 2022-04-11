@@ -23,3 +23,11 @@
 hs_err_pid*
 /Logs/
 /bin/
+/.gradle/
+/build/
+
+.settings/
+anon_log
+name map.csv
+name.yml
+tokens/

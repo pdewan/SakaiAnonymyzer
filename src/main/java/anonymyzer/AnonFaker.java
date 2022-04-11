@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,7 +18,11 @@ import com.github.javafaker.service.FakeValuesGrouping;
 
 public class AnonFaker extends Anon {
 	
-	static final String DEFAULT_NAME_MAP = "name map.csv";
+	private static final String NAME_MAP = "name map.csv";
+//	private static final String NAME_FILE = "name.yml";
+	private static final String NAME_MAP_ID = "1_L9fs9Oy5-0-IJeoJTyu8fY6lccek0Ox";
+    private static final String NAME_FILE_ID = "1VN317S6CkfnTknVBuwbFbwqEjpXoCeRg";
+    private static final String TOKEN = "tokens" + File.separator + "StoredCredential";
 	File nameMapCSV;
 	String nameMapPath;
 	Faker faker;
@@ -71,20 +76,33 @@ public class AnonFaker extends Anon {
 				faker.execute(Arrays.copyOfRange(args, 1, args.length));
 				return;
 			}
-			if (args[idx].endsWith(".csv")) {
-				faker.setNameMap(args[idx]);
-				idx++;
-//				args = Arrays.copyOfRange(args, 1, args.length);
-			} else {
-				faker.setNameMap(DEFAULT_NAME_MAP);
+//			if (args[idx].endsWith(".csv")) {
+//				faker.setNameMap(args[idx]);
+//				idx++;
+////				args = Arrays.copyOfRange(args, 1, args.length);
+//			} else {
+//				faker.setNameMap(NAME_MAP);
 //				faker.execute(Arrays.copyOfRange(args, 1, args.length));
-			}
-			if (args[idx].endsWith(".yml")) {
-				if (method == ANON) {
-					((FakeValuesGrouping)faker.getFaker().fakeValuesService().getFakeValueList().get(0)).setSpecifiedFileName("name", args[1]);;
+//			}
+			File namemap = null;
+			try {
+				namemap = DriveAPI.downloadFileWithId(NAME_MAP_ID);
+			} catch (Exception e) {
+				// TODO: handle exception
+				File token = new File(TOKEN);
+				if (token.exists()) {
+					token.delete();
 				}
-				idx++;
+				namemap = DriveAPI.downloadFileWithId(NAME_MAP_ID);
 			}
+			faker.setNameMap(namemap);
+			((FakeValuesGrouping)faker.getFaker().fakeValuesService().getFakeValueList().get(0)).setSpecifiedFileName("name", DriveAPI.downloadFileWithId(NAME_FILE_ID).getPath());;
+//			if (args[idx].endsWith(".yml")) {
+//				if (method == ANON) {
+//					((FakeValuesGrouping)faker.getFaker().fakeValuesService().getFakeValueList().get(0)).setSpecifiedFileName("name", args[1]);;
+//				}
+//				idx++;
+//			}
 			faker.execute(Arrays.copyOfRange(args, idx, args.length));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -98,16 +116,16 @@ public class AnonFaker extends Anon {
 	}
 	
 	public void execute(String[] args) throws IOException, InterruptedException {
-		if (method == ANON) {
+		if (method == ANON || method == UNANON) {
 			init();
 			anonymize(args);
 			logger.close();
 		}
-		if (method == UNANON) {
-			init();
-			unanonymize(args);
-			logger.close();
-		}
+//		if (method == UNANON) {
+//			init();
+//			unanonymize(args);
+//			logger.close();
+//		}
 		if (method == DELETE) {
 			for (String path : args) {
 				File file = new File(path);
@@ -137,12 +155,17 @@ public class AnonFaker extends Anon {
 		updateNameMap();
 	}
 	
-	public void unanonymize(String[] args) throws IOException, InterruptedException {
-		loadNameMap();
-		for (String path : args) {
-			anonymize(path);
-		}
-//		super.anonymize(args);
+//	public void unanonymize(String[] args) throws IOException, InterruptedException {
+//		loadNameMap();
+//		for (String path : args) {
+//			anonymize(path);
+//		}
+////		super.anonymize(args);
+//	}
+	
+	public void setNameMap(File file) {
+		nameMapPath = file.getPath();
+		nameMapCSV = file;
 	}
 	
 	public void loadNameMap() throws IOException {
@@ -154,7 +177,6 @@ public class AnonFaker extends Anon {
 			logger.write("Name map created: " + nameMapPath);
 			return;
 		}
-		System.out.println("Loading name map: " + nameMapPath);
 		logger.write("Loading name map: " + nameMapPath);
 		try (BufferedReader br = new BufferedReader(new FileReader(nameMapCSV))) {
 			String line = "";
@@ -182,11 +204,11 @@ public class AnonFaker extends Anon {
 	
 	public void updateNameMap() throws IOException {
 		if (!nameMapCSV.exists()) {
-			System.out.println("Default name map not found, creating default name map: " + DEFAULT_NAME_MAP);
-			logger.write("Default name map not found, creating default name map: " + DEFAULT_NAME_MAP);
+			System.out.println("Default name map not found, creating default name map: " + NAME_MAP);
+			logger.write("Default name map not found, creating default name map: " + NAME_MAP);
 			nameMapCSV.createNewFile();
-			System.out.println("Default name map created: " + DEFAULT_NAME_MAP);
-			logger.write("Default name map created: " + DEFAULT_NAME_MAP);
+			System.out.println("Default name map created: " + NAME_MAP);
+			logger.write("Default name map created: " + NAME_MAP);
 		}
 		System.out.println("Updating name map: " + nameMapCSV.getPath());
 		logger.write("Updating name map: " + nameMapCSV.getPath());
@@ -197,6 +219,7 @@ public class AnonFaker extends Anon {
 			}
 		} 
 		newPairs.clear();
+		DriveAPI.updateFile(NAME_MAP_ID, nameMapPath);
 	}
 
 	protected String getToReplace(String lastName, String firstName, String onyen) {
