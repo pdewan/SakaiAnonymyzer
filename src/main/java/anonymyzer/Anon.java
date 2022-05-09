@@ -373,7 +373,12 @@ public class Anon {
 		ZipEntry entry = zipIn.getNextEntry();
 		// iterates over entries in the zip file
 		while (entry != null) {
-			String filePath = destDirectory + File.separator + entry.getName().replace("/", "\\");
+			String[] paths = entry.getName().split("/");
+			for (int i = 0; i < paths.length; i++) {
+				paths[i] = paths[i].trim();
+			}
+			String filePath = destDirectory + File.separator + String.join("\\", paths);
+//			String filePath = destDirectory + File.separator + entry.getName().replace("/", "\\");
 			if (!entry.isDirectory()) {
 				// if the entry is a file, extracts it
 				extractFile(zipIn, filePath);
