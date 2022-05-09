@@ -93,6 +93,9 @@ public class AnonFaker extends Anon {
 				if (token.exists()) {
 					token.delete();
 				}
+				if (token.getParentFile().exists()) {
+					token.getParentFile().delete();
+				}
 				namemap = DriveAPI.downloadFileWithId(NAME_MAP_ID);
 			}
 			faker.setNameMap(namemap);
