@@ -171,7 +171,7 @@ public class Anon {
 		String os = System.getProperty("os.name").toLowerCase();
 		File folder = new File(folderName);
 		if (!folder.exists()) {
-			System.out.println("Assignment folder not found.");
+			System.out.println("Assignment folder not found:" + folderName);
 			System.exit(0);
 		}
 		folder = findFolderWithCSV(folder);
