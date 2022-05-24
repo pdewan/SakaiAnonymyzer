@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -54,6 +56,9 @@ public class Anon {
 //	static final char COURSE = 'c';
 	static final char TXT = 't';
 	static char method = ' ';
+	static final Pattern MAC_USER = Pattern.compile("/Users/(.*?)/");
+	static final Pattern WIN_USER = Pattern.compile("C:\\\\Users\\\\(.*?)\\\\");
+	static final String USERNAME = "username";
 
 	public Anon() throws IOException {
 		log_file = new File("anon_log");
@@ -865,7 +870,7 @@ public class Anon {
 			if (file.isDirectory()) {
 				findJavaFiles_Windows(file, topFolderName);
 			} else {
-				if (file.getName().contains(".java")) {
+				if (file.getName().contains(".java") || file.getName().contains(".xml")) {
 					replaceHeaders_Windows(file, topFolderName);
 				}
 			}
@@ -909,7 +914,18 @@ public class Anon {
 					logger.write("changed " + name + " on line " + line_num + " of " + f.getName() + "\n");
 					line_1 = replaceHeaders(name, line_num, f, names, line_1, i);
 				}
-
+			}
+			// /Users/username for mac   C:\Users\\username\
+			Matcher winMatcher = WIN_USER.matcher(line_1);
+			Matcher macMatcher = MAC_USER.matcher(line_1);
+			if (winMatcher.find()) {
+				String username = winMatcher.group(1);
+				line_1 = line_1.replaceAll(username, USERNAME);
+				logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
+			} else if (macMatcher.find()) {
+				String username = macMatcher.group(1);
+				line_1 = line_1.replaceAll(username, USERNAME);
+				logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
 			}
 			// write it to new file
 			w.write(line_1 + "\n");
