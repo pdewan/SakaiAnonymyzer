@@ -920,12 +920,21 @@ public class Anon {
 			Matcher macMatcher = MAC_USER.matcher(line_1);
 			if (winMatcher.find()) {
 				String username = winMatcher.group(1);
+				try {
 				line_1 = line_1.replaceAll(username, USERNAME);
 				logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
+				} catch (Exception e) {
+					System.out.println ("did not change line:" + line_1 + "user " + username);
+				}
 			} else if (macMatcher.find()) {
 				String username = macMatcher.group(1);
+				try {
 				line_1 = line_1.replaceAll(username, USERNAME);
 				logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
+				} catch (Exception e) {
+					System.out.println ("did not change line:" + line_1 + "user " + username);
+//					e.printStackTrace();
+				}
 			}
 			// write it to new file
 			w.write(line_1 + "\n");
