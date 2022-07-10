@@ -67,7 +67,7 @@ Before each session, you must download the latest version of the existing mappin
 
 java -cp path.to.jar anonymyzer.DownloadNameMap
 
-To run Anon in command line, use the following command:
+To run FakeNameGenerator in command line, use the following command:
 
 java -cp path.to.jar anonymyzer.FakeNameGenerator UID firstName lastName
 
