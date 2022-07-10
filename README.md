@@ -1,5 +1,6 @@
 # SakaiAnonymyzer
 anonymizes sakai projects
+
 ## Anon Usage
 Anon anonymizes real names and onyens with sha256 hashes
 
@@ -12,7 +13,7 @@ After anonymizing, it zips the anonymized version in a zip file called "input.fi
 #### Run:
 To run Anon in command line, use the following command:
 
-java -cp path.to.jar package.name.Anon mode list-of-paths...
+java -cp path.to.jar anonymyer.Anon mode list-of-paths...
 
 #### Mode:
 a: anonymize all paths
@@ -37,9 +38,9 @@ If an input file is a zip file, it unzips the zip file and set the input file to
 
 After (un)anonymizing, it zips the anonymized version in a zip file called "input.file.name+(U)A.zip", and deletes the input folder
 #### Run:
-To run Anon in command line, use the following command:
+To run AnonFaker in command line, use the following command:
 
-java -cp path.to.jar package.name.AnonFaker mode (path.to.name.map.csv) (path.to.fake.names.yml) list-of-paths...
+java -cp path.to.jar anonymyzer.AnonFaker mode (path.to.name.map.csv) (path.to.fake.names.yml) list-of-paths...
 
 #### Mode:
 a: anonymize all paths
@@ -58,3 +59,21 @@ If path.to.name.map.csv does not exist, a new name map will be created at the sp
 If path.to.fake.names.yml does not exist, the program will crash
 
 list-of-paths should be separated by spaces, surround a path with single quotes if the a path contains spaces
+
+## FakeNameGenerator Usage
+FakeNameGenerator is used to generate fake name and fake UID. It takes 3 arguments: UID(onyen, email, etc.), firstName, lastName, and outputs the resulting fake name to std.out in the format: UID,firstName,lastName
+#### Run:
+Before each session, you must download the latest version of the existing mapping between fake names and actual names from Google Drive with this command:
+
+java -cp path.to.jar anonymyzer.DownloadNameMap
+
+To run Anon in command line, use the following command:
+
+java -cp path.to.jar anonymyzer.FakeNameGenerator UID firstName lastName
+
+After each session, you must update the mapping in Google Drive with this command:
+
+java -cp path.to.jar anonymyzer.UpdateNameMap
+
+## Note
+In order to download from and upload to Google Drive, your must login with a Gmail account added to the Google Cloud Project whitelist.

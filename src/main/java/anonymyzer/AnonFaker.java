@@ -85,19 +85,23 @@ public class AnonFaker extends Anon {
 //				faker.execute(Arrays.copyOfRange(args, 1, args.length));
 //			}
 			File namemap = null;
-			try {
-				namemap = DriveAPI.downloadFileWithId(NAME_MAP_ID);
-			} catch (Exception e) {
+//			try {
+//				namemap = DriveAPI.downloadFileWithId(NAME_MAP_ID);
+//			} catch (Exception e) {
 				// TODO: handle exception
 				File token = new File(TOKEN);
 				if (token.exists()) {
 					token.delete();
 				}
 				if (token.getParentFile().exists()) {
-					token.getParentFile().delete();
+					File tokens = token.getParentFile();
+					System.out.println(tokens.getAbsolutePath());
+					boolean deleted = tokens.delete();
+					System.out.println(deleted);
+//					token.getParentFile().delete();
 				}
 				namemap = DriveAPI.downloadFileWithId(NAME_MAP_ID);
-			}
+//			}
 			faker.setNameMap(namemap);
 			((FakeValuesGrouping)faker.getFaker().fakeValuesService().getFakeValueList().get(0)).setSpecifiedFileName("name", DriveAPI.downloadFileWithId(NAME_FILE_ID).getPath());;
 //			if (args[idx].endsWith(".yml")) {

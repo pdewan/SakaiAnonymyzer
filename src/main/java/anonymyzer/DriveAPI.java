@@ -152,7 +152,7 @@ public class DriveAPI {
     		service.files().update(fileId, file, mediaContent).execute();
     		return true;
     	} catch (IOException e) {
-    		System.out.println("An error occurred: " + e);
+    		System.err.println("An error occurred: " + e);
     		return false;
     	}
     }
