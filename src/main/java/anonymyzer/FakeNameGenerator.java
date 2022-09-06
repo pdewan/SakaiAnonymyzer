@@ -30,10 +30,11 @@ public class FakeNameGenerator {
 	HashMap<String, String> newPairs = new HashMap<>();
 	HashSet<String> fakeNameSet = new HashSet<>();
 	File log_file;
+	String logFileName = "fake_name_generator_log";
 	FileWriter logger;
 	
 	public FakeNameGenerator() throws IOException {
-		log_file = new File("fake_name_generator_log");
+		log_file = new File(logFileName);
 		log_file.delete();
 		log_file.createNewFile();
 		logger = new FileWriter(log_file);
@@ -85,13 +86,17 @@ public class FakeNameGenerator {
 	}
 
 	
-	public void execute(String[] args) throws IOException, InterruptedException {
+	public void execute(Object arg) throws IOException, InterruptedException {
 		loadNameMap();
-		printFakeName(args);
+		anonymize(arg);
 		updateNameMap();
 	}
 
-	public void printFakeName(String[] args) {
+	public void anonymize(Object arg) {
+		if (!(arg instanceof String[])) {
+			return;
+		}
+		String[] args = (String[]) arg;
 		String[] tokens = getTokens(args[1], args[2], args[0]);
 		System.out.println(concatFirst3(tokens));
 	}
@@ -139,6 +144,7 @@ public class FakeNameGenerator {
 			}
 		} 
 		newPairs.clear();
+//		DriveAPI.updateFile(NAME_MAP_ID, nameMapPath);
 	}
 
 	protected String getFakeName(String lastName, String firstName, String onyen) {

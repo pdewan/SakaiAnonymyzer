@@ -75,5 +75,12 @@ After each session, you must update the mapping in Google Drive with this comman
 
 java -cp path.to.jar anonymyzer.UpdateNameMap
 
+## PiazzaFaker Usage
+PiazzaFaker is used to anonymize piazza posts sorted by authors. It takes one argument of the path of the piazza post file and anonymize all the authors.
+#### Run:
+To run PiazzaFaker in command line, use the following command:
+
+java -cp path.to.jar anonymyzer.PiazzaFaker path.to.piazza.post.file
+
 ## Note
 In order to download from and upload to Google Drive, your must login with a Gmail account added to the Google Cloud Project whitelist.
