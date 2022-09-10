@@ -38,8 +38,8 @@ public class PiazzaFaker extends FakeNameGenerator {
 //				return;
 //			}
 			
-//			String piazzaPostsPath = parseArg(args[0]);
-			String piazzaPostsPath = PIAZZA_POSTS_PATH;
+			String piazzaPostsPath = parseArg(args[0]);
+//			String piazzaPostsPath = PIAZZA_POSTS_PATH;
 			File piazzaPosts = new File(piazzaPostsPath);
 			if (!piazzaPosts.exists()) {
 				System.err.println(piazzaPostsPath + " does not exist: ");
