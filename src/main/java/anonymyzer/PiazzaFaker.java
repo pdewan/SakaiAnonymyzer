@@ -96,14 +96,21 @@ public class PiazzaFaker extends FakeNameGenerator {
 		}
 		File piazzaPostsFolder = (File) args;
 		File[] files = piazzaPostsFolder.listFiles();
+		File anonFolder = new File(piazzaPostsFolder, "Anon");
+		if (!anonFolder.exists()) {
+			anonFolder.mkdirs();
+		}
 		for (File file : files) {
+			if (file.isDirectory()) {
+				continue;
+			}
 			String fileName = file.getName();
 			if (fileName.contains("ByAuthorPosts") && fileName.toLowerCase().endsWith(".json")) {
-				anonymizeByAuthors(file);
+				anonymizeByAuthors(file, anonFolder);
 			} else if (fileName.contains("AllPosts") && fileName.toLowerCase().endsWith(".json")) {
-				anonymizeAllPosts(file);
+				anonymizeAllPosts(file, anonFolder);
 			} else if (fileName.contains("Authors") && fileName.toLowerCase().endsWith(".txt")) {
-				anonymizeAuthors(file);
+				anonymizeAuthors(file, anonFolder);
 			}
 			
 		}
@@ -132,12 +139,12 @@ public class PiazzaFaker extends FakeNameGenerator {
 		return fakeAuthor;
 	}
 	
-	public void anonymizeAuthors(File piazzaPosts) {
-		String authorsString = readFile(piazzaPosts).toString();
-		String[] authors = authorsString.split("\\R");
+	public void anonymizeAuthors(File authors, File anonFolder) {
+		String authorsString = readFile(authors).toString();
+		String[] authorList = authorsString.split("\\R");
 		StringBuilder sb = new StringBuilder();
 		
-		for (String author : authors) {
+		for (String author : authorList) {
 			if (author.startsWith("Instructor")) {
 				continue;
 			}
@@ -146,7 +153,7 @@ public class PiazzaFaker extends FakeNameGenerator {
 			}
 			sb.append(authorToFakeAuthor.get(author) + System.lineSeparator());
 		}
-		File anonAuthors = new File(piazzaPosts.getAbsolutePath().replace(".txt", "Anon.txt"));
+		File anonAuthors = new File(anonFolder, authors.getName().replace(".txt", "Anon.txt"));
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonAuthors))){
 			bw.write(sb.toString());
 		} catch (IOException e) {
@@ -168,7 +175,7 @@ public class PiazzaFaker extends FakeNameGenerator {
 		}
 	}
 	
-	public void anonymizeAllPosts(File allPosts) {
+	public void anonymizeAllPosts(File allPosts, File anonFolder) {
 		String allPostsString = readFile(allPosts).toString();
 		JSONObject allPostsJson = new JSONObject(allPostsString);
 		
@@ -181,7 +188,7 @@ public class PiazzaFaker extends FakeNameGenerator {
 			allPostsString = allPostsString.replace(entry.getKey(), entry.getValue());
 		}
 		
-		File anonAllPosts = new File(allPosts.getAbsolutePath().replace(".json", "Anon.json"));
+		File anonAllPosts = new File(anonFolder, allPosts.getName().replace(".json", "Anon.json"));
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonAllPosts))){
 			bw.write(allPostsString);
 		} catch (IOException e) {
@@ -189,7 +196,7 @@ public class PiazzaFaker extends FakeNameGenerator {
 		}
 	}
 	
-	public void anonymizeByAuthors(File piazzaPosts) {
+	public void anonymizeByAuthors(File piazzaPosts, File anonFolder) {
 //		File piazzaPosts = (File) args;
 		String piazzaPostsString = readFile(piazzaPosts).toString();
 		JSONObject piazzaPostsJson = new JSONObject(piazzaPostsString);
@@ -219,7 +226,7 @@ public class PiazzaFaker extends FakeNameGenerator {
 //			}
 			piazzaPostsString = piazzaPostsString.replace(author, authorToFakeAuthor.get(author));
 		}
-		File anonPiazzaPosts = new File(piazzaPosts.getAbsolutePath().replace(".json", "Anon.json"));
+		File anonPiazzaPosts = new File(anonFolder, piazzaPosts.getName().replace(".json", "Anon.json"));
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonPiazzaPosts))){
 			bw.write(piazzaPostsString);
 		} catch (IOException e) {
