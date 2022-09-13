@@ -1,21 +1,14 @@
 package anonymyzer;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import com.github.javafaker.service.FakeValuesGrouping;
 
 public class PiazzaFaker extends FakeNameGenerator {
 
@@ -65,20 +58,23 @@ public class PiazzaFaker extends FakeNameGenerator {
 
 			DownloadNameMap.main(args);
 			PiazzaFaker faker = new PiazzaFaker();
-			File namemap = new File(NAME_MAP);
-			if (!namemap.exists()) {
-				System.err.println("name map.csv not found, please download required files first");
+			if (!faker.setNameMapAndNameFile()) {
 				System.exit(1);
 			}
-			faker.setNameMap(namemap);
-			File nameFile = new File(NAME_FILE);
-			if (!nameFile.exists()) {
-				System.err.println("name.yml not found, please download name map.csv first");
-				System.exit(1);
-
-			}
-			((FakeValuesGrouping)faker.getFaker().fakeValuesService().getFakeValueList().get(0))
-				.setSpecifiedFileName("name", nameFile.getPath());
+//			File namemap = new File(NAME_MAP);
+//			if (!namemap.exists()) {
+//				System.err.println("name map.csv not found, please download required files first");
+//				System.exit(1);
+//			}
+//			faker.setNameMap(namemap);
+//			File nameFile = new File(NAME_FILE);
+//			if (!nameFile.exists()) {
+//				System.err.println("name.yml not found, please download name map.csv first");
+//				System.exit(1);
+//
+//			}
+//			((FakeValuesGrouping)faker.getFaker().fakeValuesService().getFakeValueList().get(0))
+//				.setSpecifiedFileName("name", nameFile.getPath());
 			
 //			faker.execute(assignmentFolder);
 			faker.execute(piazzaPostsFolder);
@@ -112,7 +108,6 @@ public class PiazzaFaker extends FakeNameGenerator {
 			} else if (fileName.contains("Authors") && fileName.toLowerCase().endsWith(".txt")) {
 				anonymizeAuthors(file, anonFolder);
 			}
-			
 		}
 	}
 	
@@ -154,11 +149,12 @@ public class PiazzaFaker extends FakeNameGenerator {
 			sb.append(authorToFakeAuthor.get(author) + System.lineSeparator());
 		}
 		File anonAuthors = new File(anonFolder, authors.getName().replace(".txt", "Anon.txt"));
-		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonAuthors))){
-			bw.write(sb.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		writeFile(anonAuthors, sb.toString());
+//		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonAuthors))){
+//			bw.write(sb.toString());
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	public void findAuthor(JSONObject post) {
@@ -189,11 +185,12 @@ public class PiazzaFaker extends FakeNameGenerator {
 		}
 		
 		File anonAllPosts = new File(anonFolder, allPosts.getName().replace(".json", "Anon.json"));
-		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonAllPosts))){
-			bw.write(allPostsString);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		writeFile(anonAllPosts, allPostsString);
+//		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonAllPosts))){
+//			bw.write(allPostsString);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	public void anonymizeByAuthors(File piazzaPosts, File anonFolder) {
@@ -227,24 +224,12 @@ public class PiazzaFaker extends FakeNameGenerator {
 			piazzaPostsString = piazzaPostsString.replace(author, authorToFakeAuthor.get(author));
 		}
 		File anonPiazzaPosts = new File(anonFolder, piazzaPosts.getName().replace(".json", "Anon.json"));
-		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonPiazzaPosts))){
-			bw.write(piazzaPostsString);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public StringBuilder readFile(File file) {
-		StringBuilder content = new StringBuilder();
-		try (BufferedReader br = new BufferedReader(new FileReader(file))){
-			String nextLine = "";
-			while((nextLine = br.readLine()) != null) {
-				content.append(nextLine+System.lineSeparator());
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return content;
+		writeFile(anonPiazzaPosts, piazzaPostsString);
+//		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonPiazzaPosts))){
+//			bw.write(piazzaPostsString);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 //	public File findPiazzaFile(File assignmentFolder) {
