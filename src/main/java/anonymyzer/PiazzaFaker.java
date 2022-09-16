@@ -12,27 +12,29 @@ import org.json.JSONObject;
 
 public class PiazzaFaker extends FakeNameGenerator {
 
-//	private static final String PIAZZA_POSTS_PATH = "C:\\Users\\yiwk3\\Desktop\\New Folder";
+	private static final String PIAZZA_POSTS_PATH = "F:\\Hermes Data\\PiazzaOutput\\Comp301ss22";
 	String logFileName = "piazza_faker_log";
 //	Pattern onyenPattern = Pattern.compile(".*\\((.*)@.*\\)");
 	Pattern studentNamePattern = Pattern.compile("(.*) (.*)\\((.*)@.*\\)");
 	HashMap<String, String> authorToFakeAuthor;
+	HashMap<String, String> uidToAuthor;
 
 	
 	public PiazzaFaker() throws IOException {
 		super();
 		authorToFakeAuthor = new HashMap<>();
+		uidToAuthor = new HashMap<>();
 	}
 	
 	public static void main(String[] args) throws IOException {
-		if (args.length != 1) {
-			System.err.println("Enter main args: path to Piazza posts files folder");
-			System.exit(1);
-		}
+//		if (args.length != 1) {
+//			System.err.println("Enter main args: path to Piazza posts files folder");
+//			System.exit(1);
+//		}
 
 		try {
-			String piazzaPostsFolderPath = parseArg(args[0]);
-//			String piazzaPostsFolderPath = PIAZZA_POSTS_PATH;
+//			String piazzaPostsFolderPath = parseArg(args[0]);
+			String piazzaPostsFolderPath = PIAZZA_POSTS_PATH;
 
 			File piazzaPostsFolder = new File(piazzaPostsFolderPath);
 			if (!piazzaPostsFolder.exists()) {
@@ -158,8 +160,13 @@ public class PiazzaFaker extends FakeNameGenerator {
 	}
 	
 	public void findAuthor(JSONObject post) {
-		String author = post.getString("author");
-		if (!author.contains("Instructor") && !authorToFakeAuthor.containsKey(author)) {
+		String author = null;
+		if (post.has("author")) {
+//			author = uidToAuthor.get(post.getString("uid"));
+//		} else {
+			author = post.getString("author");
+		}
+		if (author != null && !author.contains("Instructor") && !authorToFakeAuthor.containsKey(author)) {
 			authorToFakeAuthor.put(author, getFakeAuthor(author));
 		}
 		if (!post.has("children")) {
@@ -220,6 +227,11 @@ public class PiazzaFaker extends FakeNameGenerator {
 //			} else {
 //				fakeName = fakeName.substring(0, fakeName.indexOf(','));
 //				fakeAuthor = fakeName + "(" + fakeName + "@live.unc.edu)";
+//			}
+//			JSONArray postsByAuthor = piazzaPostsJson.getJSONArray(author);
+//			String uid = postsByAuthor.getJSONObject(0).getString("uid");
+//			if (!uidToAuthor.containsKey(uid)) {
+//				uidToAuthor.put(uid, author);
 //			}
 			piazzaPostsString = piazzaPostsString.replace(author, authorToFakeAuthor.get(author));
 		}
