@@ -23,10 +23,7 @@ public class FakeNameGenerator extends GeneralFaker {
 //	FileWriter logger;
 	
 	public FakeNameGenerator() throws IOException {
-		log_file = new File(logFileName);
-		log_file.delete();
-		log_file.createNewFile();
-		logger = new FileWriter(log_file);
+		super();
 	}
 	public Faker getFaker() {
 		if (faker == null) {

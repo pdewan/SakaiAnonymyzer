@@ -76,6 +76,16 @@ public class AnonFaker extends Anon {
 				faker.execute(Arrays.copyOfRange(args, 1, args.length));
 				return;
 			}
+//			String[] piazzaPostsPath = {""};
+//			if (args[idx].startsWith("ByAuthorPosts") && args[idx].endsWith(".json")) {
+//				piazzaPostsPath[0] = args[idx]; 
+//				idx++;
+//			} 
+//			String[] zoomChatsPath = {"",""};
+//			if (args[idx].toLowerCase().contains("zoom")){
+//				zoomChatsPath[0] = args[idx]; 
+//				idx++;
+//			} 
 //			if (args[idx].endsWith(".csv")) {
 //				faker.setNameMap(args[idx]);
 //				idx++;
@@ -84,23 +94,24 @@ public class AnonFaker extends Anon {
 //				faker.setNameMap(NAME_MAP);
 //				faker.execute(Arrays.copyOfRange(args, 1, args.length));
 //			}
-			File namemap = null;
+			File namemap = new File(GeneralFaker.NAME_MAP);
 //			try {
 //				namemap = DriveAPI.downloadFileWithId(NAME_MAP_ID);
 //			} catch (Exception e) {
 				// TODO: handle exception
-				File token = new File(TOKEN);
-				if (token.exists()) {
-					token.delete();
-				}
-				if (token.getParentFile().exists()) {
-					File tokens = token.getParentFile();
-					System.out.println(tokens.getAbsolutePath());
-					boolean deleted = tokens.delete();
-					System.out.println(deleted);
-//					token.getParentFile().delete();
-				}
-				namemap = DriveAPI.downloadFileWithId(NAME_MAP_ID);
+//				File token = new File(TOKEN);
+//				if (token.exists()) {
+//					token.delete();
+//				}
+//				if (token.getParentFile().exists()) {
+//					File tokens = token.getParentFile();
+//					System.out.println(tokens.getAbsolutePath());
+//					boolean deleted = tokens.delete();
+//					System.out.println(deleted);
+////					token.getParentFile().delete();
+//				}
+//				namemap = DriveAPI.downloadFileWithId(NAME_MAP_ID);
+				DownloadNameMap.main(args);
 //			}
 			faker.setNameMap(namemap);
 			((FakeValuesGrouping)faker.getFaker().fakeValuesService().getFakeValueList().get(0)).setSpecifiedFileName("name", DriveAPI.downloadFileWithId(NAME_FILE_ID).getPath());;
@@ -110,7 +121,21 @@ public class AnonFaker extends Anon {
 //				}
 //				idx++;
 //			}
-			faker.execute(Arrays.copyOfRange(args, idx, args.length));
+			String[] paths = Arrays.copyOfRange(args, idx, args.length);
+			faker.execute(paths);
+
+//			for (String folderName : paths) {
+//				zoomChatsPath[1] = folderName + File.separator + "grades.csv";;
+//				if (!piazzaPostsPath[0].isEmpty()) {
+//					PiazzaFaker.main(piazzaPostsPath);
+//				}
+//				if (!zoomChatsPath[0].isEmpty() && !zoomChatsPath[1].isEmpty()) {
+//					ZoomChatFaker.main(zoomChatsPath);
+//				}
+//				zoomChatsPath[1] = "";
+//				faker.zip(folderName, folderName+Character.toUpperCase(method));
+//				faker.delete(new File(folderName));
+//			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -231,6 +256,7 @@ public class AnonFaker extends Anon {
 
 	protected String getToReplace(String lastName, String firstName, String onyen) {
 		String[] tokens = getTokens(firstName, lastName, onyen);
+		classNameMap.put(concat(onyen, firstName, lastName), concatFirst3(tokens));
 		if (tokens == null) {
 			return null;
 		}

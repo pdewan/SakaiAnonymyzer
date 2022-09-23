@@ -30,6 +30,13 @@ public abstract class GeneralFaker {
 	String logFileName = "faker_log";
 	FileWriter logger;
 	
+	public GeneralFaker() throws IOException {
+		log_file = new File(logFileName);
+		log_file.delete();
+		log_file.createNewFile();
+		logger = new FileWriter(log_file);
+	}
+	
 	public Faker getFaker() {
 		if (faker == null) {
 			faker = new Faker();
@@ -121,7 +128,6 @@ public abstract class GeneralFaker {
 				bw.newLine();
 			}
 		} 
-		newPairs.clear();
 //		DriveAPI.updateFile(NAME_MAP_ID, nameMapPath);
 	}
 	

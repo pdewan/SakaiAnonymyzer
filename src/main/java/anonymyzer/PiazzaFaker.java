@@ -3,6 +3,7 @@ package anonymyzer;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,14 +11,14 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class PiazzaFaker extends FakeNameGenerator {
+public class PiazzaFaker extends GeneralFaker {
 
-	private static final String PIAZZA_POSTS_PATH = "F:\\Hermes Data\\PiazzaOutput\\Comp301ss22";
+//	private static final String PIAZZA_POSTS_PATH = "F:\\Hermes Data\\PiazzaOutput\\Comp301ss22";
 	String logFileName = "piazza_faker_log";
 //	Pattern onyenPattern = Pattern.compile(".*\\((.*)@.*\\)");
 	Pattern studentNamePattern = Pattern.compile("(.*) (.*)\\((.*)@.*\\)");
-	HashMap<String, String> authorToFakeAuthor;
-	HashMap<String, String> uidToAuthor;
+	Map<String, String> authorToFakeAuthor;
+	Map<String, String> uidToAuthor;
 
 	
 	public PiazzaFaker() throws IOException {
@@ -27,14 +28,14 @@ public class PiazzaFaker extends FakeNameGenerator {
 	}
 	
 	public static void main(String[] args) throws IOException {
-//		if (args.length != 1) {
-//			System.err.println("Enter main args: path to Piazza posts files folder");
-//			System.exit(1);
-//		}
+		if (args.length != 1) {
+			System.err.println("Enter main args: path to Piazza posts files folder");
+			System.exit(1);
+		}
 
 		try {
-//			String piazzaPostsFolderPath = parseArg(args[0]);
-			String piazzaPostsFolderPath = PIAZZA_POSTS_PATH;
+			String piazzaPostsFolderPath = parseArg(args[0]);
+//			String piazzaPostsFolderPath = PIAZZA_POSTS_PATH;
 
 			File piazzaPostsFolder = new File(piazzaPostsFolderPath);
 			if (!piazzaPostsFolder.exists()) {
@@ -45,40 +46,13 @@ public class PiazzaFaker extends FakeNameGenerator {
 				System.err.println(piazzaPostsFolderPath + " is not a directory.");
 				System.exit(1);
 			}
-			
-//			String piazzaPostsPath = parseArg(args[0]);
-//			String piazzaPostsPath = PIAZZA_POSTS_PATH;
-//			File piazzaPosts = new File(piazzaPostsPath);
-//			if (!piazzaPosts.exists()) {
-//				System.err.println(piazzaPostsPath + " does not exist: ");
-//				System.exit(1);
-//			}
-//			if (!piazzaPostsPath.toLowerCase().endsWith(".json")) {
-//				System.err.println(piazzaPostsPath + " is not a JSON file");
-//				System.exit(1);
-//			}
 
 			DownloadNameMap.main(args);
 			PiazzaFaker faker = new PiazzaFaker();
 			if (!faker.setNameMapAndNameFile()) {
 				System.exit(1);
 			}
-//			File namemap = new File(NAME_MAP);
-//			if (!namemap.exists()) {
-//				System.err.println("name map.csv not found, please download required files first");
-//				System.exit(1);
-//			}
-//			faker.setNameMap(namemap);
-//			File nameFile = new File(NAME_FILE);
-//			if (!nameFile.exists()) {
-//				System.err.println("name.yml not found, please download name map.csv first");
-//				System.exit(1);
-//
-//			}
-//			((FakeValuesGrouping)faker.getFaker().fakeValuesService().getFakeValueList().get(0))
-//				.setSpecifiedFileName("name", nameFile.getPath());
-			
-//			faker.execute(assignmentFolder);
+
 			faker.execute(piazzaPostsFolder);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -152,18 +126,11 @@ public class PiazzaFaker extends FakeNameGenerator {
 		}
 		File anonAuthors = new File(anonFolder, authors.getName().replace(".txt", "Anon.txt"));
 		writeFile(anonAuthors, sb.toString());
-//		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonAuthors))){
-//			bw.write(sb.toString());
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
 	}
 	
 	public void findAuthor(JSONObject post) {
 		String author = null;
 		if (post.has("author")) {
-//			author = uidToAuthor.get(post.getString("uid"));
-//		} else {
 			author = post.getString("author");
 		}
 		if (author != null && !author.contains("Instructor") && !authorToFakeAuthor.containsKey(author)) {
@@ -193,15 +160,9 @@ public class PiazzaFaker extends FakeNameGenerator {
 		
 		File anonAllPosts = new File(anonFolder, allPosts.getName().replace(".json", "Anon.json"));
 		writeFile(anonAllPosts, allPostsString);
-//		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonAllPosts))){
-//			bw.write(allPostsString);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
 	}
 	
 	public void anonymizeByAuthors(File piazzaPosts, File anonFolder) {
-//		File piazzaPosts = (File) args;
 		String piazzaPostsString = readFile(piazzaPosts).toString();
 		JSONObject piazzaPostsJson = new JSONObject(piazzaPostsString);
 		
@@ -212,57 +173,10 @@ public class PiazzaFaker extends FakeNameGenerator {
 			if (!authorToFakeAuthor.containsKey(author)) {
 				authorToFakeAuthor.put(author, getFakeAuthor(author));
 			}
-//			Matcher matcher = studentNamePattern.matcher(author);
-//			String firstName = matcher.group(1);
-//			String lastName = matcher.group(2);
-//			String onyen = matcher.group(3);
-//			String fakeName = CommentsIdenMap.get(onyen);
-//			String fakeAuthor = "";
-//			if (fakeName == null) {
-//				String fakeFirstName = faker.name().firstName();
-//				String fakeLastName = faker.name().lastName();
-//				String fakeOnyen = fakeFirstName + " " + fakeLastName;
-//				newPairs.put(concat(onyen, firstName, lastName), concat(fakeOnyen, fakeFirstName, fakeLastName));
-//				fakeAuthor = fakeFirstName + " " + fakeLastName + "(" + fakeOnyen + "@live.unc.edu)";
-//			} else {
-//				fakeName = fakeName.substring(0, fakeName.indexOf(','));
-//				fakeAuthor = fakeName + "(" + fakeName + "@live.unc.edu)";
-//			}
-//			JSONArray postsByAuthor = piazzaPostsJson.getJSONArray(author);
-//			String uid = postsByAuthor.getJSONObject(0).getString("uid");
-//			if (!uidToAuthor.containsKey(uid)) {
-//				uidToAuthor.put(uid, author);
-//			}
+
 			piazzaPostsString = piazzaPostsString.replace(author, authorToFakeAuthor.get(author));
 		}
 		File anonPiazzaPosts = new File(anonFolder, piazzaPosts.getName().replace(".json", "Anon.json"));
 		writeFile(anonPiazzaPosts, piazzaPostsString);
-//		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonPiazzaPosts))){
-//			bw.write(piazzaPostsString);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
 	}
-	
-//	public File findPiazzaFile(File assignmentFolder) {
-//		File[] piazzaPostFiles = assignmentFolder.listFiles(new FilenameFilter() {
-//			public boolean accept(File dir, String name) {
-//				return name.startsWith("ByAuthorPosts");
-//			}
-//		});
-//		if (piazzaPostFiles.length == 0) {
-//			return null;
-//		}
-//		if (piazzaPostFiles.length == 1) {
-//			return piazzaPostFiles[0];
-//		}
-//		
-//		File latestPiazzaPostFile = piazzaPostFiles[0];
-//		for (int i = 1; i < piazzaPostFiles.length; i++) {
-//			if (latestPiazzaPostFile.lastModified() < piazzaPostFiles[i].lastModified()) {
-//				latestPiazzaPostFile = piazzaPostFiles[i];
-//			}
-//		}
-//		return latestPiazzaPostFile;
-//	}
 }

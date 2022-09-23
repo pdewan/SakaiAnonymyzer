@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -21,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,12 +61,14 @@ public class Anon {
 	static final Pattern MAC_USER = Pattern.compile("/Users/(.*?)/");
 	static final Pattern WIN_USER = Pattern.compile("C:\\\\Users\\\\(.*?)\\\\");
 	static final String USERNAME = "username";
+	HashMap<String, String> classNameMap;
 
 	public Anon() throws IOException {
 		log_file = new File("anon_log");
 		log_file.delete();
 		log_file.createNewFile();
 		logger = new FileWriter(log_file);
+		classNameMap = new HashMap<>();
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -157,12 +161,14 @@ public class Anon {
 			for (File file : folder.listFiles()) {
 				if (file.isDirectory()) {
 					delete(file);
-				} else {
+				} else if (!file.getName().equals("grades.csv")){
 					file.delete();
 				}
 			}
 		}
-		folder.delete();
+		if (folder.listFiles().length == 0) {
+			folder.delete();
+		}
 	}
 
 	public void anonymize(String[] args) throws IOException, InterruptedException {
@@ -249,6 +255,19 @@ public class Anon {
 		if (folderName.endsWith(".zip")) {
 			folderName = folderName.substring(0, folderName.length()-4);
 		}
+		File folder = new File(folderName);
+		File classNameMapFile = new File(folder.getParentFile(), folder.getName() + " Name Map.csv");
+		if (!classNameMapFile.exists()) {
+			classNameMapFile.createNewFile();
+		}
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(classNameMapFile))) {
+			bw.write("onyen, first name, last name, fake onyen, fake first name, fake last name");
+			for (Entry<String, String> entry: classNameMap.entrySet()) {
+				bw.write(entry.getKey() + "," + entry.getValue());
+				bw.newLine();
+			}
+		} 
+		classNameMap.clear();
 		zip(folderName, folderName+Character.toUpperCase(method));
 		delete(new File(folderName));
 	}
@@ -1127,7 +1146,7 @@ public class Anon {
 		try (ZipOutputStream zs = new ZipOutputStream(Files.newOutputStream(p))) {
 			Path pp = Paths.get(sourceDirPath);
 			Files.walk(pp)
-			.filter(path -> !Files.isDirectory(path))
+			.filter(path -> !Files.isDirectory(path) && !path.getFileName().toString().equals("grades.csv"))
 			.forEach(path -> {
 				ZipEntry zipEntry = new ZipEntry(pp.relativize(path).toString());
 				try {
