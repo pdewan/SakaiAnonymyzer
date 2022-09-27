@@ -112,7 +112,7 @@ public class ZoomChatFaker extends GeneralFaker {
 		
 		File zoomChatFolder = files[0];
 		File[] chatFolders = zoomChatFolder.listFiles(
-				(file)->{return file.isDirectory();});
+				(file)->{return file.isDirectory() && !file.getName().equals("Anon");});
 		File anonFolder = new File(zoomChatFolder, "Anon");
 		if (!anonFolder.exists()) {
 			anonFolder.mkdirs();
