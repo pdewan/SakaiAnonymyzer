@@ -46,7 +46,7 @@ public class ZoomChatFaker extends GeneralFaker {
 			ZoomChatFaker faker = new ZoomChatFaker();
 			String zoomChatFolderPath = parseArg(args[0]);
 
-			String gradesCsvPath = args.length == 2 ? parseArg(args[1]) : faker.getGradesCsv(zoomChatFolderPath);;
+			String gradesCsvPath = args.length == 2 ? parseArg(args[1]) : faker.getGradesCsv(zoomChatFolderPath);
 			if (gradesCsvPath.isEmpty()) {
 				System.err.println("Path for grades.csv is missing and cannot be found in the folder provided");
 				System.exit(1);
@@ -87,9 +87,9 @@ public class ZoomChatFaker extends GeneralFaker {
 	
 	protected String getGradesCsv(String path) {
 		File folder = new File(path);
-		for (String subPath : folder.list()) {
-			if (subPath.endsWith("grades.csv")) {
-				return subPath;
+		for (File file : folder.listFiles()) {
+			if (file.getName().equals("grades.csv")) {
+				return file.getPath();
 			}
 		}
 		return "";
@@ -215,7 +215,7 @@ public class ZoomChatFaker extends GeneralFaker {
 		while (matcher.find()) {
 			speakerMatcher = speakerPattern.matcher(matcher.group(groupIdx));
 			if (speakerMatcher.matches()) {
-				String speaker = matcher.group(1);
+				String speaker = speakerMatcher.group(1);
 				mapNameToFakeName(speaker);
 			}
 		}
