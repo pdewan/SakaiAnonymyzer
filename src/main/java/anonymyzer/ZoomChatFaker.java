@@ -27,8 +27,8 @@ public class ZoomChatFaker extends GeneralFaker {
 	Map<File, String> chatMap = new HashMap<>();
 	String logFileName = "zoom_chat_faker_log";
 	
-	static String ZOOM_CHAT_FOLDER_PATH = "F:\\Hermes Data\\F21";
-	static String GRADES_CSV_PATH = "F:\\Hermes Data\\F21\\grades.csv";
+//	static String ZOOM_CHAT_FOLDER_PATH = "F:\\Hermes Data\\F21";
+//	static String GRADES_CSV_PATH = "F:\\Hermes Data\\F21\\grades.csv";
 
 	public ZoomChatFaker() throws IOException {
 		super();
@@ -37,22 +37,22 @@ public class ZoomChatFaker extends GeneralFaker {
 	}
 	
 	public static void main(String[] args) throws IOException {
-//		if (args.length != 1 || args.length != 2) {
-//			System.err.println("Enter main args: path to Zoom chat files folder and grades.csv for the class");
-//			System.exit(1);
-//		}
+		if (args.length != 1 && args.length != 2) {
+			System.err.println("Enter main args: path to Zoom chat files folder and grades.csv for the class");
+			System.exit(1);
+		}
 
 		try {
 			ZoomChatFaker faker = new ZoomChatFaker();
-//			String zoomChatFolderPath = parseArg(args[0]);
-//
-//			String gradesCsvPath = args.length == 2 ? parseArg(args[1]) : faker.getGradesCsv(zoomChatFolderPath);;
-//			if (gradesCsvPath.isEmpty()) {
-//				System.err.println("Path for grades.csv is missing and cannot be found in the folder provided");
-//				System.exit(1);
-//			}
-			String zoomChatFolderPath = ZOOM_CHAT_FOLDER_PATH;
-			String gradesCsvPath = GRADES_CSV_PATH;
+			String zoomChatFolderPath = parseArg(args[0]);
+
+			String gradesCsvPath = args.length == 2 ? parseArg(args[1]) : faker.getGradesCsv(zoomChatFolderPath);;
+			if (gradesCsvPath.isEmpty()) {
+				System.err.println("Path for grades.csv is missing and cannot be found in the folder provided");
+				System.exit(1);
+			}
+//			String zoomChatFolderPath = ZOOM_CHAT_FOLDER_PATH;
+//			String gradesCsvPath = GRADES_CSV_PATH;
 
 
 			File zoomChatFolder = new File(zoomChatFolderPath);
