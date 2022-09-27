@@ -12,16 +12,23 @@ import java.util.regex.Pattern;
 
 public class ZoomChatFaker extends GeneralFaker {
 
-	Pattern speakerPattern = Pattern.compile("\\d\\d:\\d\\d:\\d\\d From  (.*)  to  (.*):");
-	Pattern fullNamePattern = Pattern.compile("\\s*(\\S+)\\s+(\\S+).*");
+//	Pattern speakerPattern = Pattern.compile("\\d\\d:\\d\\d:\\d\\d From  (.*)  to  (.*):");
+	Pattern fullNamePattern = Pattern.compile("(\\S+)\\s+(\\(.*\\))?\\s?(.*)");
 	Pattern firstOrLastNamePattern = Pattern.compile("\\s*(\\S+).*");
+	Pattern vttPattern = Pattern.compile("(?m)^(\\d{2}:\\d{2}:\\d{2}\\.\\d+) +--> +(\\d{2}:\\d{2}:\\d{2}\\.\\d+).*[\\r\\n]+\\s*(?s)((?:(?!\\r?\\n\\r?\\n).)*)");
+	Pattern speakerPattern = Pattern.compile("(.*): .*");
+	Pattern txtPattern = Pattern.compile("(?m)^(\\d{2}:\\d{2}:\\d{2})\\s*(?s)((?:(?!(\\d{2}:\\d{2}:\\d{2})).)*)");
+	final int TXT_GROUP_IDX = 2;
+	final int VTT_GROUP_IDX = 3;
+	
 	Map<String, String> nameToFakeName = new HashMap<>();
 	Map<String, String> nameToOnyen = new HashMap<>();
 	Map<String, String> fullNameIdenMap = new HashMap<>();
+	Map<File, String> chatMap = new HashMap<>();
 	String logFileName = "zoom_chat_faker_log";
 	
-	static String ZOOM_CHAT_FOLDER_PATH = "F:\\Hermes Data\\ZoomChats";
-	static String GRADES_CSV_PATH = "F:\\Hermes Data\\Assignment 0\\grades.csv";
+	static String ZOOM_CHAT_FOLDER_PATH = "C:\\Users\\yiwk3\\Desktop\\F21";
+	static String GRADES_CSV_PATH = "C:\\Users\\yiwk3\\Desktop\\F21\\grades.csv";
 
 	public ZoomChatFaker() throws IOException {
 		super();
@@ -30,16 +37,22 @@ public class ZoomChatFaker extends GeneralFaker {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		if (args.length != 2) {
-			System.err.println("Enter main args: path to Zoom chat files folder and grades.csv for the class");
-			System.exit(1);
-		}
+//		if (args.length != 1 || args.length != 2) {
+//			System.err.println("Enter main args: path to Zoom chat files folder and grades.csv for the class");
+//			System.exit(1);
+//		}
 
 		try {
-			String zoomChatFolderPath = parseArg(args[0]);
-			String gradesCsvPath = parseArg(args[1]);
-//			String zoomChatFolderPath = ZOOM_CHAT_FOLDER_PATH;
-//			String gradesCsvPath = GRADES_CSV_PATH;
+			ZoomChatFaker faker = new ZoomChatFaker();
+//			String zoomChatFolderPath = parseArg(args[0]);
+//
+//			String gradesCsvPath = args.length == 2 ? parseArg(args[1]) : faker.getGradesCsv(zoomChatFolderPath);;
+//			if (gradesCsvPath.isEmpty()) {
+//				System.err.println("Path for grades.csv is missing and cannot be found in the folder provided");
+//				System.exit(1);
+//			}
+			String zoomChatFolderPath = ZOOM_CHAT_FOLDER_PATH;
+			String gradesCsvPath = GRADES_CSV_PATH;
 
 
 			File zoomChatFolder = new File(zoomChatFolderPath);
@@ -59,17 +72,27 @@ public class ZoomChatFaker extends GeneralFaker {
 			}
 			
 			DownloadNameMap.main(args);
-			ZoomChatFaker faker = new ZoomChatFaker();
 			if (!faker.setNameMapAndNameFile()) {
 				System.exit(1);
 			}
 			File[] files = {zoomChatFolder, gradesCsv};
 			faker.execute(files);
+			System.out.println("Done");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			UpdateNameMap.main(args);
 		}
+	}
+	
+	protected String getGradesCsv(String path) {
+		File folder = new File(path);
+		for (String subPath : folder.list()) {
+			if (subPath.endsWith("grades.csv")) {
+				return subPath;
+			}
+		}
+		return "";
 	}
 	
 	protected void loadAnonNameMap(String[] vals) {
@@ -94,12 +117,26 @@ public class ZoomChatFaker extends GeneralFaker {
 		if (!anonFolder.exists()) {
 			anonFolder.mkdirs();
 		}
+		
 		for (File chatFolder : chatFolders) {
 			File[] chats = chatFolder.listFiles(
-					(parent, fileName)->{return fileName.endsWith(".txt");});
+					(parent, fileName)->{return (fileName.endsWith(".txt") && !fileName.contains("total") )|| fileName.endsWith(".vtt");});
 			for (File chat : chats) {
-				anonymizeChat(chat, anonFolder);
+//				anonymizeChat(chat, anonFolder);
+				chatMap.put(chat, readFile(chat).toString());
 			}
+		}
+		for (Entry<File, String> entry : chatMap.entrySet()) {
+			anonymizeChat(entry.getKey());
+		}
+//		File parentFolder = new File(anonFolder, chat.getParentFile().getName());
+//		parentFolder.mkdir();
+		for (Entry<File, String> entry : chatMap.entrySet()) {
+			File anonChat = new File(anonFolder, entry.getKey().getName()
+					.replace(".txt", "Anon.txt")
+					.replace(".vtt", "Anon.vtt"));
+			System.out.println("Writing to " + anonChat.getPath());
+			writeFile(anonChat, entry.getValue());
 		}
 	}
 	
@@ -119,30 +156,75 @@ public class ZoomChatFaker extends GeneralFaker {
 		return s.substring(1, s.length() - 1);
 	}
 	
-	public void anonymizeChat(File chat, File anonFolder) {
-		String chatString = readFile(chat).toString();
-		String[] lines = chatString.split("\\R");
-		for (String line : lines) {
-			Matcher matcher = speakerPattern.matcher(line);
-			if (!matcher.matches()) {
-				continue;
-			}
-			String speaker = matcher.group(1);
-			mapNameToFakeName(speaker);
-			String listner = matcher.group(2);
-			if (!listner.equals("Everyone")) {
-				mapNameToFakeName(listner);
+	public void anonymizeChat(File chat) {
+		String chatString = chatMap.get(chat);
+		String chatName = chat.getName();
+		Pattern pattern = vttPattern;
+		int groupIdx = VTT_GROUP_IDX;
+		
+		if (chat.getName().endsWith(".txt") && !chatName.equals("total OH transcript.txt")) {
+			pattern = txtPattern;
+			groupIdx = TXT_GROUP_IDX;
+			if (chatString.endsWith(System.lineSeparator())) {
+				chatString += System.lineSeparator();
 			}
 		}
+		System.out.println("Anonymizing " + chatName);
+
+		Matcher matcher = pattern.matcher(chatString);
+		Matcher speakerMatcher = null; 
+		while (matcher.find()) {
+			speakerMatcher = speakerPattern.matcher(matcher.group(groupIdx));
+			if (speakerMatcher.matches()) {
+				String speaker = matcher.group(1);
+				mapNameToFakeName(speaker);
+			}
+		}
+
 		for (Entry<String, String> entry: nameToFakeName.entrySet()) {
 			chatString = chatString.replace(entry.getKey(), entry.getValue());
 		}
-		File parentFolder = new File(anonFolder, chat.getParentFile().getName());
-		parentFolder.mkdir();
-		File anonChat = new File(parentFolder, chat.getName().replace(".txt", "Anon.txt"));
-		
-		writeFile(anonChat, chatString);
+		chatMap.put(chat, chatString);
+//		for (String line : lines) {
+//			Matcher matcher = speakerPattern.matcher(line);
+//			if (!matcher.matches()) {
+//				continue;
+//			}
+//			String speaker = matcher.group(1);
+//			mapNameToFakeName(speaker);
+//			String listner = matcher.group(2);
+//			if (!listner.equals("Everyone")) {
+//				mapNameToFakeName(listner);
+//			}
+//		}
+//		for (Entry<String, String> entry: nameToFakeName.entrySet()) {
+//			chatString = chatString.replace(entry.getKey(), entry.getValue());
+//		}
+//		File parentFolder = new File(anonFolder, chat.getParentFile().getName());
+//		parentFolder.mkdir();
+//		File anonChat = new File(parentFolder, chat.getName()
+//				.replace(".txt", "Anon.txt")
+//				.replace(".vtt", "Anon.vtt"));
+//		
+//		writeFile(anonChat, chatString);
 	}
+	
+//	public String anonymizeVttChat(String chat) {
+////		String[] lines = chat.split("\\R");
+//		Matcher matcher = vttPattern.matcher(chat);
+//		Matcher speakerMatcher = null; 
+//		while (matcher.find() == true) {
+//			speakerMatcher = speakerPattern.matcher(matcher.group(3));
+//			if (speakerMatcher.matches()) {
+//				String speaker = matcher.group(1);
+//				mapNameToFakeName(speaker);
+//			}
+//		}
+//		for (Entry<String, String> entry: nameToFakeName.entrySet()) {
+//			chat = chat.replace(entry.getKey(), entry.getValue());
+//		}
+//		return chat;
+//	}
 	
 	public void mapNameToFakeName(String zoomName) {
 		if (nameToFakeName.containsKey(zoomName)) {
@@ -152,7 +234,7 @@ public class ZoomChatFaker extends GeneralFaker {
 		boolean found = false;
 		if (matcher.matches()) {
 			String firstName = matcher.group(1);
-			String lastName = matcher.group(2);
+			String lastName = matcher.group(3);
 			String fullName = firstName + " " + lastName;
 			for (String name : nameToOnyen.keySet()) {
 				if (name.contains(fullName)) {
