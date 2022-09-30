@@ -90,7 +90,11 @@ public class PiazzaFaker extends GeneralFaker {
 	public String getFakeAuthor(String author) {
 		Matcher matcher = studentNamePattern.matcher(author);
 		if (!matcher.matches()) {
-			return "Cannot match author";
+			System.out.println("Cannot match " + author + " against regex: " + studentNamePattern);
+			String fakeFirstName = faker.name().firstName();
+			String fakeLastName = faker.name().lastName();
+			String fakeOnyen = fakeFirstName + " " + fakeLastName;
+			return fakeFirstName + " " + fakeLastName + "(" + fakeOnyen + "@live.unc.edu)?";
 		}
 		String firstName = matcher.group(1);
 		String lastName = matcher.group(2);
