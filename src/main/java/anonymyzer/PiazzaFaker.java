@@ -1,6 +1,8 @@
 package anonymyzer;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,6 +12,7 @@ import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.omg.PortableInterceptor.NON_EXISTENT;
 
 public class PiazzaFaker extends GeneralFaker {
 
@@ -19,6 +22,7 @@ public class PiazzaFaker extends GeneralFaker {
 	Pattern studentNamePattern = Pattern.compile("(.*) (.*)\\((.*)@.*\\)");
 	Map<String, String> authorToFakeAuthor;
 	Map<String, String> uidToAuthor;
+	static final String NOT_MATCHED_FILE = "not matched authors.txt";
 
 	
 	public PiazzaFaker() throws IOException {
@@ -90,6 +94,20 @@ public class PiazzaFaker extends GeneralFaker {
 	public String getFakeAuthor(String author) {
 		Matcher matcher = studentNamePattern.matcher(author);
 		if (!matcher.matches()) {
+			File notMatched = new File(NOT_MATCHED_FILE);
+			if (!notMatched.exists()) {
+				try {
+					notMatched.createNewFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			try (BufferedWriter bw = new BufferedWriter(new FileWriter(notMatched, true))) {
+				bw.write(author + System.lineSeparator());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			System.out.println("Cannot match " + author + " against regex: " + studentNamePattern);
 			String fakeFirstName = faker.name().firstName();
 			String fakeLastName = faker.name().lastName();
