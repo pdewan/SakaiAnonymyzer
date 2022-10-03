@@ -12,14 +12,14 @@ import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.omg.PortableInterceptor.NON_EXISTENT;
 
 public class PiazzaFaker extends GeneralFaker {
 
 //	private static final String PIAZZA_POSTS_PATH = "F:\\Hermes Data\\PiazzaOutput\\Comp301ss22";
 	String logFileName = "piazza_faker_log";
 //	Pattern onyenPattern = Pattern.compile(".*\\((.*)@.*\\)");
-	Pattern studentNamePattern = Pattern.compile("(.*) (.*)\\((.*)@.*\\)");
+	Pattern fullNamePattern = Pattern.compile("(.*) (.*)\\((.*)@.*\\)");
+	Pattern firstNamePattern = Pattern.compile("(.*)\\((.*)@.*\\)");
 	Map<String, String> authorToFakeAuthor;
 	Map<String, String> uidToAuthor;
 	static final String NOT_MATCHED_FILE = "not matched authors.txt";
@@ -61,7 +61,7 @@ public class PiazzaFaker extends GeneralFaker {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			UpdateNameMap.main(args);
+//			UpdateNameMap.main(args);
 		}
 	}
 
@@ -92,31 +92,42 @@ public class PiazzaFaker extends GeneralFaker {
 	}
 	
 	public String getFakeAuthor(String author) {
-		Matcher matcher = studentNamePattern.matcher(author);
-		if (!matcher.matches()) {
-			File notMatched = new File(NOT_MATCHED_FILE);
-			if (!notMatched.exists()) {
-				try {
-					notMatched.createNewFile();
+		Matcher matcher = fullNamePattern.matcher(author);
+		String firstName = null;
+		String lastName = null;
+		String onyen = null;
+		if (matcher.matches()) {
+			firstName = matcher.group(1);
+			lastName = matcher.group(2);
+			onyen = matcher.group(3);
+		} else {
+			matcher = firstNamePattern.matcher(author);
+			if (matcher.matches()) {
+				firstName = matcher.group(1);
+				lastName = "";
+				onyen = matcher.group(2);
+			} else {
+				File notMatched = new File(NOT_MATCHED_FILE);
+				if (!notMatched.exists()) {
+					try {
+						notMatched.createNewFile();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				try (BufferedWriter bw = new BufferedWriter(new FileWriter(notMatched, true))) {
+					bw.write(author + System.lineSeparator());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				System.out.println("Cannot match " + author + " against regex: " + fullNamePattern);
+				String fakeFirstName = faker.name().firstName();
+				String fakeLastName = faker.name().lastName();
+				String fakeOnyen = fakeFirstName + " " + fakeLastName;
+				return fakeFirstName + " " + fakeLastName + "(" + fakeOnyen + "@live.unc.edu)?";
 			}
-			
-			try (BufferedWriter bw = new BufferedWriter(new FileWriter(notMatched, true))) {
-				bw.write(author + System.lineSeparator());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			System.out.println("Cannot match " + author + " against regex: " + studentNamePattern);
-			String fakeFirstName = faker.name().firstName();
-			String fakeLastName = faker.name().lastName();
-			String fakeOnyen = fakeFirstName + " " + fakeLastName;
-			return fakeFirstName + " " + fakeLastName + "(" + fakeOnyen + "@live.unc.edu)?";
 		}
-		String firstName = matcher.group(1);
-		String lastName = matcher.group(2);
-		String onyen = matcher.group(3);
 		String fakeName = CommentsIdenMap.get(onyen);
 		String fakeAuthor = "";
 		if (fakeName == null) {
