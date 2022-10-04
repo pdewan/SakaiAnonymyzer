@@ -128,13 +128,17 @@ public class PiazzaFaker extends GeneralFaker {
 				return fakeFirstName + " " + fakeLastName + "(" + fakeOnyen + "@live.unc.edu)?";
 			}
 		}
+		
 		String fakeName = CommentsIdenMap.get(onyen);
 		String fakeAuthor = "";
-		if (fakeName == null) {
+
+		if (fakeName == null || onyen.equals("instructor")) {
 			String fakeFirstName = faker.name().firstName();
 			String fakeLastName = faker.name().lastName();
 			String fakeOnyen = fakeFirstName + " " + fakeLastName;
-			newPairs.put(concat(onyen, firstName, lastName), concat(fakeOnyen, fakeFirstName, fakeLastName));
+			if (fakeName == null) {
+				newPairs.put(concat(onyen, firstName, lastName), concat(fakeOnyen, fakeFirstName, fakeLastName));
+			}
 			fakeAuthor = fakeFirstName + " " + fakeLastName + "(" + fakeOnyen + "@live.unc.edu)";
 		} else {
 			fakeName = fakeName.substring(0, fakeName.indexOf(','));
