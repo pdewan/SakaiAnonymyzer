@@ -105,7 +105,7 @@ public class GradescopeFaker extends GeneralFaker {
 			bw.write(String.join(",", HEADERS) + System.lineSeparator());
 			for (int i = 1; i < lines.length; i++) {
 				String[] line = lines[i].split(",");
-				if (line[statusIdx].equals("Missing")) {
+				if (line[emailIdx].isEmpty() || line[statusIdx].equals("Missing")) {
 					continue;
 				}
 				String onyen = line[emailIdx].substring(0, line[emailIdx].indexOf("@"));
