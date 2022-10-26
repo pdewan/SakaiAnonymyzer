@@ -5,9 +5,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class GradescopeFaker extends GeneralFaker {
 
@@ -66,11 +68,86 @@ public class GradescopeFaker extends GeneralFaker {
 		File gradesCsv = files[1];
 		loadNameToOnyenMap(gradesCsv);
 		String[] lines = readFile(gradescopeGrades).toString().split("\\R");
-		List<String> nextLine = new ArrayList<>();
 		File anonGrades = new File(gradescopeGrades.getPath().replace(".csv", "Anon.csv"));
 		if (anonGrades.exists()) {
 			anonGrades.delete();
 		}
+		if (lines[0].contains("Total Lateness")) {
+			anonymizeSemeter(lines, anonGrades);
+		} else {
+			anonymizeAssignment(lines, anonGrades);
+		}
+	}
+	
+	public void anonymizeSemeter(String[] lines, File anonGrades) {
+		List<String> nextLine = new ArrayList<>();
+		int emailIdx = -1;
+		int firstNameIdx = -1;
+		int lastNameIdx = -1;
+		int fullNameIdx = -1;
+		List<Integer> assigns = new ArrayList<>();
+		List<String> assignNames = new ArrayList<>();
+		List<Integer> exams = new ArrayList<>();
+		List<String> examNames = new ArrayList<>();
+
+		String[] firstLine = lines[0].split(",");
+
+		for (int i = 0; i < firstLine.length; i++) {
+			if (firstLine[i].equals("Email")) {
+				emailIdx = i;
+			}
+			if (firstLine[i].equals("First Name")) {
+				firstNameIdx = i;
+			}
+			if (firstLine[i].equals("Last Name")) {
+				lastNameIdx = i;
+			}
+			if (firstLine[i].equals("Name")) {
+				fullNameIdx = i;
+			}
+			if (firstLine[i].contains("Assignment") && !firstLine[i].contains("Lateness") && !firstLine[i].contains("Max Points") && !firstLine[i].contains("Submission Time")) {
+				assignNames.add(firstLine[i]);
+				assigns.add(i);
+			}
+			if ((firstLine[i].contains("Midterm") || firstLine[i].contains("Final")) && !firstLine[i].contains("Lateness") && !firstLine[i].contains("Max Points") && !firstLine[i].contains("Submission Time")) {
+				examNames.add(firstLine[i]);
+				exams.add(i);
+			}
+		}
+		if (emailIdx == -1) {
+			System.err.println("Cannot find email, using name matching");
+		}
+		List<String> headers = new ArrayList<>(Arrays.asList(HEADERS));
+		headers.remove(headers.size()-1);
+		headers.addAll(assignNames);
+		headers.addAll(examNames);
+		assigns.addAll(exams);
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(anonGrades))) {
+			bw.write(String.join(",", headers) + System.lineSeparator());
+			for (int i = 1; i < lines.length; i++) {
+				String[] line = lines[i].split(",");
+				if (line[emailIdx].isEmpty()) {
+					continue;
+				}
+				
+				String[] fakeNames = getFakeNames(line, emailIdx, firstNameIdx, lastNameIdx, fullNameIdx);
+				nextLine.clear();
+				nextLine.add(fakeNames[1]);
+				nextLine.add(fakeNames[2]);
+				nextLine.add(fakeNames[0]);
+				for (int idx : assigns) {
+					nextLine.add(line[idx]);
+				}
+				
+				bw.write(String.join(",", nextLine) + System.lineSeparator());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void anonymizeAssignment(String[] lines, File anonGrades) {
+		List<String> nextLine = new ArrayList<>();
 		int emailIdx = -1;
 		int firstNameIdx = -1;
 		int lastNameIdx = -1;
@@ -108,31 +185,8 @@ public class GradescopeFaker extends GeneralFaker {
 				if (line[emailIdx].isEmpty() || line[statusIdx].equals("Missing")) {
 					continue;
 				}
-				String onyen = line[emailIdx].substring(0, line[emailIdx].indexOf("@"));
-				String fakeName = CommentsIdenMap.get(onyen);
-				if (fakeName == null) {
-					String fullName = firstNameIdx != -1 ? line[firstNameIdx] + " " + line[lastNameIdx] 
-														 : line[fullNameIdx];
-					boolean found = false;
-					for (String name : nameToOnyen.keySet()) {
-						if (name.contains(fullName)) {
-							onyen = nameToOnyen.get(name);
-							fakeName = CommentsIdenMap.get(onyen);
-							found = true;
-							break;
-						}
-					}
-					if (!found) {
-						String fakeFirstName = faker.name().firstName();
-						String fakeLastName = faker.name().lastName();
-						String fakeOnyen = fakeFirstName + " " + fakeLastName + "?";
-						newPairs.put(concat(onyen, fullName.substring(0, fullName.indexOf(" ")), fullName.substring(fullName.indexOf(" ")+1)), 
-								concat(fakeOnyen, fakeFirstName, fakeLastName));
-						fakeName = concat(fakeOnyen, fakeFirstName, fakeLastName);
-					}
-				}
 				
-				String[] fakeNames = fakeName.split(",");
+				String[] fakeNames = getFakeNames(line, emailIdx, firstNameIdx, lastNameIdx, fullNameIdx);
 				nextLine.clear();
 				nextLine.add(fakeNames[1]);
 				nextLine.add(fakeNames[2]);
@@ -143,6 +197,34 @@ public class GradescopeFaker extends GeneralFaker {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public String[] getFakeNames(String[] line, int emailIdx, int firstNameIdx, int lastNameIdx, int fullNameIdx) {
+		String onyen = line[emailIdx].substring(0, line[emailIdx].indexOf("@"));
+		String fakeName = CommentsIdenMap.get(onyen);
+		if (fakeName == null) {
+			String fullName = firstNameIdx != -1 ? line[firstNameIdx] + " " + line[lastNameIdx] 
+												 : line[fullNameIdx];
+			boolean found = false;
+			for (Entry<String, String> entry : nameToOnyen.entrySet()) {
+				if (entry.getKey().contains(fullName)) {
+					onyen = entry.getValue();
+					fakeName = CommentsIdenMap.get(onyen);
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				String fakeFirstName = faker.name().firstName();
+				String fakeLastName = faker.name().lastName();
+				String fakeOnyen = fakeFirstName + " " + fakeLastName + "?";
+				newPairs.put(concat(onyen, fullName.substring(0, fullName.indexOf(" ")), fullName.substring(fullName.indexOf(" ")+1)), 
+						concat(fakeOnyen, fakeFirstName, fakeLastName));
+				fakeName = concat(fakeOnyen, fakeFirstName, fakeLastName);
+			}
+		}
+		
+		return fakeName.split(",");
 	}
 	
 	public void loadNameToOnyenMap(File gradesCsv) {
