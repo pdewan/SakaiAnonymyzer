@@ -239,7 +239,5 @@ public class GradescopeFaker extends GeneralFaker {
 		}
 	}
 	
-	public String unquote(String s) {
-		return s.substring(1, s.length() - 1);
-	}
+
 }
