@@ -9,14 +9,14 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SakaiGradebookFaker extends GeneralFaker {
-	final String[] HEADERS = {"First Name", "Last Name", "Onyen"};
-	
+	final String[] HEADERS = { "First Name", "Last Name", "Onyen" };
+
 	public static void main(String[] args) throws IOException {
 		if (args.length != 1) {
 			System.err.println("Enter path to Sakai gradebook file");
 			System.exit(1);
 		}
-		
+
 		File gradebook = new File(args[0]);
 		if (!gradebook.exists()) {
 			System.err.println("File " + args[0] + "does not exist");
@@ -35,7 +35,7 @@ public class SakaiGradebookFaker extends GeneralFaker {
 			UpdateNameMap.main(args);
 		}
 	}
-	
+
 	public SakaiGradebookFaker() throws IOException {
 		super();
 	}
@@ -45,7 +45,7 @@ public class SakaiGradebookFaker extends GeneralFaker {
 		if (!(arg instanceof File)) {
 			return;
 		}
-		File gradebook = (File)arg;
+		File gradebook = (File) arg;
 		String[] lines = readFile(gradebook).toString().split("\\R");
 		List<String> nextLine = new ArrayList<>();
 		List<Integer> gradesIdx = new ArrayList<>();
@@ -54,7 +54,7 @@ public class SakaiGradebookFaker extends GeneralFaker {
 		String[] firstLine = unquote(lines[0]).split("\",\"");
 		int onyenIdx = -1;
 		int nameIdx = -1;
-		
+
 		for (int i = 0; i < firstLine.length; i++) {
 			if (firstLine[i].equals("Student ID")) {
 				onyenIdx = i;
@@ -73,10 +73,11 @@ public class SakaiGradebookFaker extends GeneralFaker {
 		}
 		List<String> headers = new ArrayList<>(Arrays.asList(HEADERS));
 		headers.addAll(assignNames);
-		try (BufferedWriter bw = new BufferedWriter(new FileWriter(new File(gradebook.getParent(), gradebook.getName().replace(".csv", "Anon.csv"))))) {
+		try (BufferedWriter bw = new BufferedWriter(
+				new FileWriter(new File(gradebook.getParent(), gradebook.getName().replace(".csv", "Anon.csv"))))) {
 			bw.write(String.join(",", headers) + System.lineSeparator());
 			for (int i = 1; i < lines.length; i++) {
-				String line2 = lines[i].substring(1).replace(",,", ",\"\",");
+				String line2 = lines[i].substring(1).replace(",,", ",\"\",").replace(",,", ",\"\",");
 				if (line2.endsWith(",")) {
 					line2 += "\"";
 				}
@@ -99,7 +100,6 @@ public class SakaiGradebookFaker extends GeneralFaker {
 		}
 	}
 
-	
 	public String[] getFakeNames(String onyen, String name) {
 		String fakeName = CommentsIdenMap.get(onyen);
 		if (fakeName == null) {
@@ -108,11 +108,13 @@ public class SakaiGradebookFaker extends GeneralFaker {
 			String fakeFirstName = faker.name().firstName();
 			String fakeLastName = faker.name().lastName();
 			String fakeOnyen = fakeFirstName + " " + fakeLastName + "?";
-			newPairs.put(concat(onyen, fullName.substring(0, fullName.indexOf(" ")), fullName.substring(fullName.indexOf(" ")+1)), 
+			newPairs.put(
+					concat(onyen, fullName.substring(0, fullName.indexOf(" ")),
+							fullName.substring(fullName.indexOf(" ") + 1)),
 					concat(fakeOnyen, fakeFirstName, fakeLastName));
 			fakeName = concat(fakeOnyen, fakeFirstName, fakeLastName);
 		}
-		
+
 		return fakeName.split(",");
 	}
 }
