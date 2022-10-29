@@ -78,9 +78,11 @@ public class SakaiGradebookFaker extends GeneralFaker {
 			bw.write(String.join(",", headers) + System.lineSeparator());
 			for (int i = 1; i < lines.length; i++) {
 				String line2 = lines[i].substring(1).replace(",,", ",\"\",").replace(",,", ",\"\",");
+				System.out.println(line2);
 				if (line2.endsWith(",")) {
-					line2 += "\"";
+					line2 += "\"0";
 				}
+				System.out.println(line2);
 				String[] line = line2.split("\",\"");
 				if (line[onyenIdx].isEmpty()) {
 					continue;
