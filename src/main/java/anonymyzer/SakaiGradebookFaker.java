@@ -79,7 +79,7 @@ public class SakaiGradebookFaker extends GeneralFaker {
 			for (int i = 1; i < lines.length; i++) {
 				String line2 = lines[i];
 				int j = i+1;
-				while (j < lines.length && !lines[j].startsWith("\"")) {
+				while (j < lines.length && (lines[j].isEmpty() || lines[j].startsWith("\",\"") || !lines[j].startsWith("\""))) {
 					line2 += lines[j];
 					j++;
 				}
@@ -93,16 +93,21 @@ public class SakaiGradebookFaker extends GeneralFaker {
 					continue;
 				}
 				nextLine.clear();
-				String[] fakeNames = getFakeNames(line[onyenIdx], line[nameIdx]);
-				nextLine.add(fakeNames[1]);
-				nextLine.add(fakeNames[2]);
-				nextLine.add(fakeNames[0]);
-				for (int idx : gradesIdx) {
-					String s = unquote(line[idx]);
-					if (s.isEmpty()) {
-						s = "0";
+				try {
+					String[] fakeNames = getFakeNames(line[onyenIdx], line[nameIdx]);
+					nextLine.add(fakeNames[1]);
+					nextLine.add(fakeNames[2]);
+					nextLine.add(fakeNames[0]);
+					for (int idx : gradesIdx) {
+						String s = unquote(line[idx]);
+						if (s.isEmpty()) {
+							s = "0";
+						}
+						nextLine.add(s);
 					}
-					nextLine.add(s);
+				} catch (ArrayIndexOutOfBoundsException e) {
+					e.printStackTrace();
+					continue;
 				}
 				bw.write(String.join(",", nextLine) + System.lineSeparator());
 			}
