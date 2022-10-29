@@ -77,8 +77,15 @@ public class SakaiGradebookFaker extends GeneralFaker {
 				new FileWriter(new File(gradebook.getParent(), gradebook.getName().replace(".csv", "Anon.csv"))))) {
 			bw.write(String.join(",", headers) + System.lineSeparator());
 			for (int i = 1; i < lines.length; i++) {
-				String line2 = lines[i].substring(1).replace(",,", ",\"\",").replace(",,", ",\"\",");
+				String line2 = lines[i];
 				System.out.println(line2);
+				int j = i+1;
+				while (j < lines.length && !lines[j].startsWith("\"")) {
+					line2 += lines[j];
+					j++;
+				}
+				i = j-1;
+				line2 = line2.substring(1).replace(",,", ",\"\",").replace(",,", ",\"\",");
 				if (line2.endsWith(",")) {
 					line2 += "\"0";
 				}
