@@ -171,10 +171,22 @@ public class AnonFaker extends Anon {
 	}
 	
 	public String replaceHeaders(String name, int line_num, File f, List<String> names, String line_1, int i) throws IOException {
-		String[] tokens = getTokens(names.get(2), names.get(1), names.get(0));
+		// debuging sonacument
+		if (name.toLowerCase().contains("do")) {
+			System.out.println("Found problem change");
+		}
+		
+		if (line_1.contains("<Command")) { //handling xml file
+			return line_1;
+		}
+		
+//		String[] tokens = getTokens(names.get(2), names.get(1), names.get(0));
+		String[] tokens = getTokens(names.get(1), names.get(0), names.get(2));
+
 		if (tokens == null) {
 			return line_1;
 		}
+		
 		return line_1.replaceAll(name, tokens[idx[i]]).replaceAll(name.toLowerCase(),
 				tokens[idx[i]]);// shuffle all names
 	}
