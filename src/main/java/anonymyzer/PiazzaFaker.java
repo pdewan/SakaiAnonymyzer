@@ -61,7 +61,7 @@ public class PiazzaFaker extends GeneralFaker {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-//			UpdateNameMap.main(args);
+			UpdateNameMap.main(args);
 		}
 	}
 

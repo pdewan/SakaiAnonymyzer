@@ -16,7 +16,7 @@ public class ZoomChatFaker extends GeneralFaker {
 	Pattern fullNamePattern = Pattern.compile("(\\S+)\\s+(\\(.*\\))?\\s?(.*)");
 	Pattern firstOrLastNamePattern = Pattern.compile("\\s*(\\S+).*");
 	Pattern vttPattern = Pattern.compile("(?m)^(\\d{2}:\\d{2}:\\d{2}\\.\\d+) +--> +(\\d{2}:\\d{2}:\\d{2}\\.\\d+).*[\\r\\n]+\\s*(?s)((?:(?!\\r?\\n\\r?\\n).)*)");
-	Pattern speakerPattern = Pattern.compile("(.*): .*");
+	Pattern speakerPattern = Pattern.compile("([^:]*):.*");
 	Pattern txtPattern = Pattern.compile("(?m)^(\\d{2}:\\d{2}:\\d{2})\\s*(?s)((?:(?!(\\d{2}:\\d{2}:\\d{2})).)*)");
 	final int TXT_GROUP_IDX = 2;
 	final int VTT_GROUP_IDX = 3;
@@ -164,7 +164,8 @@ public class ZoomChatFaker extends GeneralFaker {
 	}
 	
 	public String unquote(String s) {
-		return s.substring(1, s.length() - 1);
+//		return s.substring(1, s.length() - 1);
+		return s;
 	}
 	
 	public void anonymizeSavedChat(File chat) {
@@ -213,7 +214,8 @@ public class ZoomChatFaker extends GeneralFaker {
 		Matcher matcher = pattern.matcher(chatString);
 		Matcher speakerMatcher = null; 
 		while (matcher.find()) {
-			speakerMatcher = speakerPattern.matcher(matcher.group(groupIdx));
+//			String aString = matcher.group(groupIdx).trim();
+			speakerMatcher = speakerPattern.matcher(matcher.group(groupIdx).trim());
 			if (speakerMatcher.matches()) {
 				String speaker = speakerMatcher.group(1);
 				mapNameToFakeName(speaker);

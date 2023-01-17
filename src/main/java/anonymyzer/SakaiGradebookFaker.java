@@ -120,15 +120,11 @@ public class SakaiGradebookFaker extends GeneralFaker {
 		String fakeName = CommentsIdenMap.get(onyen);
 		if (fakeName == null) {
 			String[] names = name.split(", ");
-			String fullName = names[1] + " " + names[0];
 			String fakeFirstName = faker.name().firstName();
 			String fakeLastName = faker.name().lastName();
 			String fakeOnyen = fakeFirstName + " " + fakeLastName + "?";
-			newPairs.put(
-					concat(onyen, fullName.substring(0, fullName.indexOf(" ")),
-							fullName.substring(fullName.indexOf(" ") + 1)),
-					concat(fakeOnyen, fakeFirstName, fakeLastName));
 			fakeName = concat(fakeOnyen, fakeFirstName, fakeLastName);
+			newPairs.put(concat(onyen, names[1], names[0]), fakeName);
 		}
 
 		return fakeName.split(",");
