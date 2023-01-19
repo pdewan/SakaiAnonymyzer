@@ -18,11 +18,6 @@ import com.github.javafaker.service.FakeValuesGrouping;
 
 public class AnonFaker extends Anon {
 	
-	private static final String NAME_MAP = "name map.csv";
-//	private static final String NAME_FILE = "name.yml";
-	private static final String NAME_MAP_ID = "1_L9fs9Oy5-0-IJeoJTyu8fY6lccek0Ox";
-    private static final String NAME_FILE_ID = "1VN317S6CkfnTknVBuwbFbwqEjpXoCeRg";
-    private static final String TOKEN = "tokens" + File.separator + "StoredCredential";
 	File nameMapCSV;
 	String nameMapPath;
 	Faker faker;
@@ -114,7 +109,7 @@ public class AnonFaker extends Anon {
 				DownloadNameMap.main(args);
 //			}
 			faker.setNameMap(namemap);
-			((FakeValuesGrouping)faker.getFaker().fakeValuesService().getFakeValueList().get(0)).setSpecifiedFileName("name", DriveAPI.downloadFileWithId(NAME_FILE_ID).getPath());;
+			((FakeValuesGrouping)faker.getFaker().fakeValuesService().getFakeValueList().get(0)).setSpecifiedFileName("name", GeneralFaker.NAME_FILE);;
 //			if (args[idx].endsWith(".yml")) {
 //				if (method == ANON) {
 //					((FakeValuesGrouping)faker.getFaker().fakeValuesService().getFakeValueList().get(0)).setSpecifiedFileName("name", args[1]);;
@@ -248,11 +243,11 @@ public class AnonFaker extends Anon {
 	
 	public void updateNameMap() throws IOException {
 		if (!nameMapCSV.exists()) {
-			System.out.println("Default name map not found, creating default name map: " + NAME_MAP);
-			logger.write("Default name map not found, creating default name map: " + NAME_MAP);
+			System.out.println("Default name map not found, creating default name map: " + GeneralFaker.NAME_MAP);
+			logger.write("Default name map not found, creating default name map: " + GeneralFaker.NAME_MAP);
 			nameMapCSV.createNewFile();
-			System.out.println("Default name map created: " + NAME_MAP);
-			logger.write("Default name map created: " + NAME_MAP);
+			System.out.println("Default name map created: " + GeneralFaker.NAME_MAP);
+			logger.write("Default name map created: " + GeneralFaker.NAME_MAP);
 		}
 		System.out.println("Updating name map: " + nameMapCSV.getPath());
 		logger.write("Updating name map: " + nameMapCSV.getPath());
@@ -263,7 +258,8 @@ public class AnonFaker extends Anon {
 			}
 		} 
 		newPairs.clear();
-		DriveAPI.updateFile(NAME_MAP_ID, nameMapPath);
+//		DriveAPI.updateFile(GeneralFaker.NAME_MAP_ID, nameMapPath);
+		UpdateNameMap.main(new String[0]);
 	}
 
 	protected String getToReplace(String lastName, String firstName, String onyen) {

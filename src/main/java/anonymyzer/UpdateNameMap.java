@@ -10,8 +10,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 public class UpdateNameMap {
 
 	public static void main(String[] args) throws IOException {
-		File token = new File(FakeNameGenerator.TOKEN);
-		Path file = Paths.get(FakeNameGenerator.TOKEN);
+		File token = new File(GeneralFaker.TOKEN);
+		Path file = Paths.get(GeneralFaker.TOKEN);
 		BasicFileAttributes attr = Files.readAttributes(file, BasicFileAttributes.class);
 		if (token.exists() && System.currentTimeMillis() - attr.creationTime().toMillis() > DownloadNameMap.WEEK) {
 			token.delete();
@@ -20,11 +20,11 @@ public class UpdateNameMap {
 				tokens.delete();
 			}
 		}
-		File namemap = new File(FakeNameGenerator.NAME_MAP);
+		File namemap = new File(GeneralFaker.NAME_MAP);
 		if (!namemap.exists()) {
 			System.err.println("name map.csv does not exists");
 			System.exit(1);
 		}
-		DriveAPI.updateFile(FakeNameGenerator.NAME_MAP_ID, namemap.getPath());
+		DriveAPI.updateFile(GeneralFaker.NAME_MAP_ID, namemap.getPath());
 	}
 }
