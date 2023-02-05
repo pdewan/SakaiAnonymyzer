@@ -20,8 +20,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -48,7 +51,7 @@ public class Anon {
 	int depth;
 	HashMap<String, String> CommentsIdenMap = new HashMap<String, String>();
 	File log_file;
-	FileWriter logger;
+	FileWriter logger, specificLogger;
 	int counter; // used for differentiating students
 	static String[] prefixes = { "lName", "fName", "ID" };
 	static String[] ignoreFileSuffixes = {};
@@ -62,6 +65,7 @@ public class Anon {
 	static final Pattern WIN_USER = Pattern.compile("C:\\\\Users\\\\(.*?)\\\\");
 	static final String USERNAME = "username";
 	HashMap<String, String> classNameMap;
+	static Map<String, String> hardwiredSubstitutions;
 
 	public Anon() throws IOException {
 		log_file = new File("anon_log");
@@ -70,7 +74,7 @@ public class Anon {
 		logger = new FileWriter(log_file);
 		classNameMap = new HashMap<>();
 	}
-	
+
 	public static void main(String[] args) throws IOException {
 		if (args.length < 2) {
 			System.err.println("Enter main args: d|a(t) path(s)");
@@ -126,7 +130,7 @@ public class Anon {
 	protected void init() throws IOException {
 		depth = 1;
 		counter = 0;
-		
+
 		if (!courseMode) {
 			logger.write("In single assignment mode. Delete txt and html files = " + deleteTXTAndHTML + "\n");
 		} else {
@@ -161,7 +165,7 @@ public class Anon {
 			for (File file : folder.listFiles()) {
 				if (file.isDirectory()) {
 					delete(file);
-				} else if (!file.getName().equals("grades.csv")){
+				} else if (!file.getName().equals("grades.csv")) {
 					file.delete();
 				}
 			}
@@ -175,7 +179,7 @@ public class Anon {
 		for (String path : args) {
 			anonymize(path);
 		}
-	}	
+	}
 
 	public void anonymize(String folderName) throws IOException, InterruptedException {
 		// determine which version to run based on OS
@@ -195,12 +199,14 @@ public class Anon {
 		} else {
 			System.out.println("Can't Figure out your os!");
 		}
-		//			logger.close();// must close upon completion for linux to show this stuff.
+		// logger.close();// must close upon completion for linux to show this stuff.
 	}
-	
+
 	protected boolean isCourseFolder(String folderName) throws IOException {
 		File folder = new File(folderName);
-		if (folder.listFiles((file)->{return file.getName().contains("grades.csv");}).length == 0) {
+		if (folder.listFiles((file) -> {
+			return file.getName().contains("grades.csv");
+		}).length == 0) {
 			return false;
 		} else {
 			return true;
@@ -209,18 +215,24 @@ public class Anon {
 
 	public void anonoymizeWindows(String folderName) throws IOException, InterruptedException {
 		if (!folderName.endsWith(".zip")) {
-			File file = new File(folderName+"Backup.zip");
+			File file = new File(folderName + "Backup.zip");
 			if (!file.exists()) {
 				System.out.println("Zipping " + folderName + " to " + folderName + "Backup.zip");
 				logger.write("Zipping " + folderName + " to " + folderName + "Backup.zip");
-				zip(folderName, folderName+"Backup");
+				zip(folderName, folderName + "Backup");
 			}
 		} else {
-			String dest = folderName.substring(0, folderName.length()-4);
+			String dest = folderName.substring(0, folderName.length() - 4);
 			unzip(folderName, dest);
 			folderName = dest;
 		}
 		unzipAllZipFiles(new File(folderName));
+		File folder = new File(folderName);
+		File specificLoggerFile = new File(folder.getParentFile(), folder.getName() + " Log.csv");
+		if (!specificLoggerFile.exists()) {
+			specificLoggerFile.createNewFile();
+		}
+		specificLogger = new FileWriter(specificLoggerFile);
 //		System.out.println("Anonymizing");
 //		logger.write("Anonymizing");
 		if (isCourseFolder(folderName)) {
@@ -253,115 +265,126 @@ public class Anon {
 			Anon_ize_Course_Windows(folderName);
 		}
 		if (folderName.endsWith(".zip")) {
-			folderName = folderName.substring(0, folderName.length()-4);
+			folderName = folderName.substring(0, folderName.length() - 4);
 		}
-		File folder = new File(folderName);
+//		File folder = new File(folderName);
 		File classNameMapFile = new File(folder.getParentFile(), folder.getName() + " Name Map.csv");
 		if (!classNameMapFile.exists()) {
 			classNameMapFile.createNewFile();
 		}
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(classNameMapFile))) {
 			bw.write("onyen, first name, last name, fake onyen, fake first name, fake last name");
-			for (Entry<String, String> entry: classNameMap.entrySet()) {
+			for (Entry<String, String> entry : classNameMap.entrySet()) {
 				bw.write(entry.getKey() + "," + entry.getValue());
 				bw.newLine();
 			}
-		} 
+		}
 		classNameMap.clear();
-		zip(folderName, folderName+Character.toUpperCase(method));
+		zip(folderName, folderName + Character.toUpperCase(method));
 		delete(new File(folderName));
+		specificLogger.close();
 	}
 
-	//	public void anonymize(String[] args) throws IOException, InterruptedException {
-	//		// instantiate vars
-	////		CommentsIdenMap = new HashMap<String, String>();
-	//		depth = 1;
-	//		counter = 0;
-	//		String folderName = ""; // will either act as the singleton assignment name....or the course folder name
-	//		log_file = new File("anon_log");
-	//		log_file.delete();
-	//		log_file.createNewFile();
-	//		logger = new FileWriter(log_file);
-	//		System.out.println("made stuff!");
-	//		if (args.length == 1) {
-	//			folderName = args[0];
-	//			courseMode = false;
-	//			deleteTXTAndHTML = false;
-	//			logger.write("In single assignment mode. Delete txt and html files = false\n");
-	//		} else if (args.length == 2) {
-	//			folderName = args[0];
-	//			courseMode = false;
-	//			if (args[1].equals("true")) {
-	//				deleteTXTAndHTML = true;
-	//			}
-	//			logger.write("In single assignment mode. Delete txt and html files = " + deleteTXTAndHTML + "\n");
-	//		} else if (args.length == 3) {
-	//			folderName = args[0];
-	//			courseMode = true;
-	//			if (args[1].equals("true")) {
-	//				deleteTXTAndHTML = true;
-	//			}
-	//			logger.write("In course folder mode. Delete txt and html files = " + deleteTXTAndHTML + "\n");
-	//		} else {
-	//			System.out.println("Enter main args: folderName (deleteTXTAndHTMLFiles) (CourseMode)");
-	//			System.exit(0);
-	//		}
-	//		// determine which version to run based on OS
-	//		String os = System.getProperty("os.name").toLowerCase();
-	//		File folder = new File(folderName);
-	//		if (!folder.exists()) {
-	//			System.out.println("Assignment folder not found.");
-	//			System.exit(0);
-	//		}
-	//		folder = findFolderWithCSV(folder);
-	//		if (folder == null) {
-	//			System.out.println("Assignment folder not found.");
-	//			System.exit(0);
-	//		}
-	//		if (folderName.contains(".zip")) {
-	//			File zipFile = new File(folderName);
-	//			folderName = folderName.substring(0, folderName.length()-4);
-	//			unzip(zipFile.getPath(), folderName);
-	//		}
-	//		if (os.contains("window")) {
-	//			if (!courseMode) {
-	//				folderName = findFolderWithCSV(new File(folderName)).getPath();
-	//				unzipAllZipFiles(new File(folderName));
-	//				clearHeaders_Windows(folderName);
-	//				Anon_ize_Windows(1, folderName);
-	//				Anon_ize_grades_Windows(folderName);
-	//			} else {
-	//				folderName = findFolderWithCSV(new File(folderName)).getParentFile().getPath();
-	//				folderName = replaceTrainingSpacesInFolderNames(folderName);
-	//				unzipAllZipFiles(new File(folderName));
-	//				Anon_ize_Course_Windows(folderName);
-	//			}
-	//			zip(folderName, folderName+"Anon.zip");
-	//		} else if (os.contains("mac")) { // currently not supported
-	//			Process testMac = new ProcessBuilder(new String[] { "/bin/bash", "-c", "mkdir", "goo", "&", "touch",
-	//					"goo/hi.txt", "&", "ls", "|", "grep", "goo" }).start();
-	//			BufferedReader r = new BufferedReader(new InputStreamReader(testMac.getInputStream()));
-	//			while (true) {
-	//				String line = r.readLine();
-	//				if (line == null)
-	//					break;
-	//				System.out.println(line);
-	//			}
-	//		} else if (os.contains("linux")) { // MUST CLOSE LOG so it can show for LINUX!!!
-	//			// for this have to basically hand off the scripts too for running in unix
-	//			// Process testlinux=Runtime.getRuntime().exec(new String[]{"doStuff.sh"});
-	//			if (!courseMode) {
-	//				clearHeaders_Linux(folderName);
-	//				Anon_ize_Linux(1, folderName);
-	//				Anon_ize_grades_Linux(folderName);
-	//			} else {
-	//				Anon_ize_Course_Linux(folderName);
-	//			}
-	//		} else {
-	//			System.out.println("Can't Figure out your os!");
-	//		}
-	//		logger.close();// must close upon completion for linux to show this stuff.
-	//	}
+	// public void anonymize(String[] args) throws IOException, InterruptedException
+	// {
+	// // instantiate vars
+	//// CommentsIdenMap = new HashMap<String, String>();
+	// depth = 1;
+	// counter = 0;
+	// String folderName = ""; // will either act as the singleton assignment
+	// name....or the course folder name
+	// log_file = new File("anon_log");
+	// log_file.delete();
+	// log_file.createNewFile();
+	// logger = new FileWriter(log_file);
+	// System.out.println("made stuff!");
+	// if (args.length == 1) {
+	// folderName = args[0];
+	// courseMode = false;
+	// deleteTXTAndHTML = false;
+	// logger.write("In single assignment mode. Delete txt and html files =
+	// false\n");
+	// } else if (args.length == 2) {
+	// folderName = args[0];
+	// courseMode = false;
+	// if (args[1].equals("true")) {
+	// deleteTXTAndHTML = true;
+	// }
+	// logger.write("In single assignment mode. Delete txt and html files = " +
+	// deleteTXTAndHTML + "\n");
+	// } else if (args.length == 3) {
+	// folderName = args[0];
+	// courseMode = true;
+	// if (args[1].equals("true")) {
+	// deleteTXTAndHTML = true;
+	// }
+	// logger.write("In course folder mode. Delete txt and html files = " +
+	// deleteTXTAndHTML + "\n");
+	// } else {
+	// System.out.println("Enter main args: folderName (deleteTXTAndHTMLFiles)
+	// (CourseMode)");
+	// System.exit(0);
+	// }
+	// // determine which version to run based on OS
+	// String os = System.getProperty("os.name").toLowerCase();
+	// File folder = new File(folderName);
+	// if (!folder.exists()) {
+	// System.out.println("Assignment folder not found.");
+	// System.exit(0);
+	// }
+	// folder = findFolderWithCSV(folder);
+	// if (folder == null) {
+	// System.out.println("Assignment folder not found.");
+	// System.exit(0);
+	// }
+	// if (folderName.contains(".zip")) {
+	// File zipFile = new File(folderName);
+	// folderName = folderName.substring(0, folderName.length()-4);
+	// unzip(zipFile.getPath(), folderName);
+	// }
+	// if (os.contains("window")) {
+	// if (!courseMode) {
+	// folderName = findFolderWithCSV(new File(folderName)).getPath();
+	// unzipAllZipFiles(new File(folderName));
+	// clearHeaders_Windows(folderName);
+	// Anon_ize_Windows(1, folderName);
+	// Anon_ize_grades_Windows(folderName);
+	// } else {
+	// folderName = findFolderWithCSV(new
+	// File(folderName)).getParentFile().getPath();
+	// folderName = replaceTrainingSpacesInFolderNames(folderName);
+	// unzipAllZipFiles(new File(folderName));
+	// Anon_ize_Course_Windows(folderName);
+	// }
+	// zip(folderName, folderName+"Anon.zip");
+	// } else if (os.contains("mac")) { // currently not supported
+	// Process testMac = new ProcessBuilder(new String[] { "/bin/bash", "-c",
+	// "mkdir", "goo", "&", "touch",
+	// "goo/hi.txt", "&", "ls", "|", "grep", "goo" }).start();
+	// BufferedReader r = new BufferedReader(new
+	// InputStreamReader(testMac.getInputStream()));
+	// while (true) {
+	// String line = r.readLine();
+	// if (line == null)
+	// break;
+	// System.out.println(line);
+	// }
+	// } else if (os.contains("linux")) { // MUST CLOSE LOG so it can show for
+	// LINUX!!!
+	// // for this have to basically hand off the scripts too for running in unix
+	// // Process testlinux=Runtime.getRuntime().exec(new String[]{"doStuff.sh"});
+	// if (!courseMode) {
+	// clearHeaders_Linux(folderName);
+	// Anon_ize_Linux(1, folderName);
+	// Anon_ize_grades_Linux(folderName);
+	// } else {
+	// Anon_ize_Course_Linux(folderName);
+	// }
+	// } else {
+	// System.out.println("Can't Figure out your os!");
+	// }
+	// logger.close();// must close upon completion for linux to show this stuff.
+	// }
 
 	static String replaceTrainingSpacesInFolderNames(String aFileName) {
 		if (aFileName.endsWith(" ")) {
@@ -370,7 +393,7 @@ public class Anon {
 		return aFileName.replace(" \\", "\\").replace(" /", "/");
 	}
 
-	public  void unzipAllZipFiles(File folder) {
+	public void unzipAllZipFiles(File folder) {
 		for (File zipFile : folder.listFiles()) {
 			if (zipFile.isDirectory()) {
 				unzipAllZipFiles(zipFile);
@@ -386,7 +409,7 @@ public class Anon {
 		}
 	}
 
-	public  void unzip(String zipFilePath, String destDirectory) throws IOException {
+	public void unzip(String zipFilePath, String destDirectory) throws IOException {
 		System.out.println("Unzipping " + zipFilePath + " to " + destDirectory);
 		logger.write("Unzipping " + zipFilePath + " to " + destDirectory);
 		File destDir = new File(destDirectory);
@@ -416,7 +439,7 @@ public class Anon {
 		zipIn.close();
 	}
 
-	private  void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
+	private void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
 		new File(filePath).getParentFile().mkdirs();
 		BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
 		byte[] bytesIn = new byte[4096];
@@ -427,7 +450,7 @@ public class Anon {
 		bos.close();
 	}
 
-	public  void Anon_ize_Course_Linux(String folderName) throws IOException, InterruptedException {
+	public void Anon_ize_Course_Linux(String folderName) throws IOException, InterruptedException {
 		Process p = null;
 		logger.flush();
 		logger.write("PROCCESSING COURSE FOLDER\n");
@@ -458,8 +481,8 @@ public class Anon {
 		}
 	}
 
-	public  void Anon_ize_Course_Windows(String folderName) throws IOException, InterruptedException {
-		//		Process p = null;
+	public void Anon_ize_Course_Windows(String folderName) throws IOException, InterruptedException {
+		// Process p = null;
 		logger.flush();
 		logger.write("PROCCESSING COURSE FOLDER\n");
 		logger.flush();
@@ -472,41 +495,42 @@ public class Anon {
 				Anon_ize_grades_Windows(newPath);
 			}
 		}
-		//		try{
-		//			//look at course directory name
-		//			String[]command = new String[8];
-		//			command[0]="cmd.exe";
-		//			command[1]="/c";
-		//				command[2]="cd";
-		//			command[3]=folderName;
-		//			command[4]="&";
-		//			command[5]="ls";
-		//			command[6]="&";
-		//			command[7]="exit";
-		//			p=new ProcessBuilder(command).start();
-		//			Thread.sleep(2000);
-		//		}
-		//		catch(Exception e){
-		//			e.printStackTrace();
-		//			System.exit(0);
-		//		}
+		// try{
+		// //look at course directory name
+		// String[]command = new String[8];
+		// command[0]="cmd.exe";
+		// command[1]="/c";
+		// command[2]="cd";
+		// command[3]=folderName;
+		// command[4]="&";
+		// command[5]="ls";
+		// command[6]="&";
+		// command[7]="exit";
+		// p=new ProcessBuilder(command).start();
+		// Thread.sleep(2000);
+		// }
+		// catch(Exception e){
+		// e.printStackTrace();
+		// System.exit(0);
+		// }
 		// reader for it
-		//		BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-		//		String line;
-		//		while(true){
-		//			line = r.readLine();
-		//			if (line == null) {
-		//				break;
-		//			}
-		//			String newPath = folderName + "/" + line;
-		//			clearHeaders_Windows(newPath);
-		//			Anon_ize_Windows(1,newPath);
-		//			Anon_ize_grades_Windows(newPath);
-		//		}
+		// BufferedReader r = new BufferedReader(new
+		// InputStreamReader(p.getInputStream()));
+		// String line;
+		// while(true){
+		// line = r.readLine();
+		// if (line == null) {
+		// break;
+		// }
+		// String newPath = folderName + "/" + line;
+		// clearHeaders_Windows(newPath);
+		// Anon_ize_Windows(1,newPath);
+		// Anon_ize_grades_Windows(newPath);
+		// }
 
 	}
 
-	public  void Anon_ize_grades_Windows(String folderName) throws IOException, InterruptedException {
+	public void Anon_ize_grades_Windows(String folderName) throws IOException, InterruptedException {
 		logger.write("CLEARING GRADES.CSV\n");
 		// get csv file
 		File csv = new File(folderName + "/grades.csv");
@@ -556,7 +580,7 @@ public class Anon {
 		return line;
 	}
 
-	protected  void Anon_ize_grades_Linux(String folderName) throws IOException, InterruptedException {
+	protected void Anon_ize_grades_Linux(String folderName) throws IOException, InterruptedException {
 		logger.write("CLEARING GRADES.CSV\n");
 		// get csv file
 		File csv = new File(folderName + "/grades.csv");
@@ -635,67 +659,73 @@ public class Anon {
 			// log.flush();
 		}
 	}
-	//	public  void Anon_ize_Windows(int depth, String folderName) throws IOException, InterruptedException {// depth
-	////		Process p = null;
-	//		logger.flush();
-	//		logger.write("CLEARING TOP-LEVEL DIRECTORY NAMES\n");
-	//		logger.flush();
-	//		File folder = new File(folderName);
-	////		try{
-	////			//look at each student directory
-	////			String[]command = new String[8];
-	////			command[0]="cmd.exe";
-	////			command[1]="/c";
-	////				command[2]="cd";
-	////			command[3]=folderName;
-	////			command[4]="&";
-	////			command[5]="ls";
-	////			command[6]="&";
-	////			command[7]="exit";
-	////			p=new ProcessBuilder(command).start();
-	////			Thread.sleep(2000);
-	////		}
-	////		catch(Exception e){
-	////			e.printStackTrace();
-	////			System.exit(0);
-	////		}
-	////		//reader for it
-	////		BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-	////		String line;
-	////		while(true){
+	// public void Anon_ize_Windows(int depth, String folderName) throws
+	// IOException, InterruptedException {// depth
+	//// Process p = null;
+	// logger.flush();
+	// logger.write("CLEARING TOP-LEVEL DIRECTORY NAMES\n");
+	// logger.flush();
+	// File folder = new File(folderName);
+	//// try{
+	//// //look at each student directory
+	//// String[]command = new String[8];
+	//// command[0]="cmd.exe";
+	//// command[1]="/c";
+	//// command[2]="cd";
+	//// command[3]=folderName;
+	//// command[4]="&";
+	//// command[5]="ls";
+	//// command[6]="&";
+	//// command[7]="exit";
+	//// p=new ProcessBuilder(command).start();
+	//// Thread.sleep(2000);
+	//// }
+	//// catch(Exception e){
+	//// e.printStackTrace();
+	//// System.exit(0);
+	//// }
+	//// //reader for it
+	//// BufferedReader r = new BufferedReader(new
+	// InputStreamReader(p.getInputStream()));
+	//// String line;
+	//// while(true){
 	//
-	//		for (File file : folder.listFiles()) {
-	////			line = r.readLine();
-	//			// csv handled elsewhere
-	//			String line = file.getName();
-	//			if (line.contains(".csv"))
-	//				continue;// skip csv file
-	////			Process rm = (new ProcessBuilder(new String[]{"cmd.exe","/c","cd","\""+folderName+"/"+line+"\"","&","rm","*.txt","*.html","&","exit"}).start());//kill txt and html...could have names
-	////			Thread.sleep(300);
-	//			if (!file.isDirectory()) {
-	//				continue;
-	//			}
-	//			// get lastname,firstname,onyen
-	//			String lastName = line.substring(0, line.indexOf(","));
-	//			String firstName = line.substring(line.indexOf(",") + 2, line.indexOf("("));
-	//			String onyen = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
-	//			// toReplace has anon versions
-	//			String toReplace = getToReplace();
-	//			// System.out.println("\"" + folderName + "/" +"\"");
-	//			findTXTAndHTMLFiles_Windows(file, firstName, lastName, onyen);
-	//			// rename the directory
-	//			file.renameTo(new File(file.getParent() + "/" + toReplace));
-	////			Process rename=(new ProcessBuilder(new String[]{"cmd.exe","/c","cd",folderName,"&","rename","\""+line+"\"","\""+toReplace+"\"","&","exit"}).start());
-	////			Thread.sleep(100);
-	//			logger.write("renamed directory " + line + " to " + toReplace + "\n");
-	//			if (deleteTXTAndHTML) {
-	//				logger.write("removed all txt files and html files from directory " + line + "\n");
-	//			}
-	//			// log.flush();
-	//		}
-	//	}
+	// for (File file : folder.listFiles()) {
+	//// line = r.readLine();
+	// // csv handled elsewhere
+	// String line = file.getName();
+	// if (line.contains(".csv"))
+	// continue;// skip csv file
+	//// Process rm = (new ProcessBuilder(new
+	// String[]{"cmd.exe","/c","cd","\""+folderName+"/"+line+"\"","&","rm","*.txt","*.html","&","exit"}).start());//kill
+	// txt and html...could have names
+	//// Thread.sleep(300);
+	// if (!file.isDirectory()) {
+	// continue;
+	// }
+	// // get lastname,firstname,onyen
+	// String lastName = line.substring(0, line.indexOf(","));
+	// String firstName = line.substring(line.indexOf(",") + 2, line.indexOf("("));
+	// String onyen = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
+	// // toReplace has anon versions
+	// String toReplace = getToReplace();
+	// // System.out.println("\"" + folderName + "/" +"\"");
+	// findTXTAndHTMLFiles_Windows(file, firstName, lastName, onyen);
+	// // rename the directory
+	// file.renameTo(new File(file.getParent() + "/" + toReplace));
+	//// Process rename=(new ProcessBuilder(new
+	// String[]{"cmd.exe","/c","cd",folderName,"&","rename","\""+line+"\"","\""+toReplace+"\"","&","exit"}).start());
+	//// Thread.sleep(100);
+	// logger.write("renamed directory " + line + " to " + toReplace + "\n");
+	// if (deleteTXTAndHTML) {
+	// logger.write("removed all txt files and html files from directory " + line +
+	// "\n");
+	// }
+	// // log.flush();
+	// }
+	// }
 
-	protected  File findFolderWithCSV(File folder) {
+	protected File findFolderWithCSV(File folder) {
 		if (folder.getName().endsWith(".zip")) {
 			return folder;
 		}
@@ -715,55 +745,62 @@ public class Anon {
 		return null;
 	}
 
-	//	protected  void findTXTAndHTMLFiles_Windows(File folder, String firstName, String lastName, String ID)
-	//			throws IOException {
-	////		File folder = new File(folderName);
-	//		if (folder.listFiles() == null) {
-	//			return;
-	//		}
-	//		for (File file : folder.listFiles()) {
-	//			if (file.isDirectory()) {
-	//				String filePath = file.getPath();
-	//				String fileName = file.getName();
-	//				if (fileName.contains(firstName) || fileName.contains(lastName) || fileName.contains(ID)) {
-	//					String newFileName = fileName.replace(lastName, shuffle(lastName, "lName"))
-	//							.replace(firstName, shuffle(firstName, "fName")).replace(ID, shuffle(ID, "ID"));
-	//					File newFile = new File(filePath.replace(fileName, newFileName));
-	//					file.renameTo(newFile);
-	//					logger.write("renamed Folder " + fileName + " to " + newFileName + "\n");
-	//				}
-	//				findTXTAndHTMLFiles_Windows(file, firstName, lastName, ID);
-	//			} else {
-	//				if (deleteTXTAndHTML) {
-	//					if (file.getName().endsWith(".txt") || file.getName().endsWith(".html")) {
-	//						file.delete();
-	//					} else {
-	//						String filePath = file.getPath();
-	//						String fileName = file.getName();
-	//						if (fileName.contains(firstName) || fileName.contains(lastName) || fileName.contains(ID)) {
-	//							String newFileName = fileName.replace(lastName, shuffle(lastName, "lName"))
-	//									.replace(firstName, shuffle(firstName, "fName")).replace(ID, shuffle(ID, "ID"));
-	//							File newFile = new File(filePath.replace(fileName, newFileName));
-	//							file.renameTo(newFile);
-	//							logger.write("renamed file " + fileName + " to " + newFileName + "\n");
-	//						}
-	//					}
-	//				} else {
-	//					String filePath = file.getPath();
-	//					String fileName = file.getName();
-	//					if (fileName.contains(firstName) || fileName.contains(lastName) || fileName.contains(ID)) {
-	//						String newFileName = fileName.replace(lastName, shuffle(lastName, "lName"))
-	//								.replace(firstName, shuffle(firstName, "fName")).replace(ID, shuffle(ID, "ID"));
-	//						File newFile = new File(filePath.replace(fileName, newFileName));
-	//						file.renameTo(newFile);
-	//						logger.write("renamed file " + fileName + " to " + newFileName + "\n");
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
+	// protected void findTXTAndHTMLFiles_Windows(File folder, String firstName,
+	// String lastName, String ID)
+	// throws IOException {
+	//// File folder = new File(folderName);
+	// if (folder.listFiles() == null) {
+	// return;
+	// }
+	// for (File file : folder.listFiles()) {
+	// if (file.isDirectory()) {
+	// String filePath = file.getPath();
+	// String fileName = file.getName();
+	// if (fileName.contains(firstName) || fileName.contains(lastName) ||
+	// fileName.contains(ID)) {
+	// String newFileName = fileName.replace(lastName, shuffle(lastName, "lName"))
+	// .replace(firstName, shuffle(firstName, "fName")).replace(ID, shuffle(ID,
+	// "ID"));
+	// File newFile = new File(filePath.replace(fileName, newFileName));
+	// file.renameTo(newFile);
+	// logger.write("renamed Folder " + fileName + " to " + newFileName + "\n");
+	// }
+	// findTXTAndHTMLFiles_Windows(file, firstName, lastName, ID);
+	// } else {
+	// if (deleteTXTAndHTML) {
+	// if (file.getName().endsWith(".txt") || file.getName().endsWith(".html")) {
+	// file.delete();
+	// } else {
+	// String filePath = file.getPath();
+	// String fileName = file.getName();
+	// if (fileName.contains(firstName) || fileName.contains(lastName) ||
+	// fileName.contains(ID)) {
+	// String newFileName = fileName.replace(lastName, shuffle(lastName, "lName"))
+	// .replace(firstName, shuffle(firstName, "fName")).replace(ID, shuffle(ID,
+	// "ID"));
+	// File newFile = new File(filePath.replace(fileName, newFileName));
+	// file.renameTo(newFile);
+	// logger.write("renamed file " + fileName + " to " + newFileName + "\n");
+	// }
+	// }
+	// } else {
+	// String filePath = file.getPath();
+	// String fileName = file.getName();
+	// if (fileName.contains(firstName) || fileName.contains(lastName) ||
+	// fileName.contains(ID)) {
+	// String newFileName = fileName.replace(lastName, shuffle(lastName, "lName"))
+	// .replace(firstName, shuffle(firstName, "fName")).replace(ID, shuffle(ID,
+	// "ID"));
+	// File newFile = new File(filePath.replace(fileName, newFileName));
+	// file.renameTo(newFile);
+	// logger.write("renamed file " + fileName + " to " + newFileName + "\n");
+	// }
+	// }
+	// }
+	// }
+	// }
 
-	protected  void findTXTAndHTMLFiles_Windows(File folder, String firstName, String lastName, String ID)
+	protected void findTXTAndHTMLFiles_Windows(File folder, String firstName, String lastName, String ID)
 			throws IOException {
 		if (folder.listFiles() == null) {
 			return;
@@ -781,8 +818,7 @@ public class Anon {
 	}
 
 	protected String getToReplace(String lastName, String firstName, String onyen) {
-		return shuffle(lastName, "lName") + ", " + shuffle(firstName, "fName") + "("
-				+ shuffle(onyen, "ID") + ")";
+		return shuffle(lastName, "lName") + ", " + shuffle(firstName, "fName") + "(" + shuffle(onyen, "ID") + ")";
 	}
 
 	protected void renameFile(File file, String firstName, String lastName, String ID) throws IOException {
@@ -800,11 +836,11 @@ public class Anon {
 	}
 
 	protected String getNewFileName(String fileName, String lastName, String firstName, String ID) {
-		return fileName.replace(lastName, shuffle(lastName, "lName"))
-				.replace(firstName, shuffle(firstName, "fName")).replace(ID, shuffle(ID, "ID"));
+		return fileName.replace(lastName, shuffle(lastName, "lName")).replace(firstName, shuffle(firstName, "fName"))
+				.replace(ID, shuffle(ID, "ID"));
 	}
 
-	protected  void Anon_ize_Linux(int i, String folderName) throws IOException, InterruptedException {
+	protected void Anon_ize_Linux(int i, String folderName) throws IOException, InterruptedException {
 		Process p = null;
 		logger.write("CLEARING TOP-LEVEL DIRECTORY NAMES\n");
 		try {
@@ -850,53 +886,257 @@ public class Anon {
 		}
 	}
 
-	public  void clearHeaders_Windows(String folderName) throws IOException {
-		//		Process p = null;
+	public void clearHeaders_Windows(String folderName) throws IOException {
+		// Process p = null;
 		logger.write("CLEARING JAVA FILES OF NAMES\n");
 		findJavaFiles_Windows(new File(folderName), folderName.substring(0, folderName.lastIndexOf("\\") + 1));
-		//		try {
+		// try {
 		// get path to each java file
 
-		//			if(!courseMode)p=new ProcessBuilder(new String[]{"cmd.exe","/c","find",folderName,"|","grep",".java","&","exit"}).start();
-		//			else{
-		//				String course = folderName.substring(0, folderName.indexOf("/"));
-		//				folderName = folderName.substring(folderName.indexOf("/")+1);
-		//				p=new ProcessBuilder(new String[]{"cmd.exe","/c","cd",course,"&","find",folderName,"|","grep",".java","&","exit"}).start();
-		//			}
+		// if(!courseMode)p=new ProcessBuilder(new
+		// String[]{"cmd.exe","/c","find",folderName,"|","grep",".java","&","exit"}).start();
+		// else{
+		// String course = folderName.substring(0, folderName.indexOf("/"));
+		// folderName = folderName.substring(folderName.indexOf("/")+1);
+		// p=new ProcessBuilder(new
+		// String[]{"cmd.exe","/c","cd",course,"&","find",folderName,"|","grep",".java","&","exit"}).start();
+		// }
 
-		//			Thread.sleep(2000);
-		//		} catch (IOException | InterruptedException e) {
-		//			e.printStackTrace();
-		//			System.exit(0);
-		//		}
+		// Thread.sleep(2000);
+		// } catch (IOException | InterruptedException e) {
+		// e.printStackTrace();
+		// System.exit(0);
+		// }
 		// reader for it
-		//		BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-		//		String line;
-		//		while (true) {
-		//			line = r.readLine();
-		//			if (line == null) {
-		//				break;
-		//			}
+		// BufferedReader r = new BufferedReader(new
+		// InputStreamReader(p.getInputStream()));
+		// String line;
+		// while (true) {
+		// line = r.readLine();
+		// if (line == null) {
+		// break;
+		// }
 		// System.out.println(line);
 		// hold on to orig line for cd later
 
-		//		r.close();
+		// r.close();
 	}
 
-	protected  void findJavaFiles_Windows(File folder, String topFolderName) throws IOException {
-		//		File folder = new File(folderName);
+	protected void findJavaFiles_Windows(File folder, String topFolderName) throws IOException {
+		// File folder = new File(folderName);
 		for (File file : folder.listFiles()) {
 			if (file.isDirectory()) {
+				specificLogger.write("Anonymyzing folder:" + file);
 				findJavaFiles_Windows(file, topFolderName);
+				specificLogger.flush();
+
 			} else {
+
 				if (file.getName().contains(".java") || file.getName().contains(".xml")) {
+					specificLogger.write("Anonymyzing file:" + file + "\n");
 					replaceHeaders_Windows(file, topFolderName);
+					specificLogger.flush();
+
 				}
 			}
 		}
 	}
 
-	protected  void replaceHeaders_Windows(File file, String topFolderName) throws IOException {
+	protected String previousLine;
+
+	public static boolean isCodeFole(File f) {
+		String aName = f.getName();
+		return aName.endsWith(".c") || aName.endsWith(".java") || aName.endsWith(".py");
+	}
+
+	public static boolean isEclipseLog(File f) {
+		String aName = f.getName();
+		return aName.startsWith("Log") && aName.endsWith(".xml");
+	}
+
+	public static boolean isCommentStart(String aTrimmedLine) {
+		return aTrimmedLine.startsWith("/*");
+
+	}
+
+	public static boolean isCommentEnd(String aTrimmedLine) {
+		return aTrimmedLine.contains("*/");
+
+	}
+
+	public boolean inProjectStat() {
+		return previousLine != null && previousLine.startsWith("Edited") && previousLine.endsWith("Projects: ");
+	}
+
+	boolean inComment;
+
+//	boolean inProjectStat;
+	protected boolean isSafeLineConservative(String aLineTrimmed) {
+		return (!aLineTrimmed.contains("file") &&
+//				!aLineTrimmed.contains("onyen") &&
+				!aLineTrimmed.contains("package")
+				&& (aLineTrimmed.contains("javadoc") || aLineTrimmed.contains("[cdata[") ||
+
+						aLineTrimmed.startsWith("<command") || aLineTrimmed.startsWith("<csvrow")
+						|| aLineTrimmed.contains("id=") || aLineTrimmed.contains("document")
+						|| aLineTrimmed.contains("stbuildercheck") || aLineTrimmed.contains("gradingTools")
+						|| aLineTrimmed.startsWith("</") || aLineTrimmed.contains("random")
+						|| aLineTrimmed.contains("does") || aLineTrimmed.contains("unc.checks")
+						|| aLineTrimmed.contains("at ")
+//				line1_trimmed.startsWith("¶unc.checks")
+
+				));
+//			return line_1;
+
+	}
+
+	protected boolean currentLineHasPackage;
+	protected boolean currentLineHasClass;
+
+	protected Set<String> identifiersWithAuthorNames = new HashSet();
+
+	protected boolean isSafeLineLiberal(String aLineTrimmed) {
+		currentLineHasPackage = aLineTrimmed.contains("package");
+		currentLineHasClass = aLineTrimmed.contains("class");
+		return (
+//				(
+//				aLineTrimmed.contains("diffbasedfileopencommand")
+//				)|| (
+		!aLineTrimmed.contains("file") && !aLineTrimmed.contains("onyen") && !currentLineHasPackage
+				&& !currentLineHasClass &&
+//				!aLineTrimmed.contains("package") &&
+				!aLineTrimmed.contains("github") && !aLineTrimmed.contains("\"/") && !aLineTrimmed.contains("/users")
+				&& !aLineTrimmed.contains("/home") &&
+//				!aLineTrimmed.contains("/") &&
+				!aLineTrimmed.contains("\\")) && !inProjectStat()
+//				&&
+//				!AnonUtil.containsNonkeyWord(aLineTrimmed, identifiersWithAuthorNames)
+//				)	
+		;
+
+//				line1_trimmed.startsWith("¶unc.checks")
+
+//			return line_1;
+
+	}
+
+	static final String[] caseNeutralMarkers = { "file", "filepath", "home", "users", "github", "onyen", "package",
+			"class"
+
+	};
+
+	protected boolean canHaveCaseNeutralMatch(String aLine, List<String> aTokens) {
+		if (aLine.contains("/") | aLine.contains("\\\\")) {
+			return true; // file markers
+		}
+		for (String aToken : aTokens) {
+			for (String aMarker : caseNeutralMarkers) {
+				if (aToken.toLowerCase().equals(aMarker)) {
+					return true;
+				}
+			}
+		}
+		return false;
+
+//		return (
+////				(
+////				aLineTrimmed.contains("diffbasedfileopencommand")
+////				)|| (
+//		!aLowercaseTrimmedLine.contains("file") && !aLineTrimmed.contains("onyen") && !currentLineHasPackage
+//				&& !currentLineHasClass &&
+////				!aLineTrimmed.contains("package") &&
+//				!aLineTrimmed.contains("github") && !aLineTrimmed.contains("\"/") && !aLineTrimmed.contains("/users")
+//				&& !aLineTrimmed.contains("/home") &&
+////				!aLineTrimmed.contains("/") &&
+//				!aLineTrimmed.contains("\\")) && !inProjectStat()
+////				&&
+////				!AnonUtil.containsNonkeyWord(aLineTrimmed, identifiersWithAuthorNames)
+////				)	
+//		;
+//
+////				line1_trimmed.startsWith("¶unc.checks")
+//
+////			return line_1;
+
+	}
+
+//	protected boolean isSafeEclipseLogLineLiberal(String aLineTrimmed) {
+//		currentLineHasPackage = 
+//				aLineTrimmed.contains("package");
+//		currentLineHasClass = 
+//				aLineTrimmed.contains("class");
+//		return (
+////				(
+////				aLineTrimmed.contains("diffbasedfileopencommand")
+////				)|| (
+//				!aLineTrimmed.contains("file") && 
+//				!aLineTrimmed.contains("onyen") && 
+//				!currentLineHasPackage &&
+//				!currentLineHasClass &&
+////				!aLineTrimmed.contains("package") &&
+//				!aLineTrimmed.contains("github") &&
+//				!aLineTrimmed.contains("\"/") && 
+//				!aLineTrimmed.contains("/users") && 
+//				!aLineTrimmed.contains("/home") && 
+////				!aLineTrimmed.contains("/") &&
+//				!aLineTrimmed.contains("\\")) &&
+//				!inProjectStat() &&
+//				!AnonUtil.contains(aLineTrimmed, identifiersWithAuthorNames)
+////				)	
+//				;
+//
+////				line1_trimmed.startsWith("¶unc.checks")
+//				
+//				
+//		
+////			return line_1;
+//		
+//	}
+//	protected boolean isSafeLine(String aLine) {
+//		return false;
+//	}
+	public String replaceAllNonKeywords(String aKeywordsRegex, String aString, String anOriginal, int line_num, File f,
+			List<String> names) throws IOException {
+		int aNumMaximumMatches = AnonUtil.numMatches(aString, names);
+		if (aNumMaximumMatches == 0) {
+			return aString;
+		}
+
+		List<String> aTokens = AnonUtil.getTokens(aString);
+		boolean wholeWordReplace = !canHaveCaseNeutralMatch(aString, aTokens);
+
+		String[] aSplits = aString.split(aKeywordsRegex);
+		StringBuffer aReplacedValue = new StringBuffer();
+		int aLastEnd = 0;
+		int aLastStart = 0;
+		String aRemainingString = aString;
+		String anOriginalLowerCase = anOriginal.toLowerCase();
+		for (String aSplit : aSplits) {
+			String aSplitSubstitution = aSplit;
+			System.out.println("split:" + aSplit);
+
+			for (int i = 0; i < names.size(); i++) {
+
+				String name = names.get(i);
+				System.out.println("name:" + name);
+
+				if (aSplit.toLowerCase().contains(name.toLowerCase())) {
+					logger.write("changed " + name + " on line " + line_num + " of " + f.getName() + "\n");
+					aSplitSubstitution = replaceHeaders(name, line_num, f, names, aSplitSubstitution, i);
+//					found = true;
+				}
+			}
+//			String aSplitSubstitution = aSplit.replaceAll(anOriginal, aReplacement).replaceAll(anOriginalLowerCase, aReplacement);
+			aRemainingString = aRemainingString.substring(aLastEnd);
+			aLastStart = aRemainingString.indexOf(aSplit);
+			aLastEnd = aLastStart + aSplit.length();
+			String aPreSplit = aRemainingString.substring(0, aLastStart);
+			aReplacedValue.append(aPreSplit + aSplitSubstitution);
+		}
+		return aReplacedValue.toString();
+	}
+
+	protected void replaceHeaders_Windows(File file, String topFolderName) throws IOException {
 
 		String line = file.getPath().replace(topFolderName, "");
 		String orig_line = file.getPath();
@@ -923,41 +1163,138 @@ public class Anon {
 		BufferedReader r_1 = new BufferedReader(new FileReader(f));
 		int line_num = 0;
 		while (true) {
-			String line_1 = r_1.readLine();
-			if (line_1 == null)
+
+			String anOriginalLine = r_1.readLine();
+			String aReplacableLine = anOriginalLine;
+			if (aReplacableLine == null)
 				break;
-			// replace all instances of names with anon version
-			for (int i = 0; i < names.size(); i++) {
-				String name = names.get(i);
-				if (line_1.toLowerCase().contains(name.toLowerCase())) {
-					logger.write("changed " + name + " on line " + line_num + " of " + f.getName() + "\n");
-					line_1 = replaceHeaders(name, line_num, f, names, line_1, i);
+			if (AnonUtil.hasName(aReplacableLine, names)) {
+				// replace all instances of names with anon version
+//			boolean returnReplaced = true;
+//				String anOriginalLine = aReplacableLine;
+//			String aLineTrimmed = aReplacableLine.trim().toLowerCase();
+//				String aHeaderInfo = names + ":" + line_num + ":" + f.getName() + ":";
+
+//			inProjectStat = inProjectStat(aLine);
+//			if (inProjectStat) {
+//				inProjectStat = false; // this is the next line
+//			}
+				if (inComment && isCommentEnd(aReplacableLine)) {
+					inComment = false;
+				} else {
+					inComment = isCommentStart(aReplacableLine);
+
 				}
+
+				aReplacableLine = replaceHeaders(line_num, f, names, aReplacableLine);
+
+//			if (anOriginalLine.contains("andrewbyerle")) {
+//				System.out.println("found offending line");
+//			}
+//			boolean found = false;
+//			for (int i = 0; i < names.size(); i++) {
+//				String name = names.get(i);
+//				if (aReplacableLine.toLowerCase().contains(name.toLowerCase())) {
+//					logger.write("changed " + name + " on line " + line_num + " of " + f.getName() + "\n");
+//					aReplacableLine = replaceHeaders(name, line_num, f, names, aReplacableLine, i);
+//					found = true;
+//				}
+//			}
+
+//			boolean found = false;
+//			for (int i = 0; i < names.size(); i++) {
+//				String name = names.get(i);
+//				if (aReplacableLine.toLowerCase().contains(name.toLowerCase())) {
+//					logger.write("found " + name + " on line " + line_num + " of " + f.getName() + "\n");
+//					aReplacableLine = replaceAllNonKeywords(keywordsRegex(), aReplacableLine, name, line_num, f, names);
+//
+////				aReplacableLine = replaceHeaders(name, line_num, f, names, aReplacableLine, i);
+//					found = true;
+//				}
+//			}
+//			boolean changed = found && !anOriginalLine.equals(aReplacableLine);
+
+//			// we may not accept this change
+////			boolean returnReplaced = true;
+//			if (changed) { // do not do the check if no change
+//				List<String> aTokens = AnonUtil.getTokens(aReplacableLine);
+//
+//				boolean returnReplaced = canHaveCaseNeutralMatch(aReplacableLine, aTokens) // not a file open etc line
+//						|| AnonUtil.hasNonkeyWordCaseSensitiveMatch(keywordsSet(), anOriginalLine, aTokens,
+//								new HashSet<String>(names));
+//
+//				specificLogger.write(aHeaderInfo + "\n");
+//
+//				specificLogger.write("Original Line:\n");
+//				specificLogger.write(anOriginalLine + "\n");
+//				specificLogger.write("Changed Line:\n");
+//				specificLogger.write(aReplacableLine + "\n");
+//				if (!returnReplaced) {
+//
+////						System.err.println("Returning original");
+//					specificLogger.write("Forwarding original\n");
+//
+//					specificLogger.flush();
+//					aReplacableLine = anOriginalLine;
+//
+////						return aLine;				
+//				} else {
+//					specificLogger.write("Forwarding changed line\n");
+//					specificLogger.flush();
+//				}
+//
+//			}
+
+				// end
 			}
-			// /Users/username for mac   C:\Users\\username\
-			Matcher winMatcher = WIN_USER.matcher(line_1);
-			Matcher macMatcher = MAC_USER.matcher(line_1);
+
+			// /Users/username for mac C:\Users\\username\
+			Matcher winMatcher = WIN_USER.matcher(aReplacableLine);
+			Matcher macMatcher = MAC_USER.matcher(aReplacableLine);
 			if (winMatcher.find()) {
 				String username = winMatcher.group(1);
 				try {
-				line_1 = line_1.replaceAll(username, USERNAME);
-				logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
+					aReplacableLine = aReplacableLine.replaceAll(username, USERNAME);
+					logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
+					specificLogger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
+
 				} catch (Exception e) {
-					System.out.println ("did not change line:" + line_1 + "user " + username);
+					System.out.println("did not change line:" + aReplacableLine + "user " + username);
 				}
 			} else if (macMatcher.find()) {
 				String username = macMatcher.group(1);
 				try {
-				line_1 = line_1.replaceAll(username, USERNAME);
-				logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
+					aReplacableLine = aReplacableLine.replaceAll(username, USERNAME);
+					logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
+					specificLogger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
+
 				} catch (Exception e) {
-					System.out.println ("did not change line:" + line_1 + "user " + username);
+					System.out.println("did not change line:" + aReplacableLine + "user " + username);
 //					e.printStackTrace();
 				}
 			}
+//			returnOriginal = aReplacableLine.equals(anOriginalLine);
+//			specificLogger.write(aHeaderInfo + "\n");
+//
+//			specificLogger.write("Original Line:\n");
+//			specificLogger.write(anOriginalLine + "\n");
+//			specificLogger.write("Changed Line:\n");
+//			specificLogger.write(aReplacableLine + "\n");
+//			if (returnOriginal) {
+////				System.err.println("Returning original");
+//				specificLogger.write("Returning original\n");
+//
+//				specificLogger.flush();
+////				return aLine;				
+//			} else {
+//				specificLogger.write("Returning changed line\n");
+//				specificLogger.flush();
+//			}
+
 			// write it to new file
-			w.write(line_1 + "\n");
+			w.write(aReplacableLine + "\n");
 			line_num++;
+			previousLine = aReplacableLine;
 		}
 		w.close();
 		r_1.close();
@@ -970,12 +1307,25 @@ public class Anon {
 		}
 	}
 
-	public String replaceHeaders(String name, int line_num, File f, List<String> names, String line_1, int i) throws IOException {
+	public String replaceHeaders(int line_num, File f, List<String> names, String aLine) throws IOException {
+		String aReplacableLine = aLine;
+		for (int i = 0; i < names.size(); i++) {
+			String name = names.get(i);
+			if (aReplacableLine.toLowerCase().contains(name.toLowerCase())) {
+				logger.write("changed " + name + " on line " + line_num + " of " + f.getName() + "\n");
+				aReplacableLine = replaceHeaders(name, line_num, f, names, aReplacableLine, i);
+			}
+		}
+		return aReplacableLine;
+	}
+
+	public String replaceHeaders(String name, int line_num, File f, List<String> names, String line_1, int i)
+			throws IOException {
 		return line_1.replaceAll(name, shuffle(name, prefixes[i])).replaceAll(name.toLowerCase(),
 				shuffle(name, prefixes[i]));// shuffle all names
 	}
 
-	protected  void clearHeaders_Linux(String folderName) throws IOException {
+	protected void clearHeaders_Linux(String folderName) throws IOException {
 		Process p = null;
 		logger.write("CLEARING JAVA FILES OF NAMES\n");
 		try {
@@ -1064,22 +1414,23 @@ public class Anon {
 			return CommentsIdenMap.get(text);
 		// otherwise we generate 5 char suffix for 'salting' the identifier...don't want
 		// to create something used already
-		//	    int leftLimit = 97; // letter 'a'
-		//	    int rightLimit = 122; // letter 'z'
-		//	    int targetStringLength = 5;
-		//	    StringBuilder buffer = new StringBuilder(targetStringLength);
-		//	    for (int i = 0; i < targetStringLength; i++) {
-		//	        int randomLimitedInt = leftLimit + (int) 
-		//	          (new Random().nextFloat() * (rightLimit - leftLimit + 1));
-		//	        buffer.append((char) randomLimitedInt);
-		//	    }
-		//	    String generatedSuffix = buffer.toString();
-		//	    String generatedString;
-		//	    if(prefix.equals("ID")) generatedString = prefix + ++counter + "_" + generatedSuffix; //only append counter to onyen
-		//	    else generatedString = prefix + "_" + generatedSuffix;
-		//		
+		// int leftLimit = 97; // letter 'a'
+		// int rightLimit = 122; // letter 'z'
+		// int targetStringLength = 5;
+		// StringBuilder buffer = new StringBuilder(targetStringLength);
+		// for (int i = 0; i < targetStringLength; i++) {
+		// int randomLimitedInt = leftLimit + (int)
+		// (new Random().nextFloat() * (rightLimit - leftLimit + 1));
+		// buffer.append((char) randomLimitedInt);
+		// }
+		// String generatedSuffix = buffer.toString();
+		// String generatedString;
+		// if(prefix.equals("ID")) generatedString = prefix + ++counter + "_" +
+		// generatedSuffix; //only append counter to onyen
+		// else generatedString = prefix + "_" + generatedSuffix;
+		//
 
-		//sha256	
+		// sha256
 		String generatedString = "";
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -1101,7 +1452,7 @@ public class Anon {
 
 	public static void deleteUnnecessaryFiles(File folder) {
 		if (!folder.exists()) {
-			System.err.println ("No folder:" + folder);
+			System.err.println("No folder:" + folder);
 			return;
 		}
 		for (File file : folder.listFiles()) {
@@ -1114,11 +1465,11 @@ public class Anon {
 	}
 
 	protected static boolean maybeDeleteFile(File file) {
-		for (String aSuffix:getIgnoreFileSuffixes()) {
+		for (String aSuffix : getIgnoreFileSuffixes()) {
 			if (file.getName().toLowerCase().endsWith(aSuffix)) {
 				file.delete();
 				return true;
-				//				break;
+				// break;
 			}
 		}
 		return false;
@@ -1135,7 +1486,7 @@ public class Anon {
 	public void zip(String sourceDirPath, String zipFilePath) throws IOException {
 		int num = 0;
 		String ext = ".zip";
-		while (new File(zipFilePath+ext).exists()) {
+		while (new File(zipFilePath + ext).exists()) {
 			num++;
 			ext = "(" + num + ").zip";
 		}
@@ -1146,24 +1497,73 @@ public class Anon {
 		try (ZipOutputStream zs = new ZipOutputStream(Files.newOutputStream(p))) {
 			Path pp = Paths.get(sourceDirPath);
 			Files.walk(pp)
-			.filter(path -> !Files.isDirectory(path) && !path.getFileName().toString().equals("grades.csv"))
-			.forEach(path -> {
-				ZipEntry zipEntry = new ZipEntry(pp.relativize(path).toString());
-				try {
-					zs.putNextEntry(zipEntry);
-					Files.copy(path, zs);
-					zs.closeEntry();
-				} catch (IOException e) {
-					System.err.println(e);
-				}
-			});
+					.filter(path -> !Files.isDirectory(path) && !path.getFileName().toString().equals("grades.csv"))
+					.forEach(path -> {
+						ZipEntry zipEntry = new ZipEntry(pp.relativize(path).toString());
+						try {
+							zs.putNextEntry(zipEntry);
+							Files.copy(path, zs);
+							zs.closeEntry();
+						} catch (IOException e) {
+							System.err.println(e);
+						}
+					});
 		}
 	}
 
 	public static String parseArg(String arg) {
 		if (arg.startsWith("'") && arg.endsWith("'")) {
-			return arg.substring(1, arg.length()-1);
+			return arg.substring(1, arg.length() - 1);
 		}
 		return arg;
+	}
+
+	static String[] keywords = { 
+			"DiffBasedFileOpenCommand", 
+			"docASTNodeCount", 
+			"docActiveCodeLength",
+			"docActiveCodeLength", 
+			"docExpressionCount", 
+			"docLength", 
+			"projectName", 
+			"starttimestamp", 
+			"timestamp",
+			"random" };
+
+	static Set<String> keywordsSet;
+
+	protected String[] keywords() {
+		return keywords;
+	}
+
+	protected Set<String> keywordsSet() {
+		if (keywordsSet == null) {
+			keywordsSet = new HashSet(Arrays.asList(keywords()));
+		}
+		return keywordsSet;
+	}
+
+	protected String keywordsRegex;
+
+	protected String keywordsRegex() {
+		if (keywordsRegex == null) {
+			StringBuffer aStringBuffer = new StringBuffer();
+			int anIndex = 0;
+			for (String aKeyword : keywordsSet()) {
+				if (anIndex > 0) {
+					aStringBuffer.append("|");
+				}
+				aStringBuffer.append(aKeyword);
+				anIndex++;
+
+			}
+			keywordsRegex = aStringBuffer.toString();
+		}
+		return keywordsRegex;
+	}
+
+	static {
+//		hardwiredSubstitutions = new HashMap();
+		// add hardwired sustitutions
 	}
 }
