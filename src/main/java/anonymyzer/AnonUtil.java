@@ -239,8 +239,13 @@ public class AnonUtil {
 	
 	public static List<Integer> indicesOf(String aString, String aSubstring) {
 		List<Integer> retVal = new ArrayList();
-		for (int anIndex = 0; (anIndex = aString.indexOf(aSubstring, anIndex)) >= 0; anIndex++) { 			
-			retVal.add(anIndex); 
+//		if (aString.contains("istance") && aSubstring.contains("tan")) {
+//			System.out.println("Found problemantic word");
+//		}
+		for (int anIndex = 0; (anIndex = aString.indexOf(aSubstring, anIndex)) >= 0; anIndex++) {
+			
+			if (occurenceIsAWord(aString, aSubstring, anIndex))
+				retVal.add(anIndex); 
 		}
 		return retVal;
 	}
@@ -275,9 +280,9 @@ public class AnonUtil {
 		int aPrefixLength = Math.min(MAX_LEFT_SURROUNDING_LENGTH, anIndexOfFragment);
 		int aSuffixLength = Math.min(MAX_RIGHT_SURROUNDING_LENGTH, aString.length() - aFragmentEnd);
 		String aContextPrefix = aString.substring(anIndexOfFragment-aPrefixLength, anIndexOfFragment);
-		if (aSuffixLength < 0) {
-			System.out.println("suffixlength " + aSuffixLength);
-		}
+//		if (aSuffixLength < 0) {
+//			System.out.println("suffixlength " + aSuffixLength);
+//		}
 		String aContextSuffix = aString.substring(aFragmentEnd, aFragmentEnd+aSuffixLength);
 		return "..." + aContextPrefix + "(" + aFragment + ")" + aContextSuffix + "...";
 		
@@ -290,10 +295,19 @@ public class AnonUtil {
 		for (Integer anIndex:anIndices) {
 			String aFragment = anIndexToFragment.get(anIndex);
 //			retVal.add(anIndex + " " + fragmentWithContext(aString, aFragment, anIndex));
-			retVal.add(anIndex + " " + fragmentWithContext(aString, aFragment, anIndex, anIndex + aFragment.length()));
+//			retVal.add(anIndex + " " + fragmentWithContext(aString, aFragment, anIndex, anIndex + aFragment.length()));
+			retVal.add(fragmentWithContext(aString, aFragment, anIndex, anIndex + aFragment.length()));
 
 		}
 		return retVal;
+	}
+	
+	public static Map<Integer, String> toIndexKeysMap (String aWord, List<Integer> anIndices) {
+		Map<Integer, String> retVal = new HashMap();
+		for (int anIndex:anIndices) {
+			retVal.put(anIndex, aWord);
+		}
+		return retVal;		
 	}
 	
 	public static List<String> fragmentsWithContext(String aString, List<String> aFragments) {
@@ -324,8 +338,10 @@ public class AnonUtil {
 	
 	public static int replaceAll(StringBuffer aReplacementsWithContext, StringBuffer retVal, FileWriter aLogger, String aString, Map<Integer, String> anIndexMap, Map<String, String> anOriginalToReplacement  ) {
 		retVal.setLength(0);
-		aReplacementsWithContext.setLength(0);
+//		aReplacementsWithContext.setLength(0);
+//		aReplacementsWithContext.setLength(0);
 		if (anIndexMap.size() == 0) {
+			retVal.append(aString);
 			return 0;
 		}
 		int aNumReplacements = 0;
@@ -457,7 +473,7 @@ public class AnonUtil {
 			String aString, 
 			List<String> anOriginals, 
 			List<String> aReplacements) {
-		aReplacementsMessageList.setLength(0);
+//		aReplacementsMessageList.setLength(0);
 		String[] aSplits = aString.split(aKeywordsRegex);
 		StringBuffer aReplacedValue = new StringBuffer();
 		int aLastEnd = 0;
@@ -494,8 +510,8 @@ public class AnonUtil {
 //				aLogger.write("Maximum matches " + aNumMaxMatches + " != num actual changes " + aNumActualChanges + "\n");
 			
 		}
-		String aReplacementsMessage = aReplacementsMessageList.toString();
-		aReplacementsMessageList.append(aReplacementsMessage);
+//		String aReplacementsMessage = aReplacementsMessageList.toString();
+//		aReplacementsMessageList.append(aReplacementsMessage);
 //		if (!replacementsMessages.contains(aReplacementsMessage) && aLogger != null) {
 //			replacementsMessages.add(aReplacementsMessage);
 //			try {

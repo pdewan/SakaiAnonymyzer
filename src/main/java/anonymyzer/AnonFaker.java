@@ -329,7 +329,7 @@ public class AnonFaker extends Anon {
 		return aReplacedValue;
 	}
 
-	Set<String> namesWithContext = new HashSet();
+//	Set<String> messagesOutput = new HashSet();
 	StringBuffer aReplacementsMessageList = new StringBuffer();
 
 	public String replaceHeaders(int line_num, File f, List<String> names, String aString) throws IOException {
@@ -364,16 +364,31 @@ public class AnonFaker extends Anon {
 		aDerivedNames.add(aFullNameNoSpaces.toLowerCase());
 		List<String> aFragmentsWithContext = AnonUtil.fragmentsWithContext(aString, aDerivedNames);
 		int aNumFragments = aFragmentsWithContext.size();
-		String aFragmentsWithContextToString = aFragmentsWithContext.toString();
+//		String aFragmentsWithContextToString = " aFragmentsWithContext.toString();
 //		String aHeaderInfo = names + ":" + line_num + ":" + f.getName() + ":";
-		if (!namesWithContext.contains(aFragmentsWithContextToString)) {
-
-			specificLogger.write(f.getName() + ":" + line_num + ":" + aFragmentsWithContext + "\n");
-			specificLogger.flush();
-			namesWithContext.add(aFragmentsWithContextToString);
-		}
+//		if (!messagesOutput.contains(aFragmentsWithContextToString)) {
+//
+//			specificLogger.write(f.getName() + ":" + line_num + ":" + aFragmentsWithContext + "\n");
+//			specificLogger.flush();
+//			messagesOutput.add(aFragmentsWithContextToString);
+//		}
+		aReplacementsMessageList.setLength(0);
 		String aReplacedValue = AnonUtil.replaceAllNonKeywords(aReplacementsMessageList, specificLogger, aNumFragments, keywordsRegex(), aString,
 				aDerivedNames, aDerivedReplacements);
+		
+		String aReplacementsMessageString = aReplacementsMessageList.toString();
+		String aFragmentsWithContextToString = "Fragments found:" + aFragmentsWithContext.toString() +"\n";
+		String aMessageOutput = aFragmentsWithContextToString + aReplacementsMessageString;
+		
+
+		if (!messagesOutput.contains(aMessageOutput)) {
+//			List<String> aFragmentsWithContext = AnonUtil.fragmentsWithContext(aString, aDerivedNames);
+
+
+			specificLogger.write(aMessageOutput);
+			specificLogger.flush();
+			messagesOutput.add(aMessageOutput);
+		}
 
 		return aReplacedValue;
 	}

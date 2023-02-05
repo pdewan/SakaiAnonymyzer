@@ -66,6 +66,8 @@ public class Anon {
 	static final String USERNAME = "username";
 	HashMap<String, String> classNameMap;
 	static Map<String, String> hardwiredSubstitutions;
+	Set<String> messagesOutput = new HashSet();
+
 
 	public Anon() throws IOException {
 		log_file = new File("anon_log");
@@ -1252,21 +1254,33 @@ public class Anon {
 			Matcher winMatcher = WIN_USER.matcher(aReplacableLine);
 			Matcher macMatcher = MAC_USER.matcher(aReplacableLine);
 			if (winMatcher.find()) {
-				String username = winMatcher.group(1);
+				String userName = winMatcher.group(1);
 				try {
-					aReplacableLine = aReplacableLine.replaceAll(username, USERNAME);
-					logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
-					specificLogger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
+					String aLine = aReplacableLine;
+					aReplacableLine = aReplacableLine.replaceAll(userName, USERNAME);
+					List<Integer> anIndices = AnonUtil.indicesOf(aLine, userName);
+					Map<Integer, String> anIndexMap = AnonUtil.toIndexKeysMap(userName, anIndices);
+					List<String> aFragmentsWithContext = AnonUtil.fragmentsWithContext(aLine, anIndexMap);
+					String aMessage = "changed " + userName + " in " + aFragmentsWithContext.toString() + "\n";
+					if (!messagesOutput.contains(aMessage)) {
+						logger.write("changed " + userName + " on line " + line_num + " of " + f.getName() + "\n");
+						specificLogger.write(aMessage);
+						specificLogger.flush();
+						messagesOutput.add(aMessage); 
+					}
+//					AnonUtil.fragmentsWithContext(aString, anIndexToFragment)
+//					logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
+//					specificLogger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
 
 				} catch (Exception e) {
-					System.out.println("did not change line:" + aReplacableLine + "user " + username);
+					System.out.println("did not change line:" + aReplacableLine + "user " + userName);
 				}
 			} else if (macMatcher.find()) {
 				String username = macMatcher.group(1);
 				try {
 					aReplacableLine = aReplacableLine.replaceAll(username, USERNAME);
 					logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
-					specificLogger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
+//					specificLogger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
 
 				} catch (Exception e) {
 					System.out.println("did not change line:" + aReplacableLine + "user " + username);
