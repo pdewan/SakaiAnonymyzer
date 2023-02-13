@@ -22,6 +22,9 @@ import java.util.regex.Pattern;
 import com.github.javafaker.Faker;
 import com.github.javafaker.service.FakeValuesGrouping;
 
+import anonymyzer.factories.KeywordFactory;
+import anonymyzer.factories.LineReplacerFactory;
+
 public class AnonFaker extends Anon {
 
 	File nameMapCSV;
@@ -328,21 +331,12 @@ public class AnonFaker extends Anon {
 
 		return aReplacedValue;
 	}
-
-//	Set<String> messagesOutput = new HashSet();
-	StringBuffer aReplacementsMessageList = new StringBuffer();
-
-	public String replaceHeaders(int line_num, File f, List<String> names, String aString) throws IOException {
-//	}
-//
-//	public String replaceHeaders(int line_num, File f, List<String> names, String aLine, int i) throws IOException {
-
-//		
-//		String[] tokens = getTokens(names.get(2), names.get(1), names.get(0));
-		aReplacementsMessageList.setLength(0);
-		String[] tokens = getTokens(names.get(1), names.get(0), names.get(2)); // computing them each time
+	protected void deriveNamesAndReplacements(List<String> aNames) {
+//		super.setNames(aNames);
+//		originalToReplacement.clear();
+		String[] tokens = getTokens(aNames.get(1), aNames.get(0), aNames.get(2)); // computing them each time
 		if (tokens == null) {
-			return aString;
+			return ;
 		}
 		List<String> aDerivedNames = new ArrayList();
 
@@ -355,40 +349,153 @@ public class AnonFaker extends Anon {
 		String aFullReplacementNameNoSpaces = aDerivedReplacements.get(2) + aDerivedReplacements.get(0);
 		aDerivedReplacements.add(aFullReplacementNameNoSpaces);
 		aDerivedReplacements.add(aFullReplacementNameNoSpaces.toLowerCase());
-		for (int index = 0; index < names.size(); index++) {
-			aDerivedNames.add(names.get(index));
-			aDerivedNames.add(names.get(index).toLowerCase());
+		for (int index = 0; index < aNames.size(); index++) {
+			aDerivedNames.add(aNames.get(index));
+			aDerivedNames.add(aNames.get(index).toLowerCase());
 		}
-		String aFullNameNoSpaces = names.get(1) + names.get(0);
+		String aFullNameNoSpaces = aNames.get(1) + aNames.get(0);
 		aDerivedNames.add(aFullNameNoSpaces);
 		aDerivedNames.add(aFullNameNoSpaces.toLowerCase());
-		List<String> aFragmentsWithContext = AnonUtil.fragmentsWithContext(aString, aDerivedNames);
-		int aNumFragments = aFragmentsWithContext.size();
-//		String aFragmentsWithContextToString = " aFragmentsWithContext.toString();
-//		String aHeaderInfo = names + ":" + line_num + ":" + f.getName() + ":";
-//		if (!messagesOutput.contains(aFragmentsWithContextToString)) {
-//
-//			specificLogger.write(f.getName() + ":" + line_num + ":" + aFragmentsWithContext + "\n");
-//			specificLogger.flush();
-//			messagesOutput.add(aFragmentsWithContextToString);
-//		}
-		aReplacementsMessageList.setLength(0);
-		String aReplacedValue = AnonUtil.replaceAllNonKeywords(aReplacementsMessageList, specificLogger, aNumFragments, keywordsRegex(), aString,
-				aDerivedNames, aDerivedReplacements);
-		
-		String aReplacementsMessageString = aReplacementsMessageList.toString();
-		String aFragmentsWithContextToString = "Fragments found:" + aFragmentsWithContext.toString() +"\n";
-		String aMessageOutput = aFragmentsWithContextToString + aReplacementsMessageString;
-		
-
-		if (!messagesOutput.contains(aMessageOutput)) {
-//			List<String> aFragmentsWithContext = AnonUtil.fragmentsWithContext(aString, aDerivedNames);
-
-
-			specificLogger.write(aMessageOutput);
-			specificLogger.flush();
-			messagesOutput.add(aMessageOutput);
+		super.deriveNamesAndReplacements(aDerivedNames);
+		setNameReplacements(aDerivedReplacements);
+		originalToReplacement = new HashMap();
+		for (int index = 0; index < aDerivedNames.size(); index++) {
+			originalToReplacement.put(aDerivedNames.get(index), aDerivedReplacements.get(index));
 		}
+//		if (aUserName != null && !aDerivedNames.contains(aUserName)) {
+//			aDerivedNames.add(aUserName);
+//			aDerivedReplacements.add(aFullReplacementNameNoSpaces.toLowerCase());			
+//		}
+		
+	}
+	
+	
+	
+	
+	
+	protected List<String> nameReplacements;
+	
+	protected Map<String, String> originalToReplacement = new HashMap();
+	
+	public Map<String, String> getOriginalToReplacement() {
+		return originalToReplacement;
+	}
+
+	public void setOriginalToReplacement(Map<String, String> newVal) {
+		this.originalToReplacement = newVal;
+	}
+
+	protected void setNameReplacements(List<String> aNameReplacements) {
+		nameReplacements = aNameReplacements;
+	}
+	
+	protected List<String> getNameReplacements() {
+		return nameReplacements;
+	}
+	
+	protected void setUserName(String aUserName) {
+		if (userName != null) {
+			return;
+		}
+		if (aUserName != null && !getNames().contains(aUserName)) {
+			getNames().add(aUserName);
+			String aReplacement = nameReplacements.get(nameReplacements.size() - 1).toLowerCase(); // first + last
+			nameReplacements.add(aReplacement);	
+			originalToReplacement.put(aUserName, aReplacement);
+		}
+		super.setUserName(aUserName);
+	}
+	
+	
+//	Set<String> messagesOutput = new HashSet();
+	StringBuffer replacementsMessageList = new StringBuffer();
+
+	public String replaceHeaders(int line_num, File f, String aLine, 
+			AssignmentMetrics aAassignmentMetrics) throws IOException {
+//	}
+//
+//	public String replaceHeaders(int line_num, File f, List<String> names, String aLine, int i) throws IOException {
+
+//		
+//		String[] tokens = getTokens(names.get(2), names.get(1), names.get(0));
+//		replacementsMessageList.setLength(0);
+		
+		// This is being done for each line, not a good idea.
+//		String[] tokens = getTokens(names.get(1), names.get(0), names.get(2)); // computing them each time
+//		if (tokens == null) {
+//			return aLine;
+//		}
+//		List<String> aDerivedNames = new ArrayList();
+//
+//		List<String> aDerivedReplacements = new ArrayList();
+//		for (int index = 0; index < tokens.length; index++) {
+//			String aToken = tokens[idx[index]];
+//			aDerivedReplacements.add(aToken);
+//			aDerivedReplacements.add(aToken.toLowerCase());
+//		}
+//		String aFullReplacementNameNoSpaces = aDerivedReplacements.get(2) + aDerivedReplacements.get(0);
+//		aDerivedReplacements.add(aFullReplacementNameNoSpaces);
+//		aDerivedReplacements.add(aFullReplacementNameNoSpaces.toLowerCase());
+//		for (int index = 0; index < names.size(); index++) {
+//			aDerivedNames.add(names.get(index));
+//			aDerivedNames.add(names.get(index).toLowerCase());
+//		}
+//		String aFullNameNoSpaces = names.get(1) + names.get(0);
+//		aDerivedNames.add(aFullNameNoSpaces);
+//		aDerivedNames.add(aFullNameNoSpaces.toLowerCase());
+		List<String> aDerivedNames = getNames();
+		List<String> aDerivedReplacements = getNameReplacements();
+		if (aDerivedNames == null || aDerivedReplacements == null) {
+			return aLine;
+		}
+//		if (aUserName != null && !aDerivedNames.contains(aUserName)) {
+//			aDerivedNames.add(aUserName);
+//			aDerivedReplacements.add(aFullReplacementNameNoSpaces.toLowerCase());			
+//		}
+		// to lower case in case words are upper case and we do not have candidate words that are upper case
+//		List<String> aFragmentsWithContext = AnonUtil.fragmentsWithContext(aLine.toLowerCase(), aDerivedNames, false);
+//		int aNumFragments = aFragmentsWithContext.size();
+//		if (aNumFragments == 0) {
+//			System.out.println ("Found problematic line");
+//		}
+//		String aFragmentsWithContextToString = "Fragments found:" + aFragmentsWithContext.toString() +"\n";
+//		if (aFragmentsWithContextToString.contains("(jilland)_assignment1")) {
+//			System.out.println ("Found problematic word");
+//		}
+		replacementsMessageList.setLength(0);
+//		int anOriginalNumberOfMessages = messagesOutput.size();
+//		String aReplacedValue = AnonUtil.replaceAllNonKeywords(replacementsMessageList, specificLogger, aNumFragments, keywordsRegex(), aLine,
+//				aDerivedNames, aDerivedReplacements);
+		
+		String aReplacedValue = LineReplacerFactory.replaceLine(line_num, aLine,
+				messagesOutput, 
+				specificLogger, 
+				KeywordFactory.keywordsRegex(), 
+				aDerivedNames, 
+				aDerivedReplacements, 
+				originalToReplacement,
+				aAassignmentMetrics);
+		
+//		String aReplacedValue = AnonUtil.replaceAllNonKeywords(line_num, aLine,
+//				messagesOutput, specificLogger, keywordsRegex(), aDerivedNames, aDerivedReplacements, originalToReplacement);
+		
+//		if (messagesOutput.size() != anOriginalNumberOfMessages) {
+//			specificLogger.write("Replacement:" + aReplacedValue + "\n");
+//		}
+//		String aReplacementsMessageString = replacementsMessageList.toString();
+		
+		
+//		String aMessageOutput = aFragmentsWithContextToString + aReplacementsMessageString;
+//		
+//
+//		if (!messagesOutput.contains(aMessageOutput)) {
+////			List<String> aFragmentsWithContext = AnonUtil.fragmentsWithContext(aString, aDerivedNames);
+//
+//
+//			specificLogger.write(line_num + ":" + aMessageOutput);
+//			specificLogger.flush();
+//			messagesOutput.add(aMessageOutput);
+//		}
 
 		return aReplacedValue;
 	}

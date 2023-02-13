@@ -34,6 +34,10 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import anonymyzer.factories.KeywordFactory;
+import anonymyzer.factories.LoginNameExtractorFactory;
+import anonymyzer.factories.NameExtractorFactory;
+
 /*
  * 
  * Research: Make the anonimizer platform agnostic....make it work with folders w/o headers....and w them....also anonimize grades.csv!!! 
@@ -65,9 +69,9 @@ public class Anon {
 	static final Pattern WIN_USER = Pattern.compile("C:\\\\Users\\\\(.*?)\\\\");
 	static final String USERNAME = "username";
 	HashMap<String, String> classNameMap;
-	static Map<String, String> hardwiredSubstitutions;
+	static Map<String, String> hardwiredSubstitutions = new HashMap();
 	Set<String> messagesOutput = new HashSet();
-
+	AssignmentMetrics assignmentMetrics = new AssignmentMetrics();
 
 	public Anon() throws IOException {
 		log_file = new File("anon_log");
@@ -923,21 +927,26 @@ public class Anon {
 
 		// r.close();
 	}
+	
+	protected String lastFileProcessed = null;
+	protected boolean lastFilePrinted = false;
 
 	protected void findJavaFiles_Windows(File folder, String topFolderName) throws IOException {
 		// File folder = new File(folderName);
 		for (File file : folder.listFiles()) {
 			if (file.isDirectory()) {
-				specificLogger.write("Anonymyzing folder:" + file);
+//				specificLogger.write("Anonymyzing folder:" + file);
 				findJavaFiles_Windows(file, topFolderName);
 				specificLogger.flush();
 
 			} else {
 
 				if (file.getName().contains(".java") || file.getName().contains(".xml")) {
-					specificLogger.write("Anonymyzing file:" + file + "\n");
+					lastFileProcessed = file.getName();
+					lastFilePrinted = false;
+//					specificLogger.write("Anonymyzing file:" + file + "\n");
 					replaceHeaders_Windows(file, topFolderName);
-					specificLogger.flush();
+//					specificLogger.flush();
 
 				}
 			}
@@ -1137,13 +1146,44 @@ public class Anon {
 		}
 		return aReplacedValue.toString();
 	}
-
-	protected void replaceHeaders_Windows(File file, String topFolderName) throws IOException {
-
-		String line = file.getPath().replace(topFolderName, "");
-		String orig_line = file.getPath();
-		line = line.replaceAll("\\\\", "/"); // sanitize
-		String[] split = line.split("/");
+	
+	protected String extractUserName(String aReplacableLine) {
+		String retVal = null;
+		// /Users/username for mac C:\Users\\username\
+		Matcher winMatcher = WIN_USER.matcher(aReplacableLine);
+		Matcher macMatcher = MAC_USER.matcher(aReplacableLine);
+//		String retVal = null;
+		if (winMatcher.find()) {
+			 retVal = winMatcher.group(1);
+		}  else if (macMatcher.find()) {
+			 retVal = macMatcher.group(1);
+		}
+		return retVal;
+		
+	}
+	protected List<String> originalNames;
+	protected String userName;
+	protected void deriveNamesAndReplacements(List<String> aNames) {
+		userName = null;
+		originalNames = aNames;
+	}
+	
+	protected List<String> getNames() {
+		return originalNames;
+	}
+	
+	protected void setUserName(String aName) {
+		userName = aName;
+	}
+	protected String getUserName() {
+		return userName;
+	}
+	
+	protected List<String> extractNames (File aFile, String aTopFolderName) {
+		String aNormalizedPath = aFile.getPath().replace(aTopFolderName, "");
+//		String orig_line = aFile.getPath();
+		aNormalizedPath = aNormalizedPath.replaceAll("\\\\", "/"); // sanitize
+		String[] split = aNormalizedPath.split("/");
 		// load up our known names
 		ArrayList<String> names = new ArrayList<String>();
 		// should be last name
@@ -1152,10 +1192,46 @@ public class Anon {
 		names.add(split[depth].substring(split[depth].indexOf(",") + 2, split[depth].indexOf("(")));
 		// should be onyen
 		names.add(split[depth].substring(split[depth].indexOf("(") + 1, split[depth].indexOf(")")));
+		return names;
+	}
+	
+	List<String> previousNames;
+
+	protected void replaceHeaders_Windows(File file, String topFolderName) throws IOException {
+
+//		String line = file.getPath().replace(topFolderName, "");
+//		String orig_line = file.getPath();
+//		line = line.replaceAll("\\\\", "/"); // sanitize
+//		String[] split = line.split("/");
+//		// load up our known names
+//		ArrayList<String> names = new ArrayList<String>();
+//		// should be last name
+//		names.add(split[depth].substring(0, split[depth].indexOf(",")));
+//		// should be first name
+//		names.add(split[depth].substring(split[depth].indexOf(",") + 2, split[depth].indexOf("(")));
+//		// should be onyen
+//		names.add(split[depth].substring(split[depth].indexOf("(") + 1, split[depth].indexOf(")")));
+//		
+		String orig_line = file.getPath();
+		List<String> names = NameExtractorFactory.extractNames(file, topFolderName);
+		if (previousNames == null || !names.equals(previousNames)) {
+//			messagesOutput.clear();
+			specificLogger.write("New Names:" + names + "\n");
+			previousNames = names;
+
+
+		}
+
+//		List<String> names = extractNames (file, topFolderName);
+		deriveNamesAndReplacements(names);
+				
+
 		// make a new file to write to
 		File f = new File(orig_line);
 		if (!f.canWrite()) {
-			System.out.println("can't write file " + line);
+//			System.out.println("can't write file " + line);
+			System.out.println("can't write file " + orig_line);
+
 			return;
 		}
 		File temp = new File("TEMP_GOO");
@@ -1164,148 +1240,81 @@ public class Anon {
 		BufferedWriter w = new BufferedWriter(new FileWriter(temp));
 		BufferedReader r_1 = new BufferedReader(new FileReader(f));
 		int line_num = 0;
+//		String aReplacedValue = AnonUtil.replaceAllNonKeywords(replacementsMessageList, specificLogger, aNumFragments, keywordsRegex(), aLine,
+//				aDerivedNames, aDerivedReplacements);
+		
+		
+		String aUserName = null;
+		assignmentMetrics.numFilesProcessed++;
 		while (true) {
+			int anOriginalNumberOfMessages = messagesOutput.size();
 
 			String anOriginalLine = r_1.readLine();
 			String aReplacableLine = anOriginalLine;
 			if (aReplacableLine == null)
 				break;
+			if (getUserName() == null) {
+//				aUserName = extractUserName(aReplacableLine);
+				aUserName = LoginNameExtractorFactory.extractLoginName(aReplacableLine);
+
+				if (aUserName != null) {
+					setUserName(aUserName);
+				}
+			}
 			if (AnonUtil.hasName(aReplacableLine, names)) {
-				// replace all instances of names with anon version
-//			boolean returnReplaced = true;
-//				String anOriginalLine = aReplacableLine;
-//			String aLineTrimmed = aReplacableLine.trim().toLowerCase();
-//				String aHeaderInfo = names + ":" + line_num + ":" + f.getName() + ":";
 
-//			inProjectStat = inProjectStat(aLine);
-//			if (inProjectStat) {
-//				inProjectStat = false; // this is the next line
-//			}
-				if (inComment && isCommentEnd(aReplacableLine)) {
-					inComment = false;
-				} else {
-					inComment = isCommentStart(aReplacableLine);
-
-				}
-
-				aReplacableLine = replaceHeaders(line_num, f, names, aReplacableLine);
-
-//			if (anOriginalLine.contains("andrewbyerle")) {
-//				System.out.println("found offending line");
-//			}
-//			boolean found = false;
-//			for (int i = 0; i < names.size(); i++) {
-//				String name = names.get(i);
-//				if (aReplacableLine.toLowerCase().contains(name.toLowerCase())) {
-//					logger.write("changed " + name + " on line " + line_num + " of " + f.getName() + "\n");
-//					aReplacableLine = replaceHeaders(name, line_num, f, names, aReplacableLine, i);
-//					found = true;
-//				}
-//			}
-
-//			boolean found = false;
-//			for (int i = 0; i < names.size(); i++) {
-//				String name = names.get(i);
-//				if (aReplacableLine.toLowerCase().contains(name.toLowerCase())) {
-//					logger.write("found " + name + " on line " + line_num + " of " + f.getName() + "\n");
-//					aReplacableLine = replaceAllNonKeywords(keywordsRegex(), aReplacableLine, name, line_num, f, names);
-//
-////				aReplacableLine = replaceHeaders(name, line_num, f, names, aReplacableLine, i);
-//					found = true;
-//				}
-//			}
-//			boolean changed = found && !anOriginalLine.equals(aReplacableLine);
-
-//			// we may not accept this change
-////			boolean returnReplaced = true;
-//			if (changed) { // do not do the check if no change
-//				List<String> aTokens = AnonUtil.getTokens(aReplacableLine);
-//
-//				boolean returnReplaced = canHaveCaseNeutralMatch(aReplacableLine, aTokens) // not a file open etc line
-//						|| AnonUtil.hasNonkeyWordCaseSensitiveMatch(keywordsSet(), anOriginalLine, aTokens,
-//								new HashSet<String>(names));
-//
-//				specificLogger.write(aHeaderInfo + "\n");
-//
-//				specificLogger.write("Original Line:\n");
-//				specificLogger.write(anOriginalLine + "\n");
-//				specificLogger.write("Changed Line:\n");
-//				specificLogger.write(aReplacableLine + "\n");
-//				if (!returnReplaced) {
-//
-////						System.err.println("Returning original");
-//					specificLogger.write("Forwarding original\n");
-//
+//				if (!lastFilePrinted) {
+//					specificLogger.write("File:" + lastFileProcessed + "\n");
 //					specificLogger.flush();
-//					aReplacableLine = anOriginalLine;
-//
-////						return aLine;				
-//				} else {
-//					specificLogger.write("Forwarding changed line\n");
-//					specificLogger.flush();
+//					lastFilePrinted = true;
 //				}
-//
-//			}
 
-				// end
+				aReplacableLine = replaceHeaders(line_num, f, aReplacableLine, null);
+
 			}
 
-			// /Users/username for mac C:\Users\\username\
-			Matcher winMatcher = WIN_USER.matcher(aReplacableLine);
-			Matcher macMatcher = MAC_USER.matcher(aReplacableLine);
-			if (winMatcher.find()) {
-				String userName = winMatcher.group(1);
-				try {
-					String aLine = aReplacableLine;
-					aReplacableLine = aReplacableLine.replaceAll(userName, USERNAME);
-					List<Integer> anIndices = AnonUtil.indicesOf(aLine, userName);
-					Map<Integer, String> anIndexMap = AnonUtil.toIndexKeysMap(userName, anIndices);
-					List<String> aFragmentsWithContext = AnonUtil.fragmentsWithContext(aLine, anIndexMap);
-					String aMessage = "changed " + userName + " in " + aFragmentsWithContext.toString() + "\n";
-					if (!messagesOutput.contains(aMessage)) {
-						logger.write("changed " + userName + " on line " + line_num + " of " + f.getName() + "\n");
-						specificLogger.write(aMessage);
-						specificLogger.flush();
-						messagesOutput.add(aMessage); 
-					}
-//					AnonUtil.fragmentsWithContext(aString, anIndexToFragment)
-//					logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
-//					specificLogger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
-
-				} catch (Exception e) {
-					System.out.println("did not change line:" + aReplacableLine + "user " + userName);
-				}
-			} else if (macMatcher.find()) {
-				String username = macMatcher.group(1);
-				try {
-					aReplacableLine = aReplacableLine.replaceAll(username, USERNAME);
-					logger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
-//					specificLogger.write("changed " + username + " on line " + line_num + " of " + f.getName() + "\n");
-
-				} catch (Exception e) {
-					System.out.println("did not change line:" + aReplacableLine + "user " + username);
-//					e.printStackTrace();
-				}
-			}
-//			returnOriginal = aReplacableLine.equals(anOriginalLine);
-//			specificLogger.write(aHeaderInfo + "\n");
-//
-//			specificLogger.write("Original Line:\n");
-//			specificLogger.write(anOriginalLine + "\n");
-//			specificLogger.write("Changed Line:\n");
-//			specificLogger.write(aReplacableLine + "\n");
-//			if (returnOriginal) {
-////				System.err.println("Returning original");
-//				specificLogger.write("Returning original\n");
-//
-//				specificLogger.flush();
-////				return aLine;				
-//			} else {
-//				specificLogger.write("Returning changed line\n");
-//				specificLogger.flush();
+//			// /Users/username for mac C:\Users\\username\
+//			Matcher winMatcher = WIN_USER.matcher(aReplacableLine);
+//			Matcher macMatcher = MAC_USER.matcher(aReplacableLine);
+////			String userName = null;
+//			if (winMatcher.find()) {
+//				 aUserName = winMatcher.group(1);
+//			}  else if (macMatcher.find()) {
+//				aUserName = macMatcher.group(1);
 //			}
+//			if (aUserName != null && 
+//					!names.contains(aUserName)) {
+//				try {
+//					String aLine = aReplacableLine;
+//					aReplacableLine = aReplacableLine.replaceAll(aUserName, USERNAME);
+//					List<Integer> anIndices = AnonUtil.indicesOf(aLine, aUserName, true);
+//					Map<Integer, String> anIndexMap = AnonUtil.toIndexKeysMap(aUserName, anIndices);
+//					List<String> aFragmentsWithContext = AnonUtil.fragmentsWithContext(aLine, anIndexMap);
+//					if (aFragmentsWithContext.isEmpty()) {
+//						System.out.println("found empty fragment");
+//					}
+//					String aMessage = "changed " + aUserName + " in " + aFragmentsWithContext.toString() + "\n";
+//					if (!messagesOutput.contains(aMessage)) {
+//						logger.write("changed " + aUserName + " on line " + line_num + " of " + f.getName() + "\n");
+//						specificLogger.write(aMessage);
+//						specificLogger.flush();
+//						messagesOutput.add(aMessage);
+//					}
+//
+//
+//				} catch (Exception e) {
+//					System.out.println("did not change line:" + aReplacableLine + "user " + aUserName);
+//				}
+//				
+//				
+//			}
+			
+
 
 			// write it to new file
+			if (messagesOutput.size() != anOriginalNumberOfMessages) {
+				specificLogger.write("Replacement:" + aReplacableLine + "\n");
+			}
 			w.write(aReplacableLine + "\n");
 			line_num++;
 			previousLine = aReplacableLine;
@@ -1321,13 +1330,14 @@ public class Anon {
 		}
 	}
 
-	public String replaceHeaders(int line_num, File f, List<String> names, String aLine) throws IOException {
+	public String replaceHeaders(int line_num, File f, String aLine, AssignmentMetrics anAssignmentMetrics) throws IOException {
 		String aReplacableLine = aLine;
-		for (int i = 0; i < names.size(); i++) {
-			String name = names.get(i);
+		List<String> aNames = getNames();
+		for (int i = 0; i < aNames.size(); i++) {
+			String name = aNames.get(i);
 			if (aReplacableLine.toLowerCase().contains(name.toLowerCase())) {
 				logger.write("changed " + name + " on line " + line_num + " of " + f.getName() + "\n");
-				aReplacableLine = replaceHeaders(name, line_num, f, names, aReplacableLine, i);
+				aReplacableLine = replaceHeaders(name, line_num, f, aNames, aReplacableLine, i);
 			}
 		}
 		return aReplacableLine;
@@ -1532,27 +1542,57 @@ public class Anon {
 		return arg;
 	}
 
-	static String[] keywords = { 
-			"DiffBasedFileOpenCommand", 
-			"docASTNodeCount", 
-			"docActiveCodeLength",
-			"docActiveCodeLength", 
-			"docExpressionCount", 
-			"docLength", 
-			"projectName", 
-			"starttimestamp", 
-			"timestamp",
-			"random" };
+//	static String[] keywords = { 
+////			"DiffBasedFileOpenCommand", 
+////			"docASTNodeCount", 
+////			"docActiveCodeLength",
+////			"docActiveCodeLength", 
+////			"docExpressionCount", 
+////			"docLength", 
+////			"Doc",
+//			"doc",
+//			"random",
+////			"Random",
+//			"constant",
+//			"distance",
+//			"distancing",
+////			"Distance",
+//			"undo",
+////			"Undo",
+//			"doPrivileged",
+//			"doIntersection",
+//			"doFinish",
+//			"does",
+//			"double",
+//			"window",
+////			"Double",
+////			"projectName", 
+////			"starttimestamp", 
+////			"timestamp",
+////			"random" 
+//			};
 
 	static Set<String> keywordsSet;
 
 	protected String[] keywords() {
-		return keywords;
+		return KeywordFactory.getKeywords();
+	}
+	
+	protected String capitalizeWordStart(String aWord) {
+		if (aWord.length() > 1) {
+			return Character.toUpperCase(aWord.charAt(0)) + aWord.substring(1);
+		}
+		return aWord;
 	}
 
 	protected Set<String> keywordsSet() {
 		if (keywordsSet == null) {
-			keywordsSet = new HashSet(Arrays.asList(keywords()));
+			keywordsSet = new HashSet();
+			for (String aString:keywords()) {				
+				keywordsSet.add(aString);
+				keywordsSet.add(capitalizeWordStart(aString));
+			}
+
 		}
 		return keywordsSet;
 	}

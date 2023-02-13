@@ -14,6 +14,10 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import anonymyzer.factories.FragmentsWithContextGeneratorFactory;
+import anonymyzer.factories.IndicesFinderFactory;
+import anonymyzer.factories.StringReplacerFactory;
+
 public class AnonUtil {
 	public static String[] splitCamelCaseHyphenDash(String aCamelCaseName) {
 		// return
@@ -57,7 +61,6 @@ public class AnonUtil {
 //	};
 //
 //	static Set<String> keywordsSet = new HashSet(Arrays.asList(keywords));
-	
 
 	public static List<String> getComponents(List<String> anIdentifiers) {
 		List<String> retVal = new ArrayList();
@@ -69,7 +72,8 @@ public class AnonUtil {
 
 	}
 
-	public static boolean isNameInLineKeyword(Set<String> aKeywordsSet, String aLine, List<String> aLineTokens, List<String> aNames) {
+	public static boolean isNameInLineKeyword(Set<String> aKeywordsSet, String aLine, List<String> aLineTokens,
+			List<String> aNames) {
 //	 if (aLine.contains("docASTNodeCount".toLowerCase()) &&
 //			 aNames.contains("Do")) {
 //		 System.out.println ("found problematic keyword");
@@ -128,7 +132,8 @@ public class AnonUtil {
 	 * 
 	 * 
 	 */
-	public static boolean hasNonkeyWordCaseSensitiveMatch(Set<String> aKeywordsSet, String aString, List<String> aStringTokens, Set<String> aWords) {
+	public static boolean hasNonkeyWordCaseSensitiveMatch(Set<String> aKeywordsSet, String aString,
+			List<String> aStringTokens, Set<String> aWords) {
 		return findNonKeywordMatches(aKeywordsSet, aString, aStringTokens, aWords).size() != 0;
 //	 StringTokenizer aTokenizedString = new StringTokenizer(aString, "./\\ 	,;![]()+-*\"'>");
 //	 while (aTokenizedString.hasMoreTokens()) {
@@ -176,19 +181,23 @@ public class AnonUtil {
 //	 
 //	 return null;
 // }
-	public static int numMatches (String aString, List<String> aCandidateWords) {
+	public static int numMatches(String aString, List<String> aCandidateWords) {
 		String aNormalizedString = aString.toLowerCase();
 		int retVal = 0;
-		for (String aCandidateWord:aCandidateWords) {
+		for (String aCandidateWord : aCandidateWords) {
 			if (aNormalizedString.contains(aCandidateWord.toLowerCase())) {
 				retVal++;
 			}
 		}
 		return retVal;
 	}
-	
-	public static int numDisjointMatches (String aString, List<String> aCandidateWords) {
-		Map<String, List<Integer>>  aWordToIndices = indicesOf(aString, aCandidateWords);
+
+	public static int numDisjointMatches(String aString, List<String> aCandidateWords, boolean checkWord) {
+//		Map<String, List<Integer>> aWordToIndices = indicesOf(aString, aCandidateWords, checkWord);
+		
+		Map<String, List<Integer>> aWordToIndices = IndicesFinderFactory.indicesOf(aString, aCandidateWords, checkWord);
+
+		
 		Map<Integer, String> anIndexKeyMap = toIndexKeys(aWordToIndices);
 		List<Integer> anIndices = getSortedDisjointIndices(anIndexKeyMap);
 		return anIndices.size();
@@ -201,98 +210,202 @@ public class AnonUtil {
 //		}
 //		return retVal;
 	}
-	
-	public static boolean isOppositeCase (char aChar1, char aChar2) {
-		return (Character.isUpperCase(aChar1) && Character.isLowerCase(aChar2)) ||
-				(Character.isLowerCase(aChar1) && Character.isUpperCase(aChar2));
+
+	public static boolean isOppositeCase(char aChar1, char aChar2) {
+		return (Character.isUpperCase(aChar1) && Character.isLowerCase(aChar2))
+				|| (Character.isLowerCase(aChar1) && Character.isUpperCase(aChar2));
 	}
+
 	public static boolean isIdentifierCharacter(char ch) {
-		return Character.isDigit(ch) || Character.isLetter(ch) ||
-				ch == '-' || ch == '-';
+		return Character.isDigit(ch) || Character.isLetter(ch) || ch == '-' || ch == '_';
 	}
-	public static boolean hasLeftDelimiter (String aString, int aNameStartIndex) {
-		if (aNameStartIndex == 0) return true;
+
+	public static boolean isAlphaNumeric(char ch) {
+		return Character.isDigit(ch) || Character.isLetter(ch);
+	}
+
+	public static boolean hasLeftDelimiter(String aString, int aNameStartIndex) {
+		if (aNameStartIndex == 0)
+			return true;
 		char aStart = aString.charAt(aNameStartIndex);
-		char aPredecessor = aString.charAt(aNameStartIndex -1);
-		return isDelimiter(aStart, aPredecessor);
-	
+		char aPredecessor = aString.charAt(aNameStartIndex - 1);
+		return isLeftDelimiter(aStart, aPredecessor);
+
 	}
-	public static boolean isDelimiter (char aChar, char anAdjacentChar) {
-		return !isIdentifierCharacter(anAdjacentChar) || isOppositeCase(aChar, anAdjacentChar);
+
+	public static boolean isDelimiter(char aChar, char anAdjacentChar) {
+		return !isAlphaNumeric(anAdjacentChar) || isOppositeCase(aChar, anAdjacentChar);
+
 	}
-	
-	public static boolean hasRightDelimiter (String aString, int aNameEndIndex) {
-		if (aNameEndIndex == aString.length()) return true;	
-		char anEnd = aString.charAt(aNameEndIndex-1);
+
+	public static boolean isLeftDelimiter(char aChar, char anAdjacentChar) {
+		return !isAlphaNumeric(anAdjacentChar) || isOppositeCase(aChar, anAdjacentChar);
+
+	}
+
+	public static boolean hasRightDelimiter(String aString, int aNameEndIndex) {
+		if (aNameEndIndex == aString.length())
+			return true;
+		char anEnd = aString.charAt(aNameEndIndex - 1);
 		char aSuccessor = aString.charAt(aNameEndIndex);
 		return isDelimiter(anEnd, aSuccessor);
 
-		
-	
 	}
-	
+
 	public static boolean occurenceIsAWord(String aString, String aName, int aNameStartIndex) {
 		int aNameEndIndex = aNameStartIndex + aName.length();
 		return hasLeftDelimiter(aString, aNameStartIndex) && hasRightDelimiter(aString, aNameEndIndex);
-		
+
 	}
-	
-	public static List<Integer> indicesOf(String aString, String aSubstring) {
+
+	public static List<Integer> indicesOf(String aString, String aSubstring, boolean checkWord) {
 		List<Integer> retVal = new ArrayList();
 //		if (aString.contains("istance") && aSubstring.contains("tan")) {
 //			System.out.println("Found problemantic word");
 //		}
 		for (int anIndex = 0; (anIndex = aString.indexOf(aSubstring, anIndex)) >= 0; anIndex++) {
-			
-			if (occurenceIsAWord(aString, aSubstring, anIndex))
-				retVal.add(anIndex); 
-		}
-		return retVal;
-	}
-	
 
-	public static Map<String, List<Integer>> indicesOf  (String aString, List<String> aCandidateWords) {
-		Map<String, List<Integer>>  retVal = new HashMap();
-		for (String aCandidateWord:aCandidateWords) {
-			retVal.put (aCandidateWord, indicesOf(aString, aCandidateWord));
+			if (!checkWord || occurenceIsAWord(aString, aSubstring, anIndex))
+				retVal.add(anIndex);
 		}
 		return retVal;
-		
 	}
-	
-	public static Map<Integer, String> toIndexKeys (Map<String, List<Integer>> aStringKeys) {
+
+	public static Map<String, List<Integer>> indicesOf(String aString, List<String> aCandidateFragments,
+			boolean checkWord) {
+		Map<String, List<Integer>> retVal = new HashMap();
+		for (String aCandidateFragment : aCandidateFragments) {
+			retVal.put(aCandidateFragment, indicesOf(aString, aCandidateFragment, checkWord));
+		}
+		return retVal;
+
+	}
+
+	public static Map<Integer, String> toIndexKeys(Map<String, List<Integer>> aStringKeys) {
 		Map<Integer, String> retVal = new HashMap();
-		for (String aString: aStringKeys.keySet()) {
+		for (String aString : aStringKeys.keySet()) {
 			List<Integer> anIndices = aStringKeys.get(aString);
-			for (Integer anIndex: anIndices) {
+			for (Integer anIndex : anIndices) {
 				String anExisting = retVal.get(anIndex);
 				if (anExisting == null || anExisting.length() < aString.length())
-				   retVal.put(anIndex, aString);
+					retVal.put(anIndex, aString);
 			}
 		}
 		return retVal;
 	}
+
 	public static final int MAX_LEFT_SURROUNDING_LENGTH = 5;
 	public static final int MAX_RIGHT_SURROUNDING_LENGTH = 10;
 
-	public static String fragmentWithContext(String aString, String aFragment,  int anIndexOfFragment, int aFragmentEnd) {
+	public static String fragmentWithFixedContext(String aString, String aFragment, int anIndexOfFragment,
+			int aFragmentEnd) {
 //		int aFragmentEnd = anIndexOfFragment + aFragment.length();
 		int aPrefixLength = Math.min(MAX_LEFT_SURROUNDING_LENGTH, anIndexOfFragment);
 		int aSuffixLength = Math.min(MAX_RIGHT_SURROUNDING_LENGTH, aString.length() - aFragmentEnd);
-		String aContextPrefix = aString.substring(anIndexOfFragment-aPrefixLength, anIndexOfFragment);
+		String aContextPrefix = aString.substring(anIndexOfFragment - aPrefixLength, anIndexOfFragment);
 //		if (aSuffixLength < 0) {
 //			System.out.println("suffixlength " + aSuffixLength);
 //		}
-		String aContextSuffix = aString.substring(aFragmentEnd, aFragmentEnd+aSuffixLength);
+		String aContextSuffix = aString.substring(aFragmentEnd, aFragmentEnd + aSuffixLength);
 		return "..." + aContextPrefix + "(" + aFragment + ")" + aContextSuffix + "...";
-		
+
 	}
-	
+
+	public static boolean prefixPartOfSameWord(String aString, int aFragmentStart) {
+		return ((aFragmentStart > 0) && isAlphaNumeric(aString.charAt(aFragmentStart - 1)));
+	}
+
+	public static boolean suffixPartOfSameWord(String aString, int aFragmentEnd) {
+		return ((aFragmentEnd > aString.length()) && isAlphaNumeric(aString.charAt(aFragmentEnd)));
+	}
+
+//	public static int findLeftFramgmentLimit(String aString, int aFragmentStart) {
+//		boolean foundIdentifier = false;
+//		int index = prefixPartOfSameWord(aString, aFragmentStart)
+//						? aFragmentStart - 1
+//						:aFragmentStart - 2;
+//			
+//		for (; index >= 0; index--) {
+//			char aChar = aString.charAt(index);
+//			if (isIdentifierCharacter(aChar)) {
+//				foundIdentifier = true;
+//			} else if (foundIdentifier) {
+//				return index + 1;
+//			} else {
+//				break;
+//			}
+//		}
+//
+//		return aFragmentStart;
+//	}
+
+	public static int findLeftFramgmentLimit(String aString, int aFragmentStart) {
+		for (int index = aFragmentStart - 1; index >= 0; index--) {
+			char aChar = aString.charAt(index);
+			if (isIdentifierCharacter(aChar)) {
+				continue;
+			} else {
+				return index + 1;
+			}
+		}
+		return aFragmentStart;
+	}
+
+//	public static int findRightFragmentLimit(String aString, int aFragmentEnd) {
+//		boolean foundIdentifier = false;
+//		
+//
+//		for (int index = aFragmentEnd + 1; index < aString.length(); index++) {
+//			char aChar = aString.charAt(index);
+//			if (isIdentifierCharacter(aChar)) {
+//				foundIdentifier = true;
+//			} else if (foundIdentifier) {
+//				return index;
+//			} else {
+//				break;
+//			}
+//
+////			if (isIdentifierCharacter(aChar)) {
+////				continue;
+////			}
+////			return index;  
+//		}
+//		return aFragmentEnd;
+//	}
+
+	public static int findRightFragmentLimit(String aString, int aFragmentEnd) {
+		for (int index = aFragmentEnd; index < aString.length(); index++) {
+			char aChar = aString.charAt(index);
+			if (isIdentifierCharacter(aChar)) {
+				continue;
+			} else {
+				return index;
+			}
+		}
+		return aFragmentEnd;
+	}
+
+	public static String fragmentWithContext(String aString, String aFragment, int anIndexOfFragment,
+			int aFragmentEnd) {
+//		int aFragmentEnd = anIndexOfFragment + aFragment.length();
+		int aPrefixStart = findLeftFramgmentLimit(aString, anIndexOfFragment);
+		int aSuffixEnd = findRightFragmentLimit(aString, aFragmentEnd);
+
+		String aContextPrefix = aString.substring(aPrefixStart, anIndexOfFragment);
+//		if (aSuffixLength < 0) {
+//			System.out.println("suffixlength " + aSuffixLength);
+//		}
+		String aContextSuffix = aString.substring(aFragmentEnd, aSuffixEnd);
+		return "..." + aContextPrefix + "(" + aFragment + ")" + aContextSuffix + "...";
+
+	}
+
 	public static List<String> fragmentsWithContext(String aString, Map<Integer, String> anIndexToFragment) {
 		List<String> retVal = new ArrayList();
-		List<Integer> anIndices = new ArrayList(anIndexToFragment.keySet());
-		Collections.sort(anIndices);
-		for (Integer anIndex:anIndices) {
+//		List<Integer> anIndices = new ArrayList(anIndexToFragment.keySet());
+		List<Integer> aSortedIndices = getSortedDisjointIndices(anIndexToFragment);
+		Collections.sort(aSortedIndices);
+		for (Integer anIndex : aSortedIndices) {
 			String aFragment = anIndexToFragment.get(anIndex);
 //			retVal.add(anIndex + " " + fragmentWithContext(aString, aFragment, anIndex));
 //			retVal.add(anIndex + " " + fragmentWithContext(aString, aFragment, anIndex, anIndex + aFragment.length()));
@@ -301,45 +414,55 @@ public class AnonUtil {
 		}
 		return retVal;
 	}
-	
-	public static Map<Integer, String> toIndexKeysMap (String aWord, List<Integer> anIndices) {
+
+	public static Map<Integer, String> toIndexKeysMap(String aWord, List<Integer> anIndices) {
 		Map<Integer, String> retVal = new HashMap();
-		for (int anIndex:anIndices) {
+		for (int anIndex : anIndices) {
 			retVal.put(anIndex, aWord);
 		}
-		return retVal;		
+		return retVal;
 	}
-	
-	public static List<String> fragmentsWithContext(String aString, List<String> aFragments) {
-		Map<Integer, String> anIndexToFragment = indexToFragment(aString,aFragments);
-		return fragmentsWithContext(aString, anIndexToFragment);
+
+	public static List<String> fragmentsWithContext(String aString, List<String> aFragments, boolean checkWord) {
+		Map<Integer, String> anIndexToFragment = indexToFragment(aString, aFragments, checkWord);
+//		return fragmentsWithContext(aString, anIndexToFragment);
+		
+		return FragmentsWithContextGeneratorFactory.fragmentsWithContext(aString, anIndexToFragment);
+
 	}
-	
-	public static Map<Integer, String> indexToFragment (String aString, List<String> aFragments) {
-		Map<String, List<Integer>> anIndicesOfFragments= indicesOf(aString, aFragments);
-		return toIndexKeys(anIndicesOfFragments);
+
+	public static Map<Integer, String> indexToFragment(String aString, List<String> aFragments, boolean checkWord) {
+		Map<String, List<Integer>> anIndicesOfFragments = 
+				IndicesFinderFactory.
+				indicesOf(aString, aFragments, checkWord);
+//		indicesOf(aString, aFragments, checkWord);
+		return IndicesFinderFactory.toIndexKeys(anIndicesOfFragments);
 	}
-	
+
 	public static List<Integer> getSortedDisjointIndices(Map<Integer, String> anIndexMap) {
 		List<Integer> anIndices = new ArrayList(anIndexMap.keySet());
 		Collections.sort(anIndices);
 		List<Integer> retVal = new ArrayList();
 		int aLastFragmentEnd = 0;
-		for (Integer anIndex:anIndices) {
+		for (Integer anIndex : anIndices) {
 			if (anIndex < aLastFragmentEnd) {
 				continue;
 			}
 			retVal.add(anIndex);
 			aLastFragmentEnd = anIndex + anIndexMap.get(anIndex).length();
-			
+
 		}
 		return retVal;
 	}
-	
-	public static int replaceAll(StringBuffer aReplacementsWithContext, StringBuffer retVal, FileWriter aLogger, String aString, Map<Integer, String> anIndexMap, Map<String, String> anOriginalToReplacement  ) {
+
+	public static int replaceAll(StringBuffer aReplacementsWithContext, StringBuffer retVal, FileWriter aLogger,
+			String aString, Map<Integer, String> anIndexMap, Map<String, String> anOriginalToReplacement) {
 		retVal.setLength(0);
 //		aReplacementsWithContext.setLength(0);
 //		aReplacementsWithContext.setLength(0);
+//		if (aString.contains("jilliand")) {
+//			System.out.println("found problemantic split");
+//		}
 		if (anIndexMap.size() == 0) {
 			retVal.append(aString);
 			return 0;
@@ -351,17 +474,22 @@ public class AnonUtil {
 		int aLastEndIndex = 0;
 		List<Integer> aSortedDisjointIndices = getSortedDisjointIndices(anIndexMap);
 //		boolean aChanged = false;
-		for (Integer anIndex:aSortedDisjointIndices) {
+		for (Integer anIndex : aSortedDisjointIndices) {
 			if (aLastEndIndex < 0 || anIndex < 0 || aLastEndIndex > anIndex) {
 				System.out.println("negative index");
 			}
 			String aPreMatchFragment = aString.substring(aLastEndIndex, anIndex);
 			String anOriginalAtIndex = anIndexMap.get(anIndex);
+			if (anOriginalAtIndex.equals("jilliand")) {
+				System.out.println("found non matching original:");
+			}
 			String aReplacementAtIndex = anOriginalToReplacement.get(anOriginalAtIndex);
-			String anOriginalWithContext = fragmentWithContext(aString, anOriginalAtIndex, anIndex, anIndex+anOriginalAtIndex.length());
-			String aReplacementWithContext = fragmentWithContext(aString, aReplacementAtIndex, anIndex, anIndex+ anOriginalAtIndex.length());
+			String anOriginalWithContext = fragmentWithContext(aString, anOriginalAtIndex, anIndex,
+					anIndex + anOriginalAtIndex.length());
+			String aReplacementWithContext = fragmentWithContext(aString, aReplacementAtIndex, anIndex,
+					anIndex + anOriginalAtIndex.length());
 			aNumReplacements++;
-			String aReplacementMessage ="Replaced " + anOriginalWithContext + " with" + aReplacementWithContext + "\n";
+			String aReplacementMessage = "Replaced " + anOriginalWithContext + " with" + aReplacementWithContext + "\n";
 			aReplacementsWithContext.append(aReplacementMessage);
 ////			aChanged = true;
 //			if (aLogger != null) {
@@ -376,7 +504,7 @@ public class AnonUtil {
 //			}
 			retVal.append(aPreMatchFragment);
 			retVal.append(aReplacementAtIndex);
-			aLastEndIndex = anIndex + anOriginalAtIndex.length();			
+			aLastEndIndex = anIndex + anOriginalAtIndex.length();
 		}
 //		if (aLogger != null && !aChanged) {
 //			try {
@@ -392,6 +520,123 @@ public class AnonUtil {
 		return aNumReplacements;
 //		return retVal.toString();		
 	}
+
+	static StringBuffer replaceAllResult = new StringBuffer();
+
+	public static String replaceAll(int aLineNumber, 
+			String aLine, 
+			FileWriter aLogger, 
+			Set<String> aMessagesOutput, 
+			String aString,
+			Map<Integer, String> aWordIndexMap, Map<Integer, 
+			String> aFragmentIndexMap, 
+			Map<String, String> anOriginalToReplacement, 
+			AssignmentMetrics anAssignmentMetrics
+			) {
+//		retVal.setLength(0);
+//		aReplacementsWithContext.setLength(0);
+//		aReplacementsWithContext.setLength(0);
+//		if (aString.contains("jilliand")) {
+//			System.out.println("found problemantic split");
+//		}
+		List<Integer> aSortedDisjointWordIndices = getSortedDisjointIndices(aWordIndexMap);
+		List<Integer> aSortedDisjointFragmentIndices = getSortedDisjointIndices(aFragmentIndexMap);
+		
+
+		replaceAllResult.setLength(0);
+		int aNumWords = aSortedDisjointWordIndices.size();
+		int aNumFragments = aSortedDisjointFragmentIndices.size() ;
+		
+		if (aNumFragments != aNumWords) {
+//			List<String> aFragmentsWithContext = fragmentsWithContext(aString, aFragmentIndexMap);
+			
+			List<String> aFragmentsWithContext = FragmentsWithContextGeneratorFactory.
+					fragmentsWithContext(aString, aFragmentIndexMap);
+
+			
+			String aNormalizedString = "In " + aFragmentsWithContext + " # matching fragements " + aNumFragments + " != # matching words " + aNumWords + " from " + anOriginalToReplacement +  "\n";
+			if (!aMessagesOutput.contains(aNormalizedString)) {
+				try {
+					aLogger.write(aLineNumber + " :" + aNormalizedString);
+					aLogger.flush();
+					aMessagesOutput.add(aNormalizedString);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+		}
+		if (aNumWords == 0) {
+			return aString;
+		}
+		int aNumReplacements = 0;
+//		StringBuffer retVal = new StringBuffer();
+//		List<Integer> anIndices = new ArrayList(anIndexMap.keySet());
+//		Collections.sort(anIndices);
+		int aLastEndIndex = 0;
+		//		boolean aChanged = false;
+		for (Integer anIndex : aSortedDisjointWordIndices) {
+			if (aLastEndIndex < 0 || anIndex < 0 || aLastEndIndex > anIndex) {
+				System.out.println("negative index");
+			}
+			String aPreMatchFragment = aString.substring(aLastEndIndex, anIndex);
+			String anOriginalAtIndex = aWordIndexMap.get(anIndex);
+//			if (anOriginalAtIndex.equals("jilliand")) {
+//				System.out.println("found non matching original:");
+//			}
+			String aReplacementAtIndex = anOriginalToReplacement.get(anOriginalAtIndex);
+			String anOriginalWithContext = fragmentWithContext(aString, anOriginalAtIndex, anIndex,
+					anIndex + anOriginalAtIndex.length());
+			String aReplacementWithContext = fragmentWithContext(aString, aReplacementAtIndex, anIndex,
+					anIndex + anOriginalAtIndex.length());
+			aNumReplacements++;
+			String aNormalizedMessage = "Replaced " + anOriginalWithContext + " with" + aReplacementWithContext + "\n";
+//			if (aNormalizedMessage.contains("(Jillian)")) {
+//				System.out.println("found message");
+//			}
+			if (!aMessagesOutput.contains(aNormalizedMessage)) {
+				try {
+					aLogger.write(aLineNumber + "," + anIndex + ":" + aNormalizedMessage);
+					aLogger.flush();
+					aMessagesOutput.add(aNormalizedMessage);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+////			aChanged = true;
+//			if (aLogger != null) {
+//				try {
+//					String aReplacementMessage ="Replaced " + anOriginalWithContext + " with" + aReplacementWithContext + "\n";
+//					aLogger.write(anIndex + ": " + aReplacementMessage);
+//					aLogger.flush();
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+			replaceAllResult.append(aPreMatchFragment);
+			replaceAllResult.append(aReplacementAtIndex);
+			aLastEndIndex = anIndex + anOriginalAtIndex.length();
+		}
+//		if (aLogger != null && !aChanged) {
+//			try {
+//				aLogger.write("Made no change\n");
+//				aLogger.flush();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+		String aRemainingString = aString.substring(aLastEndIndex, aString.length());
+		replaceAllResult.append(aRemainingString);
+		return replaceAllResult.toString();
+//		return aNumReplacements;
+//		return retVal.toString();		
+	}
+
 	public static List<String> findTokenWords(String aString) {
 		StringTokenizer aTokenizedString = new StringTokenizer(aString, "=./\\ 	,;![]()+-*\"'><:%");
 		List<String> retVal = new ArrayList();
@@ -400,10 +645,11 @@ public class AnonUtil {
 			retVal.add(aTokenizedString.nextToken());
 		}
 		return retVal;
-		
+
 	}
-	
-	public static List<String> findNonKeywordMatches(Set<String> aKeywordsSet, String aString, List<String> aStringTokens, Set<String> aCandidateWords) {
+
+	public static List<String> findNonKeywordMatches(Set<String> aKeywordsSet, String aString,
+			List<String> aStringTokens, Set<String> aCandidateWords) {
 //		if (aString.contains("jaand")) {
 //			System.out.println("Found probem string" + aString);
 //		}
@@ -416,7 +662,7 @@ public class AnonUtil {
 //		}
 		List<String> retVal = new ArrayList();
 
-		for (String aToken:aStringTokens) {
+		for (String aToken : aStringTokens) {
 //			String aToken = aTokenizedString.nextToken();
 			if (aKeywordsSet.contains(aToken)) {
 				continue; // breaking it up may perform a match
@@ -437,81 +683,87 @@ public class AnonUtil {
 		return retVal;
 
 	}
-	
-	public static String replaceAllNonKeywords(String aKeywordsRegex, String aString, String anOriginal, String aReplacement) {
+
+	public static String replaceAllNonKeywords(String aKeywordsRegex, String aString, String anOriginal,
+			String aReplacement) {
 		String[] aSplits = aString.split(aKeywordsRegex);
 		StringBuffer aReplacedValue = new StringBuffer();
 		int aLastEnd = 0;
 		int aLastStart = 0;
 		String aRemainingString = aString;
 		String anOriginalLowerCase = anOriginal.toLowerCase();
-		for (String aSplit:aSplits) {
-			String aSplitSubstitution = aSplit.replaceAll(anOriginal, aReplacement).replaceAll(anOriginalLowerCase, aReplacement);
+		for (String aSplit : aSplits) {
+			String aSplitSubstitution = aSplit.replaceAll(anOriginal, aReplacement).replaceAll(anOriginalLowerCase,
+					aReplacement);
 			aRemainingString = aRemainingString.substring(aLastEnd);
 			aLastStart = aRemainingString.indexOf(aSplit);
 			aLastEnd = aLastStart + aSplit.length();
 			String aPreSplit = aRemainingString.substring(0, aLastStart);
-			aReplacedValue.append(aPreSplit+aSplitSubstitution);			
+			aReplacedValue.append(aPreSplit + aSplitSubstitution);
 		}
 		return aReplacedValue.toString();
 	}
+
 	public static boolean hasName(String aString, List<String> aNames) {
 		String aStringLowerCase = aString.toLowerCase();
-		for (String aName:aNames) {
+		for (String aName : aNames) {
 			if (aStringLowerCase.contains(aName.toLowerCase())) {
 				return true;
 			}
 		}
 		return false;
 	}
+
 //	static Set<String> replacementsMessages = new HashSet();
-	public static String replaceAllNonKeywords(
-			StringBuffer aReplacementsMessageList,
-			FileWriter aLogger,
-			int aNumMaxMatches,
-			String aKeywordsRegex, 
-			String aString, 
-			List<String> anOriginals, 
+	public static String replaceAllNonKeywords(StringBuffer aReplacementsMessageList, FileWriter aLogger,
+			int aNumMaxMatches, String aKeywordsRegex, String aString, List<String> anOriginals,
 			List<String> aReplacements) {
-//		aReplacementsMessageList.setLength(0);
+//		replacementsMessageList.setLength(0);
 		String[] aSplits = aString.split(aKeywordsRegex);
 		StringBuffer aReplacedValue = new StringBuffer();
 		int aLastEnd = 0;
 		int aLastStart = 0;
 		String aRemainingString = aString;
 		Map<String, String> anOriginalToReplacement = new HashMap();
-		for (int index = 0; index< anOriginals.size(); index++) {
+		for (int index = 0; index < anOriginals.size(); index++) {
 			anOriginalToReplacement.put(anOriginals.get(index), aReplacements.get(index));
 		}
 		StringBuffer aSplitSubstitution = new StringBuffer();
 		int aNumActualChanges = 0;
 //		String anOriginalLowerCase = anOriginal.toLowerCase();
-		for (String aSplit:aSplits) {
-//			Map<String, List<Integer>> aSplitKeys  = indicesOf  (aSplit, anOriginals);
-//			Map<Integer, String> aSplitIndexKeysMap = toIndexKeys(aSplitKeys);
-			Map<Integer, String> aSplitIndexKeysMap = indexToFragment(aSplit, anOriginals);
-
-//			if (anIndexKeysMap.size() == 0) {
-//				aReplacedValue.append(aSplit);
-//				continue;
+		for (String aSplit : aSplits) {
+//			if (aSplit.contains("jilland")) {
+//				System.out.println("found problemantic split");
 //			}
-			aNumActualChanges += replaceAll(aReplacementsMessageList, aSplitSubstitution, aLogger, aSplit, aSplitIndexKeysMap, anOriginalToReplacement);
+
+			Map<Integer, String> aSplitIndexWordKeysMap = indexToFragment(aSplit, anOriginals, true);
+			Map<Integer, String> aSplitIndexSubstringKeysMap = indexToFragment(aSplit, anOriginals, false);
+			int aNumSubstringMatches = aSplitIndexSubstringKeysMap.size();
+			int aNumWordMatches = aSplitIndexWordKeysMap.size();
+			if (aNumSubstringMatches != aNumWordMatches) {
+				String aMessage = aSplit + ": # substrings " + aNumSubstringMatches + " # words:" + aNumWordMatches;
+				aReplacementsMessageList.append(aMessage);
+			}
+
+			aNumActualChanges += replaceAll(aReplacementsMessageList, aSplitSubstitution, aLogger, aSplit,
+					aSplitIndexWordKeysMap, anOriginalToReplacement);
 
 //			aRemainingString = aRemainingString.substring(aLastEnd);
 			aLastStart = aRemainingString.indexOf(aSplit);
 			aLastEnd = aLastStart + aSplit.length();
 			String aPreSplit = aRemainingString.substring(0, aLastStart);
-			aReplacedValue.append(aPreSplit+aSplitSubstitution);
+			aReplacedValue.append(aPreSplit + aSplitSubstitution);
 			aRemainingString = aRemainingString.substring(aLastEnd);
 		}
-		aReplacedValue.append(aRemainingString);		
+		aReplacedValue.append(aRemainingString);
 		if (aNumMaxMatches != aNumActualChanges) {
-			aReplacementsMessageList.append("Maximum matches " + aNumMaxMatches + " != num actual changes " + aNumActualChanges + "\n");
+			aReplacementsMessageList
+					.append("Maximum matches " + aNumMaxMatches + " != num actual changes " + aNumActualChanges + "\n");
 //				aLogger.write("Maximum matches " + aNumMaxMatches + " != num actual changes " + aNumActualChanges + "\n");
-			
+
 		}
-//		String aReplacementsMessage = aReplacementsMessageList.toString();
-//		aReplacementsMessageList.append(aReplacementsMessage);
+//		String aReplacementsMessage = replacementsMessageList.toString();
+//		replacementsMessageList.append(aReplacementsMessage);
 //		if (!replacementsMessages.contains(aReplacementsMessage) && aLogger != null) {
 //			replacementsMessages.add(aReplacementsMessage);
 //			try {
@@ -525,6 +777,79 @@ public class AnonUtil {
 		return aReplacedValue.toString();
 	}
 	
+	public static String replaceAllNonKeywords(
+			int aLineNumber, 
+			String aLine, 
+			Set<String> aMessagesOutput,
+			FileWriter aLogger,
+			String aKeywordsRegex, 
+			List<String> anOriginals,
+			List<String> aReplacements, Map<String, String> anOriginalToReplacement, AssignmentMetrics anAssignmentMetrics) {
+//		replacementsMessageList.setLength(0);
+		String[] aSplits = aLine.split(aKeywordsRegex);
+		StringBuffer aReplacedValue = new StringBuffer();
+		int aLastEnd = 0;
+		int aLastStart = 0;
+		String aRemainingString = aLine;
+//		Map<String, String> anOriginalToReplacement = new HashMap();
+//		for (int index = 0; index < anOriginals.size(); index++) {
+//			anOriginalToReplacement.put(anOriginals.get(index), aReplacements.get(index));
+//		}
+//		StringBuffer aSplitSubstitution = new StringBuffer();
+//		int aNumActualChanges = 0;
+//		String anOriginalLowerCase = anOriginal.toLowerCase();
+		for (String aSplit : aSplits) {
+//			if (aSplit.contains("jilland")) {
+//				System.out.println("found problemantic split");
+//			}
+			
+		
+
+
+			Map<Integer, String> aSplitIndexWordKeysMap = indexToFragment(aSplit, anOriginals, true);
+			Map<Integer, String> aSplitIndexSubstringKeysMap = indexToFragment(aSplit, anOriginals, false);
+
+//			int aNumSubstringMatches = aSplitIndexSubstringKeysMap.size();
+//			int aNumWordMatches = aSplitIndexWordKeysMap.size();
+//			if (aNumSubstringMatches != aNumWordMatches) {
+//				String aMessage = aSplit + ": # substrings " + aNumSubstringMatches + " # words:" + aNumWordMatches;
+//				replacementsMessageList.append(aMessage);
+//			}
+
+
+			String aSplitSubstiution = StringReplacerFactory.replaceString(aLineNumber, aLine, aLogger, aMessagesOutput, aSplit, aSplitIndexWordKeysMap, aSplitIndexSubstringKeysMap, 
+					anOriginalToReplacement, anAssignmentMetrics);
+
+//			String aSplitSubstiution = replaceAll(aLineNumber, aLine, aLogger, aMessagesOutput, aSplit, aSplitIndexWordKeysMap, aSplitIndexSubstringKeysMap, anOriginalToReplacement);
+//			aRemainingString = aRemainingString.substring(aLastEnd);
+			aLastStart = aRemainingString.indexOf(aSplit);
+			aLastEnd = aLastStart + aSplit.length();
+			String aPreSplit = aRemainingString.substring(0, aLastStart);
+			aReplacedValue.append(aPreSplit + aSplitSubstiution);
+			aRemainingString = aRemainingString.substring(aLastEnd);
+		}
+		aReplacedValue.append(aRemainingString);
+//		if (aNumMaxMatches != aNumActualChanges) {
+//			replacementsMessageList
+//					.append("Maximum matches " + aNumMaxMatches + " != num actual changes " + aNumActualChanges + "\n");
+////				aLogger.write("Maximum matches " + aNumMaxMatches + " != num actual changes " + aNumActualChanges + "\n");
+//
+//		}
+//		String aReplacementsMessage = replacementsMessageList.toString();
+//		replacementsMessageList.append(aReplacementsMessage);
+//		if (!replacementsMessages.contains(aReplacementsMessage) && aLogger != null) {
+//			replacementsMessages.add(aReplacementsMessage);
+//			try {
+//				aLogger.write(aReplacementsMessage);
+//				aLogger.flush();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}		
+		return aReplacedValue.toString();
+	}
+
 
 	public static void main(String[] args) {
 //		String aString = "package jilliand_Assignment1";
@@ -532,24 +857,23 @@ public class AnonUtil {
 //		System.out.println("Found:" + found);
 		String aString = "<Command __id=\"27\" _type=\"DiffBasedFileOpenCommand\" date=\"Thu Aug 25 20:00:20 ICT 2022\" docASTNodeCount=\"6\" docActiveCodeLength=\"55\" docExpressionCount=\"2\" docLength=\"55\" projectName=\"A1.mattdo\" starttimestamp=\"1661432312024\" timestamp=\"108593\">";
 		String aSplitKeyword = "Command __id|DiffBasedFileOpenCommand|docASTNodeCount|docActiveCodeLength|docExpressionCount|docLength|projectName|starttimestamp|timestamp";
-		
-		
+
 		String[] aSplits = aString.split(aSplitKeyword);
 		StringBuffer aReplacedValue = new StringBuffer();
 		int aLastEnd = 0;
 		int aLastStart = 0;
 		String aRemainingString = aString;
-		for (String aSplit:aSplits) {
+		for (String aSplit : aSplits) {
 			String aSplitSubstitution = aSplit.replaceAll("Do", "Christopher").replaceAll("do", "Christopher");
 			aRemainingString = aRemainingString.substring(aLastEnd);
 			aLastStart = aRemainingString.indexOf(aSplit);
 			aLastEnd = aLastStart + aSplit.length();
 			String aPreSplit = aRemainingString.substring(0, aLastStart);
-			aReplacedValue.append(aPreSplit+aSplitSubstitution);			
+			aReplacedValue.append(aPreSplit + aSplitSubstitution);
 		}
 		System.out.println(aString);
 		System.out.println(aReplacedValue);
-		
+
 	}
 
 }
