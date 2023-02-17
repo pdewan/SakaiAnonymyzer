@@ -14,7 +14,7 @@ public class KeywordBasedLineReplacer implements LineReplacer {
 	public String replaceLine(int aLineNumber, String aLine, Set<String> aMessagesOutput, FileWriter aLogger,
 			String aKeywordsRegex, List<String> anOriginals, List<String> aReplacements,
 			Map<String, String> anOriginalToReplacement, AssignmentMetrics anAssignmentMetrics) {
-		return AnonUtil.replaceAllNonKeywords(aLineNumber, aLine, aMessagesOutput, aLogger, aKeywordsRegex, anOriginals, aReplacements, anOriginalToReplacement, null);
+		return AnonUtil.replaceAllNonKeywords(aLineNumber, aLine, aMessagesOutput, aLogger, aKeywordsRegex, anOriginals, aReplacements, anOriginalToReplacement, anAssignmentMetrics);
 	}
 
 }

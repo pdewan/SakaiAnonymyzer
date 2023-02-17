@@ -239,6 +239,7 @@ public class Anon {
 			specificLoggerFile.createNewFile();
 		}
 		specificLogger = new FileWriter(specificLoggerFile);
+		assignmentMetrics = new AssignmentMetrics();
 //		System.out.println("Anonymizing");
 //		logger.write("Anonymizing");
 		if (isCourseFolder(folderName)) {
@@ -288,6 +289,9 @@ public class Anon {
 		classNameMap.clear();
 		zip(folderName, folderName + Character.toUpperCase(method));
 		delete(new File(folderName));
+		String aMetricsString = assignmentMetrics.toString();
+		specificLogger.write(aMetricsString);
+		specificLogger.flush();
 		specificLogger.close();
 	}
 
@@ -1178,6 +1182,7 @@ public class Anon {
 	protected String getUserName() {
 		return userName;
 	}
+
 	
 	protected List<String> extractNames (File aFile, String aTopFolderName) {
 		String aNormalizedPath = aFile.getPath().replace(aTopFolderName, "");
@@ -1196,6 +1201,9 @@ public class Anon {
 	}
 	
 	List<String> previousNames;
+	
+	protected Set<List<String>> namesSeen = new HashSet();
+
 
 	protected void replaceHeaders_Windows(File file, String topFolderName) throws IOException {
 
@@ -1214,13 +1222,14 @@ public class Anon {
 //		
 		String orig_line = file.getPath();
 		List<String> names = NameExtractorFactory.extractNames(file, topFolderName);
-		if (previousNames == null || !names.equals(previousNames)) {
-//			messagesOutput.clear();
-			specificLogger.write("New Names:" + names + "\n");
-			previousNames = names;
-
-
-		}
+		namesSeen.add(names);
+//		if (previousNames == null || !names.equals(previousNames)) {
+////			messagesOutput.clear();
+//			specificLogger.write("New Names:" + names + "\n");
+//			previousNames = names;
+//
+//
+//		}
 
 //		List<String> names = extractNames (file, topFolderName);
 		deriveNamesAndReplacements(names);
@@ -1246,6 +1255,7 @@ public class Anon {
 		
 		String aUserName = null;
 		assignmentMetrics.numFilesProcessed++;
+		boolean aFileHasName = false;
 		while (true) {
 			int anOriginalNumberOfMessages = messagesOutput.size();
 
@@ -1261,7 +1271,15 @@ public class Anon {
 					setUserName(aUserName);
 				}
 			}
+			assignmentMetrics.numLinesProcessed++;
+			assignmentMetrics.numCharactersProcessed += aReplacableLine.length();
+			
+
 			if (AnonUtil.hasName(aReplacableLine, names)) {
+				aFileHasName = true;
+
+				assignmentMetrics.numLinesWithNames++;
+				assignmentMetrics.numCharactersInLinesWithNames += aReplacableLine.length();
 
 //				if (!lastFilePrinted) {
 //					specificLogger.write("File:" + lastFileProcessed + "\n");
@@ -1269,7 +1287,7 @@ public class Anon {
 //					lastFilePrinted = true;
 //				}
 
-				aReplacableLine = replaceHeaders(line_num, f, aReplacableLine, null);
+				aReplacableLine = replaceHeaders(line_num, f, aReplacableLine, assignmentMetrics);
 
 			}
 
@@ -1315,9 +1333,15 @@ public class Anon {
 			if (messagesOutput.size() != anOriginalNumberOfMessages) {
 				specificLogger.write("Replacement:" + aReplacableLine + "\n");
 			}
+			if (!anOriginalLine.equals(aReplacableLine)) {
+				assignmentMetrics.numLinesWithPositives++;
+			}
 			w.write(aReplacableLine + "\n");
 			line_num++;
 			previousLine = aReplacableLine;
+		}
+		if (aFileHasName) {
+			assignmentMetrics.numFilesWithNames++;
 		}
 		w.close();
 		r_1.close();

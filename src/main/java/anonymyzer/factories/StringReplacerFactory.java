@@ -22,7 +22,7 @@ public class StringReplacerFactory {
 			Map<String, String> anOriginalToReplacement,
 			AssignmentMetrics anAssignmentMetrics
 			) {
-		return stringReplacer.replaceString(aLineNumber, aLine, aLogger, aMessagesOutput, aString, aWordIndexMap, aFragmentIndexMap, anOriginalToReplacement, null);
+		return stringReplacer.replaceString(aLineNumber, aLine, aLogger, aMessagesOutput, aString, aWordIndexMap, aFragmentIndexMap, anOriginalToReplacement, anAssignmentMetrics);
 	}
 	
 

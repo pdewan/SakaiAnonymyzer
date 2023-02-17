@@ -13,7 +13,7 @@ public class BasicStringReplacer implements StringReplacer {
 	public String replaceString(int aLineNumber, String aLine, FileWriter aLogger, Set<String> aMessagesOutput,
 			String aString, Map<Integer, String> aWordIndexMap, Map<Integer, String> aFragmentIndexMap,
 			Map<String, String> anOriginalToReplacement, AssignmentMetrics anAssignmentMetrics) {
-		return AnonUtil.replaceAll(aLineNumber, aLine, aLogger, aMessagesOutput, aString, aWordIndexMap, aFragmentIndexMap, anOriginalToReplacement, null);
+		return AnonUtil.replaceAll(aLineNumber, aLine, aLogger, aMessagesOutput, aString, aWordIndexMap, aFragmentIndexMap, anOriginalToReplacement, anAssignmentMetrics);
 	}
 	
 	

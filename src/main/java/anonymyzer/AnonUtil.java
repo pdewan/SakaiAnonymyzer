@@ -552,14 +552,20 @@ public class AnonUtil {
 			
 			List<String> aFragmentsWithContext = FragmentsWithContextGeneratorFactory.
 					fragmentsWithContext(aString, aFragmentIndexMap);
+			
+			String aFragmentsWithContextString = aFragmentsWithContext.toString();
 
 			
-			String aNormalizedString = "In " + aFragmentsWithContext + " # matching fragements " + aNumFragments + " != # matching words " + aNumWords + " from " + anOriginalToReplacement +  "\n";
+			String aNormalizedString = "In " + aFragmentsWithContextString + " # matching fragments " + aNumFragments + " != # matching words " + aNumWords + " from " + anOriginalToReplacement +  "\n";
+			anAssignmentMetrics.numStructuredNegatives++;
+
 			if (!aMessagesOutput.contains(aNormalizedString)) {
 				try {
 					aLogger.write(aLineNumber + " :" + aNormalizedString);
+					anAssignmentMetrics.numUniqueStructuredNegatives++;
 					aLogger.flush();
 					aMessagesOutput.add(aNormalizedString);
+					anAssignmentMetrics.numCharactersInUniqueStructuredNegatives += aNormalizedString.length();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -570,7 +576,7 @@ public class AnonUtil {
 		if (aNumWords == 0) {
 			return aString;
 		}
-		int aNumReplacements = 0;
+//		int aNumReplacements = 0;
 //		StringBuffer retVal = new StringBuffer();
 //		List<Integer> anIndices = new ArrayList(anIndexMap.keySet());
 //		Collections.sort(anIndices);
@@ -590,7 +596,8 @@ public class AnonUtil {
 					anIndex + anOriginalAtIndex.length());
 			String aReplacementWithContext = fragmentWithContext(aString, aReplacementAtIndex, anIndex,
 					anIndex + anOriginalAtIndex.length());
-			aNumReplacements++;
+//			aNumReplacements++;
+			anAssignmentMetrics.numStructuredKeywordPositives++;
 			String aNormalizedMessage = "Replaced " + anOriginalWithContext + " with" + aReplacementWithContext + "\n";
 //			if (aNormalizedMessage.contains("(Jillian)")) {
 //				System.out.println("found message");
@@ -600,6 +607,10 @@ public class AnonUtil {
 					aLogger.write(aLineNumber + "," + anIndex + ":" + aNormalizedMessage);
 					aLogger.flush();
 					aMessagesOutput.add(aNormalizedMessage);
+					anAssignmentMetrics.numUniqueStructuredPositives++;
+					int aFragmentsSize = anOriginalWithContext.length() + aReplacementWithContext.length();
+					anAssignmentMetrics.numCharactersInUniqueStructuredPositives += aFragmentsSize;
+
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -798,6 +809,8 @@ public class AnonUtil {
 //		StringBuffer aSplitSubstitution = new StringBuffer();
 //		int aNumActualChanges = 0;
 //		String anOriginalLowerCase = anOriginal.toLowerCase();
+		
+//		int aPreviousNumChanges = anAssignmentMetrics.numPossibleFalsePositives;
 		for (String aSplit : aSplits) {
 //			if (aSplit.contains("jilland")) {
 //				System.out.println("found problemantic split");
@@ -829,6 +842,11 @@ public class AnonUtil {
 			aRemainingString = aRemainingString.substring(aLastEnd);
 		}
 		aReplacedValue.append(aRemainingString);
+//		int aNewNumChanges = anAssignmentMetrics.numUniqueStructuredPositives++;
+//		if (aNewNumChanges > aPreviousNumChanges) {
+//			// at least one change in this line made by split processing code
+//			anAssignmentMetrics.numLinesChanged++;
+//		}
 //		if (aNumMaxMatches != aNumActualChanges) {
 //			replacementsMessageList
 //					.append("Maximum matches " + aNumMaxMatches + " != num actual changes " + aNumActualChanges + "\n");

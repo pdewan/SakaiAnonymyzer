@@ -22,6 +22,6 @@ public class LineReplacerFactory {
 			String aKeywordsRegex, List<String> anOriginals, List<String> aReplacements,
 			Map<String, String> anOriginalToReplacement,
 			AssignmentMetrics anAssignmentMetrics) {
-		return lineReplacer.replaceLine(aLineNumber, aLine, aMessagesOutput, aLogger, aKeywordsRegex, anOriginals, aReplacements, anOriginalToReplacement, null);
+		return lineReplacer.replaceLine(aLineNumber, aLine, aMessagesOutput, aLogger, aKeywordsRegex, anOriginals, aReplacements, anOriginalToReplacement, anAssignmentMetrics);
 	}
 }
