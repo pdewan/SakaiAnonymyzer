@@ -3,7 +3,7 @@ package anonymyzer.factories;
 import java.util.HashSet;
 import java.util.Set;
 
-public class BasicKeywordGenerator implements KeywordGenerator {
+public class BasicKeywordGenerator implements KeywordGenerator {	
 	static String[] keywords = { 
 //			"DiffBasedFileOpenCommand", 
 //			"docASTNodeCount", 
@@ -20,6 +20,7 @@ public class BasicKeywordGenerator implements KeywordGenerator {
 			"distancing",
 //			"Distance",
 			"undo",
+			"ow do ",
 //			"Undo",
 			"doPrivileged",
 			"doIntersection",
@@ -27,6 +28,7 @@ public class BasicKeywordGenerator implements KeywordGenerator {
 			"does",
 			"double",
 			"window",
+			"wait(long,int)",
 //			"Double",
 //			"projectName", 
 //			"starttimestamp", 

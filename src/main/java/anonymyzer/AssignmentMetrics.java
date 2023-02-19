@@ -11,10 +11,14 @@ public class AssignmentMetrics {
 
 	public int numStructuredKeywordPositives = 0; //  matching using structured keywords match
 	public int numUniqueStructuredPositives = 0; // token context around component match
+	public int numCharactersInStructuredPositives = 0; // fragments in lines with unstructured but not structured matches
+
 	public int numCharactersInUniqueStructuredPositives = 0; // fragments in positives to be examined with one word context
 
 //	public int numUniqueNonContextualMatches = 0; // non context around component match
 	public int numStructuredNegatives = 0; // a structured match that is not an unstructured match
+	public int numCharactersInStructuredNegatives = 0; // a structured match that is not an unstructured match
+
 	public int numUniqueStructuredNegatives = 0; // a unique structured match that is not an unstructured match
 //	public int charactersInNonContextualPositives = 0; // fragments in positives to be examined with no context
 	public int numCharactersInUniqueStructuredNegatives = 0; // fragments in lines with unstructured but not structured matches

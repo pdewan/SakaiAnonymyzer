@@ -37,6 +37,8 @@ import java.util.zip.ZipOutputStream;
 import anonymyzer.factories.KeywordFactory;
 import anonymyzer.factories.LoginNameExtractorFactory;
 import anonymyzer.factories.NameExtractorFactory;
+import anonymyzer.factories.StrikeOutManager;
+import anonymyzer.factories.StrikeOutManagerFactory;
 
 /*
  * 
@@ -1277,6 +1279,8 @@ public class Anon {
 
 			if (AnonUtil.hasName(aReplacableLine, names)) {
 				aFileHasName = true;
+				aReplacableLine = StrikeOutManagerFactory.
+						srikeOutOriginals(line_num, aReplacableLine, specificLogger, messagesOutput, names, assignmentMetrics);
 
 				assignmentMetrics.numLinesWithNames++;
 				assignmentMetrics.numCharactersInLinesWithNames += aReplacableLine.length();

@@ -319,27 +319,27 @@ public class AnonUtil {
 		return ((aFragmentEnd > aString.length()) && isAlphaNumeric(aString.charAt(aFragmentEnd)));
 	}
 
-//	public static int findLeftFramgmentLimit(String aString, int aFragmentStart) {
-//		boolean foundIdentifier = false;
-//		int index = prefixPartOfSameWord(aString, aFragmentStart)
-//						? aFragmentStart - 1
-//						:aFragmentStart - 2;
-//			
-//		for (; index >= 0; index--) {
-//			char aChar = aString.charAt(index);
-//			if (isIdentifierCharacter(aChar)) {
-//				foundIdentifier = true;
-//			} else if (foundIdentifier) {
-//				return index + 1;
-//			} else {
-//				break;
-//			}
-//		}
-//
-//		return aFragmentStart;
-//	}
-
 	public static int findLeftFramgmentLimit(String aString, int aFragmentStart) {
+		boolean foundIdentifier = false;
+		int index = prefixPartOfSameWord(aString, aFragmentStart)
+						? aFragmentStart - 1
+						:aFragmentStart - 2;
+			
+		for (; index >= 0; index--) {
+			char aChar = aString.charAt(index);
+			if (isIdentifierCharacter(aChar)) {
+				foundIdentifier = true;
+			} else if (foundIdentifier) {
+				return index + 1;
+			} else {
+				break;
+			}
+		}
+
+		return aFragmentStart;
+	}
+
+	public static int findLeftFramgmentLimitShort(String aString, int aFragmentStart) {
 		for (int index = aFragmentStart - 1; index >= 0; index--) {
 			char aChar = aString.charAt(index);
 			if (isIdentifierCharacter(aChar)) {
@@ -351,29 +351,29 @@ public class AnonUtil {
 		return aFragmentStart;
 	}
 
-//	public static int findRightFragmentLimit(String aString, int aFragmentEnd) {
-//		boolean foundIdentifier = false;
-//		
-//
-//		for (int index = aFragmentEnd + 1; index < aString.length(); index++) {
-//			char aChar = aString.charAt(index);
-//			if (isIdentifierCharacter(aChar)) {
-//				foundIdentifier = true;
-//			} else if (foundIdentifier) {
-//				return index;
-//			} else {
-//				break;
-//			}
-//
-////			if (isIdentifierCharacter(aChar)) {
-////				continue;
-////			}
-////			return index;  
-//		}
-//		return aFragmentEnd;
-//	}
-
 	public static int findRightFragmentLimit(String aString, int aFragmentEnd) {
+		boolean foundIdentifier = false;
+		
+
+		for (int index = aFragmentEnd + 1; index < aString.length(); index++) {
+			char aChar = aString.charAt(index);
+			if (isIdentifierCharacter(aChar)) {
+				foundIdentifier = true;
+			} else if (foundIdentifier) {
+				return index;
+			} else {
+				break;
+			}
+
+//			if (isIdentifierCharacter(aChar)) {
+//				continue;
+//			}
+//			return index;  
+		}
+		return aFragmentEnd;
+	}
+
+	public static int findRightFragmentLimitShort(String aString, int aFragmentEnd) {
 		for (int index = aFragmentEnd; index < aString.length(); index++) {
 			char aChar = aString.charAt(index);
 			if (isIdentifierCharacter(aChar)) {
@@ -528,7 +528,8 @@ public class AnonUtil {
 			FileWriter aLogger, 
 			Set<String> aMessagesOutput, 
 			String aString,
-			Map<Integer, String> aWordIndexMap, Map<Integer, 
+			Map<Integer, String> aWordIndexMap, 
+			Map<Integer, 
 			String> aFragmentIndexMap, 
 			Map<String, String> anOriginalToReplacement, 
 			AssignmentMetrics anAssignmentMetrics
