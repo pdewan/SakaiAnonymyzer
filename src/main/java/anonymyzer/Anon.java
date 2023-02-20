@@ -406,7 +406,8 @@ public class Anon {
 	}
 
 	public void unzipAllZipFiles(File folder) {
-		for (File zipFile : folder.listFiles()) {
+		File[] aFiles = folder.listFiles();
+		for (File zipFile : aFiles) {
 			if (zipFile.isDirectory()) {
 				unzipAllZipFiles(zipFile);
 			} else if (zipFile.getName().endsWith(".zip")) {

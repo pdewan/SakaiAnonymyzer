@@ -132,6 +132,7 @@ public class BasicStrikeOutManager implements StrikeOutManager{
 				String aNormalizedMessage = "Replaced " + anOriginalWithContext + " with " + aReplacementWithContext;
 				anAssignmentMetrics.numStructuredKeywordPositives++;
 				int aNumChars = anOriginalWithContext.length() + aReplacementWithContext.length();
+				anAssignmentMetrics.numCharactersInStructuredPositives+= aNumChars;
 
 				if (!aMessagesOutput.contains(aNormalizedMessage)) {
 					aMessagesOutput.add(aNormalizedMessage);

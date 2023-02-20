@@ -559,6 +559,7 @@ public class AnonUtil {
 			
 			String aNormalizedString = "In " + aFragmentsWithContextString + " # matching fragments " + aNumFragments + " != # matching words " + aNumWords + " from " + anOriginalToReplacement +  "\n";
 			anAssignmentMetrics.numStructuredNegatives++;
+			anAssignmentMetrics.numCharactersInStructuredNegatives += aNormalizedString.length();
 
 			if (!aMessagesOutput.contains(aNormalizedString)) {
 				try {
@@ -603,13 +604,17 @@ public class AnonUtil {
 //			if (aNormalizedMessage.contains("(Jillian)")) {
 //				System.out.println("found message");
 //			}
+			int aFragmentsSize = anOriginalWithContext.length() + aReplacementWithContext.length();
+
+			anAssignmentMetrics.numCharactersInStructuredPositives += aFragmentsSize;
+
 			if (!aMessagesOutput.contains(aNormalizedMessage)) {
 				try {
 					aLogger.write(aLineNumber + "," + anIndex + ":" + aNormalizedMessage);
 					aLogger.flush();
 					aMessagesOutput.add(aNormalizedMessage);
 					anAssignmentMetrics.numUniqueStructuredPositives++;
-					int aFragmentsSize = anOriginalWithContext.length() + aReplacementWithContext.length();
+//					int aFragmentsSize = anOriginalWithContext.length() + aReplacementWithContext.length();
 					anAssignmentMetrics.numCharactersInUniqueStructuredPositives += aFragmentsSize;
 
 				} catch (IOException e) {

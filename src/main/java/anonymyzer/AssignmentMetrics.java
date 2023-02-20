@@ -36,7 +36,11 @@ public class AssignmentMetrics {
 				"Number of Positives:" + numStructuredKeywordPositives + "\n" +
 				"Number of Unique Positives:" + numUniqueStructuredPositives + "\n" +
 				"Number of Negatives:" + numStructuredNegatives + "\n" +
+				"Number of Characters in Positives:" + numCharactersInStructuredPositives + "\n" +
+
 				"Number of Characters in Unique Positives:" + numCharactersInUniqueStructuredPositives + "\n" +
+				"Number of Characters in Negatives:" + numCharactersInStructuredNegatives + "\n" +
+
 				"Number of Characters in Unique Negatives:" + numCharactersInUniqueStructuredNegatives + "\n" ;
 
 
