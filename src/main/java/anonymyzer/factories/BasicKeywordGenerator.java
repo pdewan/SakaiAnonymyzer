@@ -20,7 +20,10 @@ public class BasicKeywordGenerator implements KeywordGenerator {
 			"distancing",
 //			"Distance",
 			"undo",
-			"ow do ",
+			"how do ",
+			"do you",
+			"do look",
+			"do not",
 //			"Undo",
 			"doPrivileged",
 			"doIntersection",
@@ -28,7 +31,10 @@ public class BasicKeywordGenerator implements KeywordGenerator {
 			"does",
 			"double",
 			"window",
+			"Myer-Patel",
 			"wait(long,int)",
+			"be An", // args should be An to Am
+			"copyright Prasun Dewan"
 //			"Double",
 //			"projectName", 
 //			"starttimestamp", 

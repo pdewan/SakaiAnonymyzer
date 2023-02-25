@@ -375,15 +375,15 @@ public class AnonFaker extends Anon {
 	
 	protected List<String> nameReplacements;
 	
-	protected Map<String, String> originalToReplacement = new HashMap();
-	
-	public Map<String, String> getOriginalToReplacement() {
-		return originalToReplacement;
-	}
-
-	public void setOriginalToReplacement(Map<String, String> newVal) {
-		this.originalToReplacement = newVal;
-	}
+//	protected Map<String, String> originalToReplacement = new HashMap();
+//	
+//	public Map<String, String> getOriginalToReplacement() {
+//		return originalToReplacement;
+//	}
+//
+//	public void setOriginalToReplacement(Map<String, String> newVal) {
+//		this.originalToReplacement = newVal;
+//	}
 
 	protected void setNameReplacements(List<String> aNameReplacements) {
 		nameReplacements = aNameReplacements;
@@ -408,7 +408,7 @@ public class AnonFaker extends Anon {
 	
 	
 //	Set<String> messagesOutput = new HashSet();
-	StringBuffer replacementsMessageList = new StringBuffer();
+//	StringBuffer replacementsMessageList = new StringBuffer();
 
 	public String replaceHeaders(int line_num, File f, String aLine, 
 			AssignmentMetrics aAassignmentMetrics) throws IOException {
@@ -547,12 +547,12 @@ public class AnonFaker extends Anon {
 	}
 
 	protected void loadAnonNameMap(String[] vals) {
-		CommentsIdenMap.put(vals[0], concat(vals[3], vals[4], vals[5]));
+		commentsIdenMap.put(vals[0], concat(vals[3], vals[4], vals[5]));
 		fakeNameSet.add(vals[3]);
 	}
 
 	protected void loadUnanonNameMap(String[] vals) {
-		CommentsIdenMap.put(vals[3], concatFirst3(vals));
+		commentsIdenMap.put(vals[3], concatFirst3(vals));
 	}
 
 	public void updateNameMap() throws IOException {
@@ -586,7 +586,7 @@ public class AnonFaker extends Anon {
 	}
 
 	protected String[] getTokens(String firstName, String lastName, String onyen) {
-		String fake = CommentsIdenMap.get(onyen);
+		String fake = commentsIdenMap.get(onyen);
 		if (fake != null) {
 			return fake.split(",");
 		}
@@ -599,7 +599,7 @@ public class AnonFaker extends Anon {
 			tokens[2] = getFaker().name().lastName();
 			tokens[0] = tokens[1] + " " + tokens[2];
 		} while (fakeNameSet.contains(tokens[2]));
-		CommentsIdenMap.put(onyen, concatFirst3(tokens));
+		commentsIdenMap.put(onyen, concatFirst3(tokens));
 		fakeNameSet.add(tokens[2]);
 		newPairs.put(concat(onyen, firstName, lastName), concatFirst3(tokens));
 		return tokens;

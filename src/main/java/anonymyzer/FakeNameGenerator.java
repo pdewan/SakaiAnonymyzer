@@ -15,7 +15,7 @@ public class FakeNameGenerator extends GeneralFaker {
 //	File nameMapCSV;
 //	String nameMapPath;
 //	Faker faker;
-//	HashMap<String, String> CommentsIdenMap = new HashMap<String, String>();
+//	HashMap<String, String> commentsIdenMap = new HashMap<String, String>();
 //	HashMap<String, String> newPairs = new HashMap<>();
 //	HashSet<String> fakeNameSet = new HashSet<>();
 //	File log_file;
@@ -116,7 +116,7 @@ public class FakeNameGenerator extends GeneralFaker {
 //	}
 //	
 //	protected void loadAnonNameMap(String[] vals) {
-//		CommentsIdenMap.put(vals[0], concat(vals[3], vals[4], vals[5]));
+//		commentsIdenMap.put(vals[0], concat(vals[3], vals[4], vals[5]));
 //		fakeNameSet.add(vals[3]);
 //	}
 //	

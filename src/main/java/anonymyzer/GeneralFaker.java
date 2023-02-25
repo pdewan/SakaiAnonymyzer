@@ -10,8 +10,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Set;
+
 import com.github.javafaker.Faker;
 import com.github.javafaker.service.FakeValuesGrouping;
+
+import anonymyzer.factories.LoggerFactory;
 
 public abstract class GeneralFaker {
 	
@@ -28,7 +32,12 @@ public abstract class GeneralFaker {
 	HashSet<String> fakeNameSet = new HashSet<>();
 	File log_file;
 	String logFileName = "faker_log";
-	FileWriter logger;
+	FileWriter logger, specificLogger;
+	AssignmentMetrics assignmentMetrics;
+
+
+//	FileWriter logger;
+	Set<String> messagesOutput = new HashSet();
 	
 	public GeneralFaker() throws IOException {
 		log_file = new File(logFileName);
@@ -43,7 +52,18 @@ public abstract class GeneralFaker {
 		}
 		return faker;
 	}
-	
+	protected void createSpecificLoggerAndMetrics(File folder) throws IOException {
+//		File folder = new File(folderName);
+//		File specificLoggerFile = new File(folder.getParentFile(), folder.getName() + " Log.csv");
+//		if (!specificLoggerFile.exists()) {
+//			specificLoggerFile.createNewFile();
+//		}
+//		specificLogger = new FileWriter(specificLoggerFile);
+//		assignmentMetrics = new AssignmentMetrics();
+		LoggerFactory aLoggerFactory = new LoggerFactory(folder, false);
+		specificLogger = aLoggerFactory.getSpecificLogger();
+		assignmentMetrics = aLoggerFactory.getAssignmentMetrics();
+	}
 	public static String[] parseArgs(String[] args) {
 		for (int i = 0; i < args.length; i++) {
 			args[i] = parseArg(args[i]);

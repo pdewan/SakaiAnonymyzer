@@ -557,7 +557,9 @@ public class AnonUtil {
 			String aFragmentsWithContextString = aFragmentsWithContext.toString();
 
 			
-			String aNormalizedString = "In " + aFragmentsWithContextString + " # matching fragments " + aNumFragments + " != # matching words " + aNumWords + " from " + anOriginalToReplacement +  "\n";
+			String aNormalizedString = "In " + aFragmentsWithContextString + " # matching fragments " + aNumFragments + " != # matching words " + aNumWords 
+//					+ " from " + anOriginalToReplacement 
+					+ "\n";
 			anAssignmentMetrics.numStructuredNegatives++;
 			anAssignmentMetrics.numCharactersInStructuredNegatives += aNormalizedString.length();
 
@@ -801,7 +803,9 @@ public class AnonUtil {
 			FileWriter aLogger,
 			String aKeywordsRegex, 
 			List<String> anOriginals,
-			List<String> aReplacements, Map<String, String> anOriginalToReplacement, AssignmentMetrics anAssignmentMetrics) {
+			List<String> aReplacements, 
+			Map<String, String> anOriginalToReplacement, 
+			AssignmentMetrics anAssignmentMetrics) {
 //		replacementsMessageList.setLength(0);
 		String[] aSplits = aLine.split(aKeywordsRegex);
 		StringBuffer aReplacedValue = new StringBuffer();

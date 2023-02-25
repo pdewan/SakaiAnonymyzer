@@ -35,6 +35,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import anonymyzer.factories.KeywordFactory;
+import anonymyzer.factories.LoggerFactory;
 import anonymyzer.factories.LoginNameExtractorFactory;
 import anonymyzer.factories.NameExtractorFactory;
 import anonymyzer.factories.StrikeOutManager;
@@ -55,7 +56,7 @@ public class Anon {
 	boolean deleteTXTAndHTML = false;
 	String currIden;
 	int depth;
-	HashMap<String, String> CommentsIdenMap = new HashMap<String, String>();
+	HashMap<String, String> commentsIdenMap = new HashMap<String, String>();
 	File log_file;
 	FileWriter logger, specificLogger;
 	int counter; // used for differentiating students
@@ -72,8 +73,22 @@ public class Anon {
 	static final String USERNAME = "username";
 	HashMap<String, String> classNameMap;
 	static Map<String, String> hardwiredSubstitutions = new HashMap();
+	AssignmentMetrics assignmentMetrics;
+
 	Set<String> messagesOutput = new HashSet();
-	AssignmentMetrics assignmentMetrics = new AssignmentMetrics();
+	StringBuffer replacementsMessageList = new StringBuffer();
+    protected Map<String, String> originalToReplacement = new HashMap();
+	
+	public Map<String, String> getOriginalToReplacement() {
+		return originalToReplacement;
+	}
+
+	public void setOriginalToReplacement(Map<String, String> newVal) {
+		this.originalToReplacement = newVal;
+	}
+
+	
+
 
 	public Anon() throws IOException {
 		log_file = new File("anon_log");
@@ -220,6 +235,19 @@ public class Anon {
 			return true;
 		}
 	}
+	
+	protected void createSpecificLoggerAndMetrics(File folder) throws IOException {
+//		File folder = new File(folderName);
+//		File specificLoggerFile = new File(folder.getParentFile(), folder.getName() + " Log.csv");
+//		if (!specificLoggerFile.exists()) {
+//			specificLoggerFile.createNewFile();
+//		}
+//		specificLogger = new FileWriter(specificLoggerFile);
+//		assignmentMetrics = new AssignmentMetrics();
+		LoggerFactory aLoggerFactory = new LoggerFactory(folder);
+		specificLogger = aLoggerFactory.getSpecificLogger();
+		assignmentMetrics = aLoggerFactory.getAssignmentMetrics();
+	}
 
 	public void anonoymizeWindows(String folderName) throws IOException, InterruptedException {
 		if (!folderName.endsWith(".zip")) {
@@ -235,13 +263,17 @@ public class Anon {
 			folderName = dest;
 		}
 		unzipAllZipFiles(new File(folderName));
+		
 		File folder = new File(folderName);
-		File specificLoggerFile = new File(folder.getParentFile(), folder.getName() + " Log.csv");
-		if (!specificLoggerFile.exists()) {
-			specificLoggerFile.createNewFile();
-		}
-		specificLogger = new FileWriter(specificLoggerFile);
-		assignmentMetrics = new AssignmentMetrics();
+//		File specificLoggerFile = new File(folder.getParentFile(), folder.getName() + " Log.csv");
+//		if (!specificLoggerFile.exists()) {
+//			specificLoggerFile.createNewFile();
+//		}
+//		specificLogger = new FileWriter(specificLoggerFile);
+//		assignmentMetrics = new AssignmentMetrics();
+		createSpecificLoggerAndMetrics(folder);
+		
+		
 //		System.out.println("Anonymizing");
 //		logger.write("Anonymizing");
 		if (isCourseFolder(folderName)) {
@@ -300,7 +332,7 @@ public class Anon {
 	// public void anonymize(String[] args) throws IOException, InterruptedException
 	// {
 	// // instantiate vars
-	//// CommentsIdenMap = new HashMap<String, String>();
+	//// commentsIdenMap = new HashMap<String, String>();
 	// depth = 1;
 	// counter = 0;
 	// String folderName = ""; // will either act as the singleton assignment
@@ -1463,8 +1495,8 @@ public class Anon {
 	public String shuffle(String text, String prefix) {
 		// we see if we have seen the name before, returning its mapped anon version if
 		// it exists
-		if (CommentsIdenMap.get(text) != null)
-			return CommentsIdenMap.get(text);
+		if (commentsIdenMap.get(text) != null)
+			return commentsIdenMap.get(text);
 		// otherwise we generate 5 char suffix for 'salting' the identifier...don't want
 		// to create something used already
 		// int leftLimit = 97; // letter 'a'
@@ -1498,7 +1530,7 @@ public class Anon {
 			e.printStackTrace();
 		}
 		// load the generated identifier into hash map
-		CommentsIdenMap.put(text, generatedString);
+		commentsIdenMap.put(text, generatedString);
 		return generatedString;
 
 	}
