@@ -22,6 +22,10 @@ public class AssignmentMetrics {
 	public int numUniqueStructuredNegatives = 0; // a unique structured match that is not an unstructured match
 //	public int charactersInNonContextualPositives = 0; // fragments in positives to be examined with no context
 	public int numCharactersInUniqueStructuredNegatives = 0; // fragments in lines with unstructured but not structured matches
+	public int numWordsIgnored = 0; // englsh words that should not be replaced
+	public int numUniqueWordsIgnored = 0; // for each word, count it once
+	public int numWordsHidden = 0; // each word hidden
+	public int numUniqueWordsHidden = 0; // num unique words
 
 
 	
@@ -41,8 +45,11 @@ public class AssignmentMetrics {
 				"Number of Characters in Unique Positives:" + numCharactersInUniqueStructuredPositives + "\n" +
 				"Number of Characters in Negatives:" + numCharactersInStructuredNegatives + "\n" +
 
-				"Number of Characters in Unique Negatives:" + numCharactersInUniqueStructuredNegatives + "\n" ;
-
+				"Number of Characters in Unique Negatives:" + numCharactersInUniqueStructuredNegatives + "\n" +
+				"Number of Words Ignored:" + numWordsIgnored +
+				"Number of Unique Words Ignored:" + numUniqueWordsIgnored +
+				"Number of Words Hidden:" + numWordsHidden +
+				"Number of Unique Words Hidden:" + numUniqueWordsHidden;
 
 	}
 

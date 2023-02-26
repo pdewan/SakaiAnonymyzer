@@ -387,9 +387,14 @@ public class PiazzaFaker extends GeneralFaker {
 		}
 		return retVal;
 	}
+	
+	protected String normalizeString(String aString) {
+		return aString;
+	}
 
 	protected String anonymyzeUsingLineReplacer(String aPiazzaPostsString) {
-		String[] aSplitPiazzaPostsStrings = aPiazzaPostsString.split(",");
+		String aNormalizedString = normalizeString(aPiazzaPostsString);
+		String[] aSplitPiazzaPostsStrings = aNormalizedString.split(",");
 		StringBuffer retVal = new StringBuffer(aPiazzaPostsString.length());
 		boolean hasName = false;
 		for (int index = 0; index < aSplitPiazzaPostsStrings.length; index++) {
@@ -535,7 +540,6 @@ public class PiazzaFaker extends GeneralFaker {
 		return null;
 	}
 
-	final static String HIDDEN_NAME = "";
 
 	protected void nonDuplicatePut(Map<String, String> aMap, String aKey, String aValue) {
 		if (aKey.contains("nstructor")) {
@@ -544,6 +548,7 @@ public class PiazzaFaker extends GeneralFaker {
 		String anExistingValue = aMap.get(aKey);
 		if (anExistingValue != null && !aValue.equals(anExistingValue)) {
 			aMap.put(aKey, HIDDEN_NAME);
+			
 			try {
 				specificLogger.write("Key:" + aKey + " Duplicate Values:" + anExistingValue + "," + aValue + "\n");
 				specificLogger.flush();
@@ -554,6 +559,7 @@ public class PiazzaFaker extends GeneralFaker {
 
 		} else {
 			aMap.put(aKey, aValue);
+			aMap.put(aKey.toLowerCase(), aValue);
 		}
 	}
 

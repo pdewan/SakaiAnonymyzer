@@ -14,6 +14,8 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import anonymyzer.factories.DoNotFakeFactory;
+import anonymyzer.factories.DoNotFakeManager;
 import anonymyzer.factories.FragmentsWithContextGeneratorFactory;
 import anonymyzer.factories.IndicesFinderFactory;
 import anonymyzer.factories.StringReplacerFactory;
@@ -321,12 +323,21 @@ public class AnonUtil {
 
 	public static int findLeftFramgmentLimit(String aString, int aFragmentStart) {
 		boolean foundIdentifier = false;
+		char aStartChar = aString.charAt(aFragmentStart);
+		if (aFragmentStart == 0) {
+			return aFragmentStart;
+		}
+		char aPrecedingChar = aString.charAt(aFragmentStart - 1);
+		if (aPrecedingChar == '>') {
+			return aFragmentStart;
+		}
 		int index = prefixPartOfSameWord(aString, aFragmentStart)
 						? aFragmentStart - 1
 						:aFragmentStart - 2;
 			
 		for (; index >= 0; index--) {
 			char aChar = aString.charAt(index);
+			
 			if (isIdentifierCharacter(aChar)) {
 				foundIdentifier = true;
 			} else if (foundIdentifier) {
@@ -353,7 +364,14 @@ public class AnonUtil {
 
 	public static int findRightFragmentLimit(String aString, int aFragmentEnd) {
 		boolean foundIdentifier = false;
-		
+		char anEndChar = aString.charAt(aFragmentEnd - 1);
+		if (aFragmentEnd == aString.length()) {
+			return aFragmentEnd;
+		}
+		char aSucceedingChar = aString.charAt(aFragmentEnd);
+		if (aSucceedingChar == '<') {
+			return aFragmentEnd;
+		}
 
 		for (int index = aFragmentEnd + 1; index < aString.length(); index++) {
 			char aChar = aString.charAt(index);
@@ -384,7 +402,33 @@ public class AnonUtil {
 		}
 		return aFragmentEnd;
 	}
-
+	
+	public static boolean isCompleteWord(String aFragmentWithContext) {
+		int aStartIndex = aFragmentWithContext.indexOf('(');
+		int anEndIndex = aFragmentWithContext.indexOf(")...");		
+		int aDotsLength = "...".length();
+		char aPrecedingChar = aFragmentWithContext.charAt(aStartIndex - 1);
+		char aSucceedingChar = aFragmentWithContext.charAt(anEndIndex + 1);
+		boolean isStartOfWord = aStartIndex == aDotsLength || !isIdentifierCharacter(aPrecedingChar);
+		boolean isEndOfWord = anEndIndex == 
+				(aFragmentWithContext.length() - aDotsLength) ||
+				!isIdentifierCharacter(aSucceedingChar);
+		return isStartOfWord && isEndOfWord;
+////		String aFragmnentWithoutDots = aFragmentWithContext.
+////				substring(aDotsLength, aFragmentWithContext.length() - aDotsLength);
+//		try {
+//			char firstContextChar =  aFragmentWithContext.charAt(aDotsLength) ;
+//			char lastContextChar = aFragmentWithContext.charAt(aFragmentWithContext.length() - 1 - aDotsLength);
+//		return firstContextChar  == '('  &&
+//				lastContextChar ==
+//				')';	
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return false;
+//		}
+	}
+	
+	
 	public static String fragmentWithContext(String aString, String aFragment, int anIndexOfFragment,
 			int aFragmentEnd) {
 //		int aFragmentEnd = anIndexOfFragment + aFragment.length();
@@ -396,6 +440,9 @@ public class AnonUtil {
 //			System.out.println("suffixlength " + aSuffixLength);
 //		}
 		String aContextSuffix = aString.substring(aFragmentEnd, aSuffixEnd);
+		if (aContextPrefix.contains(">")) {
+			System.out.println("found >");
+		}
 		return "..." + aContextPrefix + "(" + aFragment + ")" + aContextSuffix + "...";
 
 	}
@@ -598,6 +645,43 @@ public class AnonUtil {
 			String aReplacementAtIndex = anOriginalToReplacement.get(anOriginalAtIndex);
 			String anOriginalWithContext = fragmentWithContext(aString, anOriginalAtIndex, anIndex,
 					anIndex + anOriginalAtIndex.length());
+//			String aReplacementWithContext = fragmentWithContext(aString, aReplacementAtIndex, anIndex,
+//					anIndex + anOriginalAtIndex.length());
+			if  (isCompleteWord(anOriginalWithContext)) {
+				
+				if (DoNotFakeFactory.doNotReplaceWord(anOriginalAtIndex)) {
+					String aMessage = "No replacement:" + anOriginalWithContext;
+					if (!aMessagesOutput.contains(aMessage)) {
+						try {
+							aLogger.write(aMessage +"\n");
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						aMessagesOutput.add(aMessage);
+					}
+					continue;
+				}
+				if (DoNotFakeFactory.hideWord(anOriginalAtIndex)) {
+					aReplacementAtIndex = GeneralFaker.HIDDEN_NAME;
+					String aMessage = "Hidden:" + anOriginalWithContext;
+					anAssignmentMetrics.numWordsHidden++;
+					if (!aMessagesOutput.contains(aMessage)) {
+						anAssignmentMetrics.numUniqueWordsHidden++;
+						try {
+							aLogger.write(aMessage +"\n");
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						aMessagesOutput.add(aMessage);
+					}
+//
+//					aReplacementWithContext = fragmentWithContext(aString, GeneralFaker.HIDDEN_NAME, anIndex,
+//							anIndex + anOriginalAtIndex.length());
+				}
+			}
+			
 			String aReplacementWithContext = fragmentWithContext(aString, aReplacementAtIndex, anIndex,
 					anIndex + anOriginalAtIndex.length());
 //			aNumReplacements++;

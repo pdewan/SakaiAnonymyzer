@@ -34,6 +34,8 @@ public abstract class GeneralFaker {
 	String logFileName = "faker_log";
 	FileWriter logger, specificLogger;
 	AssignmentMetrics assignmentMetrics;
+	public final static String HIDDEN_NAME = "";
+
 
 
 //	FileWriter logger;
