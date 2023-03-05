@@ -7,8 +7,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -35,7 +38,21 @@ public abstract class GeneralFaker {
 	FileWriter logger, specificLogger;
 	AssignmentMetrics assignmentMetrics;
 	public final static String HIDDEN_NAME = "";
+	Map<String, String> maybeQuotedNameToOnyen = new HashMap<>();
+	Map<String, String> nameToOnyen = new HashMap<>();
 
+	Map<String, String> authorToFakeAuthor = new HashMap<>();
+	Map<String, String> emailToFakeAuthor = new HashMap<>() ;
+	Map<String, String> uidToFakeAuthor = new HashMap<>();
+	Map<String, String> fullNameToFakeFullName = new HashMap<>();
+	Map<String, String> firstNameToFakeFirstName = new HashMap<>();
+	Map<String, String> lastNameToFakeLastName = new HashMap<>();
+	Map<String, String> someNameToFakeAuthor = new HashMap<>();
+	List<String> originalNameList  = new ArrayList();
+	List<String> replacementNameList =new ArrayList() ;
+	
+
+	Map<String, String> uidToAuthor;
 
 
 //	FileWriter logger;
@@ -46,7 +63,75 @@ public abstract class GeneralFaker {
 		log_file.delete();
 		log_file.createNewFile();
 		logger = new FileWriter(log_file);
+//		authorToFakeAuthor = new HashMap<>();
+//		uidToAuthor = new HashMap<>();
+//		uidToFakeAuthor = new HashMap<>();
+//		emailToFakeAuthor = new HashMap<>();
+//		fullNameToFakeFullName = new HashMap<>();
+//		firstNameToFakeFirstName = new HashMap<>();
+//		lastNameToFakeLastName = new HashMap<>();
 	}
+	
+	protected void processElements(Map<String, String> aMap) {
+		for (String aKey : aMap.keySet()) {
+//			originalNameList.add(aKey);
+			String aValue = aMap.get(aKey);
+			String anExistingValue = someNameToFakeAuthor.get(aKey);
+			if (aValue.equals(anExistingValue)) {
+				continue; // already processed
+				
+			}
+			originalNameList.add(aKey);
+			replacementNameList.add(aValue);
+			someNameToFakeAuthor.put(aKey, aValue);
+		}
+	}
+
+	protected void processElementsOfAllMaps() {
+//		if (someNameToFakeAuthor == null) {
+//			originalNameList = new ArrayList();
+//			replacementNameList = new ArrayList();
+//			someNameToFakeAuthor = new HashMap<>();
+			processElements(authorToFakeAuthor);
+			processElements(emailToFakeAuthor);
+			processElements(uidToFakeAuthor);
+			processElements(fullNameToFakeFullName);
+			processElements(firstNameToFakeFirstName);
+			processElements(lastNameToFakeLastName);
+//			try {
+//				specificLogger.write(authorToFakeAuthor.toString() + "/n");
+//				specificLogger.flush();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+
+			// first add
+//		}
+	}
+	
+	protected void nonDuplicatePut(Map<String, String> aMap, String aKey, String aValue) {
+		if (aKey.contains("nstructor")) {
+			return;
+		}
+		String anExistingValue = aMap.get(aKey);
+		if (anExistingValue != null && !aValue.equals(anExistingValue)) {
+			aMap.put(aKey, HIDDEN_NAME);
+
+			try {
+				specificLogger.write("Key:" + aKey + " Duplicate Values:" + anExistingValue + "," + aValue + "\n");
+				specificLogger.flush();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		} else {
+			aMap.put(aKey, aValue);
+			aMap.put(aKey.toLowerCase(), aValue);
+		}
+	}
+
 	
 	public Faker getFaker() {
 		if (faker == null) {
@@ -54,7 +139,7 @@ public abstract class GeneralFaker {
 		}
 		return faker;
 	}
-	protected void createSpecificLoggerAndMetrics(File folder) throws IOException {
+	protected void createSpecificLoggerAndMetrics(File folder, boolean useParent) throws IOException {
 //		File folder = new File(folderName);
 //		File specificLoggerFile = new File(folder.getParentFile(), folder.getName() + " Log.csv");
 //		if (!specificLoggerFile.exists()) {
@@ -62,7 +147,7 @@ public abstract class GeneralFaker {
 //		}
 //		specificLogger = new FileWriter(specificLoggerFile);
 //		assignmentMetrics = new AssignmentMetrics();
-		LoggerFactory aLoggerFactory = new LoggerFactory(folder, false);
+		LoggerFactory aLoggerFactory = new LoggerFactory(folder, useParent);
 		specificLogger = aLoggerFactory.getSpecificLogger();
 		assignmentMetrics = aLoggerFactory.getAssignmentMetrics();
 	}
@@ -99,6 +184,23 @@ public abstract class GeneralFaker {
 		nameMapCSV = new File(path);
 	}
 
+	protected void specificLogLine(String aString) {
+		try {
+			specificLogger.write(aString + "\n");
+			specificLogger.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	protected void maybeSpecificLogLine(String aString) {
+		if (messagesOutput.contains(aString)) {
+			return;
+		}
+		specificLogLine(aString);
+	}
+	
+	
 	
 	public void execute(Object arg) throws IOException, InterruptedException {
 		loadNameMap();
@@ -189,6 +291,45 @@ public abstract class GeneralFaker {
 		}
 	}
 	
+//	public String maybeUnquote(String s) {
+//		if (s.startsWith("\"") && s.endsWith("\"")) {
+//			return s.substring(1, s.length() - 1);
+//		} else {
+//			return s;
+//		}
+//	}
+	
+	public String maybeUnquote(String s) {
+		return unquote(s);
+//		if (s.startsWith("\"") && s.endsWith("\"")) {
+//			return s.substring(1, s.length() - 1);
+//		} else {
+//			return s;
+//		}
+	}
+	
+	public void loadNameToOnyenMap(File gradesCsv) {
+		String gradesCsvString = readFile(gradesCsv).toString();
+		String[] lines = gradesCsvString.split("\\R");
+		for (int i = 3; i < lines.length; i++) {
+			String[] fields = lines[i].split(",");
+			String onyen = maybeUnquote(fields[1]);
+			String lastName = maybeUnquote(fields[2]);
+			String firstName = maybeUnquote(fields[3]);
+			String aFullName = firstName + " " + lastName;
+			
+			String anUnquotedOnyen = unquote(onyen);
+			String anUnquotedLastName = unquote(lastName);
+			String anUnquotedFirstName = unquote(firstName);
+			String anUnquotedFullName = anUnquotedFirstName + " " + anUnquotedLastName; 
+
+//			maybeQuotedNameToOnyen.put(firstName + " " + lastName, onyen);
+			maybeQuotedNameToOnyen.put(aFullName, onyen);
+			nameToOnyen.put(anUnquotedFullName, anUnquotedOnyen);			
+
+//			mapNames(aFullName, firstName, lastName, fakeName);
+		}
+	}
 	public String unquote(String s) {
 		if (s.startsWith("\"") && s.endsWith("\"")) {
 			return s.substring(1, s.length() - 1);

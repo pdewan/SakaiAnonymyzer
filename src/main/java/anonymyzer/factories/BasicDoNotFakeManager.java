@@ -7,7 +7,8 @@ import java.util.Set;
 public class BasicDoNotFakeManager implements DoNotFakeManager{
 	String[] doNotReplaceWordArray = {
 			"do",
-			"an"
+			"an",
+			"uh"
 	};
 	String[] hideWordArray = {
 			

@@ -46,10 +46,10 @@ public class AssignmentMetrics {
 				"Number of Characters in Negatives:" + numCharactersInStructuredNegatives + "\n" +
 
 				"Number of Characters in Unique Negatives:" + numCharactersInUniqueStructuredNegatives + "\n" +
-				"Number of Words Ignored:" + numWordsIgnored +
-				"Number of Unique Words Ignored:" + numUniqueWordsIgnored +
-				"Number of Words Hidden:" + numWordsHidden +
-				"Number of Unique Words Hidden:" + numUniqueWordsHidden;
+				"Number of Words Ignored:" + numWordsIgnored + "\n" +
+				"Number of Unique Ignores:" + numUniqueWordsIgnored + "\n" +
+				"Number of Words Hidden:" + numWordsHidden + "\n" +
+				"Number of Unique Hides:" + numUniqueWordsHidden;
 
 	}
 

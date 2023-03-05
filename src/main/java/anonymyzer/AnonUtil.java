@@ -217,6 +217,11 @@ public class AnonUtil {
 		return (Character.isUpperCase(aChar1) && Character.isLowerCase(aChar2))
 				|| (Character.isLowerCase(aChar1) && Character.isUpperCase(aChar2));
 	}
+	
+	public static boolean isCamelCase(char aLeftChar, char aRightChar) {
+		return (Character.isUpperCase(aRightChar) && Character.isLowerCase(aLeftChar));
+//				|| (Character.isLowerCase(aChar1) && Character.isUpperCase(aChar2));
+	}
 
 	public static boolean isIdentifierCharacter(char ch) {
 		return Character.isDigit(ch) || Character.isLetter(ch) || ch == '-' || ch == '_';
@@ -235,13 +240,20 @@ public class AnonUtil {
 
 	}
 
-	public static boolean isDelimiter(char aChar, char anAdjacentChar) {
-		return !isAlphaNumeric(anAdjacentChar) || isOppositeCase(aChar, anAdjacentChar);
+//	public static boolean isRightDelimiter(char aChar, char anAdjacentChar) {
+//		return !isAlphaNumeric(anAdjacentChar) || isOppositeCase(aChar, anAdjacentChar);
+//
+//	}
+	
+	public static boolean isRightDelimiter(char aChar, char anAdjacentChar) {
+		return !isAlphaNumeric(anAdjacentChar) || isCamelCase(aChar, anAdjacentChar);
 
 	}
 
 	public static boolean isLeftDelimiter(char aChar, char anAdjacentChar) {
-		return !isAlphaNumeric(anAdjacentChar) || isOppositeCase(aChar, anAdjacentChar);
+//		return !isAlphaNumeric(anAdjacentChar) || isOppositeCase(aChar, anAdjacentChar);
+		return !isAlphaNumeric(anAdjacentChar) || 
+				isCamelCase(anAdjacentChar, aChar);
 
 	}
 
@@ -250,14 +262,15 @@ public class AnonUtil {
 			return true;
 		char anEnd = aString.charAt(aNameEndIndex - 1);
 		char aSuccessor = aString.charAt(aNameEndIndex);
-		return isDelimiter(anEnd, aSuccessor);
+		return isRightDelimiter(anEnd, aSuccessor);
+		
 
 	}
 
 	public static boolean occurenceIsAWord(String aString, String aName, int aNameStartIndex) {
 		int aNameEndIndex = aNameStartIndex + aName.length();
-		return hasLeftDelimiter(aString, aNameStartIndex) && hasRightDelimiter(aString, aNameEndIndex);
-
+		boolean retVal = hasLeftDelimiter(aString, aNameStartIndex) && hasRightDelimiter(aString, aNameEndIndex);
+		return retVal;
 	}
 
 	public static List<Integer> indicesOf(String aString, String aSubstring, boolean checkWord) {
@@ -369,19 +382,23 @@ public class AnonUtil {
 			return aFragmentEnd;
 		}
 		char aSucceedingChar = aString.charAt(aFragmentEnd);
+//		int anIndex = anEndIndex;
 		if (aSucceedingChar == '<') {
 			return aFragmentEnd;
 		}
-
-		for (int index = aFragmentEnd + 1; index < aString.length(); index++) {
+		// assuming one blank after a word
+		for (int index = aFragmentEnd; index < aString.length(); index++) {
 			char aChar = aString.charAt(index);
 			if (isIdentifierCharacter(aChar)) {
 				foundIdentifier = true;
 			} else if (foundIdentifier) {
 				return index;
+			} else if (index == aFragmentEnd) { // skip the space after the fragment to get the next word
+				index = aFragmentEnd + 1;
 			} else {
 				break;
 			}
+		
 
 //			if (isIdentifierCharacter(aChar)) {
 //				continue;
@@ -403,15 +420,19 @@ public class AnonUtil {
 		return aFragmentEnd;
 	}
 	
-	public static boolean isCompleteWord(String aFragmentWithContext) {
-		int aStartIndex = aFragmentWithContext.indexOf('(');
-		int anEndIndex = aFragmentWithContext.indexOf(")...");		
+	public static boolean isCompleteWord(String aFragmentWithContext, String anOriginal) {
+//		if (aFragmentWithContext.contains("...whether (he) has...")) {
+//			System.out.println("Found offending text");
+//		}
+				
+		int aStartIndex = aFragmentWithContext.indexOf(anOriginal);
+		int anEndIndex = aStartIndex + anOriginal.length();	
 		int aDotsLength = "...".length();
-		char aPrecedingChar = aFragmentWithContext.charAt(aStartIndex - 1);
+		char aPrecedingChar = aFragmentWithContext.charAt(aStartIndex - 2);
 		char aSucceedingChar = aFragmentWithContext.charAt(anEndIndex + 1);
 		boolean isStartOfWord = aStartIndex == aDotsLength || !isIdentifierCharacter(aPrecedingChar);
-		boolean isEndOfWord = anEndIndex == 
-				(aFragmentWithContext.length() - aDotsLength) ||
+		boolean isEndOfWord = (anEndIndex + 1 == 
+				(aFragmentWithContext.length() - aDotsLength)) ||
 				!isIdentifierCharacter(aSucceedingChar);
 		return isStartOfWord && isEndOfWord;
 ////		String aFragmnentWithoutDots = aFragmentWithContext.
@@ -434,15 +455,20 @@ public class AnonUtil {
 //		int aFragmentEnd = anIndexOfFragment + aFragment.length();
 		int aPrefixStart = findLeftFramgmentLimit(aString, anIndexOfFragment);
 		int aSuffixEnd = findRightFragmentLimit(aString, aFragmentEnd);
+		
+		
 
 		String aContextPrefix = aString.substring(aPrefixStart, anIndexOfFragment);
+//		if (aContextPrefix.contains("method")) {
+//			System.out.println("found offending text");
+//		}
 //		if (aSuffixLength < 0) {
 //			System.out.println("suffixlength " + aSuffixLength);
 //		}
 		String aContextSuffix = aString.substring(aFragmentEnd, aSuffixEnd);
-		if (aContextPrefix.contains(">")) {
-			System.out.println("found >");
-		}
+//		if (aContextPrefix.contains(">")) {
+//			System.out.println("found >");
+//		}
 		return "..." + aContextPrefix + "(" + aFragment + ")" + aContextSuffix + "...";
 
 	}
@@ -607,6 +633,9 @@ public class AnonUtil {
 			String aNormalizedString = "In " + aFragmentsWithContextString + " # matching fragments " + aNumFragments + " != # matching words " + aNumWords 
 //					+ " from " + anOriginalToReplacement 
 					+ "\n";
+//			if (aNormalizedString.startsWith("In [...hig(he)...")) {
+//				System.out.println("found offending stringg");
+//			}
 			anAssignmentMetrics.numStructuredNegatives++;
 			anAssignmentMetrics.numCharactersInStructuredNegatives += aNormalizedString.length();
 
@@ -647,11 +676,17 @@ public class AnonUtil {
 					anIndex + anOriginalAtIndex.length());
 //			String aReplacementWithContext = fragmentWithContext(aString, aReplacementAtIndex, anIndex,
 //					anIndex + anOriginalAtIndex.length());
-			if  (isCompleteWord(anOriginalWithContext)) {
+			if  (isCompleteWord(anOriginalWithContext, anOriginalAtIndex)) {
 				
 				if (DoNotFakeFactory.doNotReplaceWord(anOriginalAtIndex)) {
 					String aMessage = "No replacement:" + anOriginalWithContext;
+//					if (aMessage.contains("...method (do)...")) {
+//						System.out.println("found offending text");
+//					}
+					anAssignmentMetrics.numWordsIgnored++;
 					if (!aMessagesOutput.contains(aMessage)) {
+						anAssignmentMetrics.numUniqueWordsIgnored++;
+
 						try {
 							aLogger.write(aMessage +"\n");
 						} catch (IOException e) {

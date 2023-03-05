@@ -51,7 +51,7 @@ public class SakaiGradebookFaker extends GeneralFaker {
 		List<Integer> gradesIdx = new ArrayList<>();
 		List<String> assignNames = new ArrayList<>();
 
-		String[] firstLine = unquote(lines[0]).split("\",\"");
+		String[] firstLine = maybeUnquote(lines[0]).split("\",\"");
 		int onyenIdx = -1;
 		int nameIdx = -1;
 
@@ -99,7 +99,7 @@ public class SakaiGradebookFaker extends GeneralFaker {
 					nextLine.add(fakeNames[2]);
 					nextLine.add(fakeNames[0]);
 					for (int idx : gradesIdx) {
-						String s = unquote(line[idx]);
+						String s = maybeUnquote(line[idx]);
 						if (s.isEmpty()) {
 							s = "0";
 						}

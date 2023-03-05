@@ -42,6 +42,9 @@ public class BasicKeywordGenerator implements KeywordGenerator {
 //			"an absence",
 			"AnAbstract",
 			"AnOOP",
+			"AnOverview",
+			"AnAutomatic",
+			"anAbstract",
 			"copyright Prasun Dewan"
 //			"Double",
 //			"projectName", 

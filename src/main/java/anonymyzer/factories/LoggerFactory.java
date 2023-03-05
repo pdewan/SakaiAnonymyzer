@@ -40,7 +40,10 @@ public class LoggerFactory {
 		File aBaseFolder = useParent?
 				aFile.getParentFile():
 					aFile;
-		File specificLoggerFile = new File(aBaseFolder, aFile.getName() + " Log.csv");
+		String[] aNameParts = aFile.getName().split("\\.");
+		String aFileNameWithoutSuffix = aNameParts [0];
+//		File specificLoggerFile = new File(aBaseFolder, aFile.getName() + " Log.csv");
+		File specificLoggerFile = new File(aBaseFolder, aFileNameWithoutSuffix + " Log.csv");
 
 //		File specificLoggerFile = new File(aFile.getParentFile(), aFile.getName() + " Log.csv");
 		if (!specificLoggerFile.exists()) {

@@ -63,8 +63,14 @@ public class GradescopeFaker extends GeneralFaker {
 		if (!(arg instanceof File[])) {
 			return;
 		}
+		
 		File[] files = (File[]) arg;
 		File gradescopeGrades = files[0];
+		try {
+			createSpecificLoggerAndMetrics(gradescopeGrades, true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		File gradesCsv = files[1];
 		loadNameToOnyenMap(gradesCsv);
 		String[] lines = readFile(gradescopeGrades).toString().split("\\R");
@@ -73,13 +79,13 @@ public class GradescopeFaker extends GeneralFaker {
 			anonGrades.delete();
 		}
 		if (lines[0].contains("Total Lateness")) {
-			anonymizeSemeter(lines, anonGrades);
+			anonymizeSemester(lines, anonGrades);
 		} else {
 			anonymizeAssignment(lines, anonGrades);
 		}
 	}
 	
-	public void anonymizeSemeter(String[] lines, File anonGrades) {
+	public void anonymizeSemester(String[] lines, File anonGrades) {
 		List<String> nextLine = new ArrayList<>();
 		int emailIdx = -1;
 		int firstNameIdx = -1;
@@ -116,6 +122,13 @@ public class GradescopeFaker extends GeneralFaker {
 		}
 		if (emailIdx == -1) {
 			System.err.println("Cannot find email, using name matching");
+			try {
+				specificLogger.write("Cannot find email, using name matching\n");
+				specificLogger.flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		List<String> headers = new ArrayList<>(Arrays.asList(HEADERS));
 		headers.remove(headers.size()-1);
@@ -140,6 +153,7 @@ public class GradescopeFaker extends GeneralFaker {
 				}
 				
 				bw.write(String.join(",", nextLine) + System.lineSeparator());
+				specificLogLine(line[fullNameIdx] + "," + line[emailIdx] + " -> " + Arrays.toString(fakeNames));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -193,6 +207,8 @@ public class GradescopeFaker extends GeneralFaker {
 				nextLine.add(fakeNames[0]);
 				nextLine.add(line[gradeIdx]);
 				bw.write(String.join(",", nextLine) + System.lineSeparator());
+				specificLogLine(line[fullNameIdx] + "," + line[emailIdx] + " -> " + Arrays.toString(fakeNames));
+
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -232,10 +248,18 @@ public class GradescopeFaker extends GeneralFaker {
 		String[] lines = gradesCsvString.split("\\R");
 		for (int i = 3; i < lines.length; i++) {
 			String[] fields = lines[i].split(",");
-			String onyen = unquote(fields[1]);
-			String lastName = unquote(fields[2]);
-			String firstName = unquote(fields[3]);
-			nameToOnyen.put(firstName + " " + lastName, onyen);
+			String onyen = maybeUnquote(fields[1]);
+			String lastName = maybeUnquote(fields[2]);
+			String firstName = maybeUnquote(fields[3]);
+			String aFullName = firstName + " " + lastName;
+			String anOldOnyen = nameToOnyen.get(aFullName);
+			if (anOldOnyen != null) {
+//				System.out.println("Duplicate full name:" + aFullName);
+				specificLogLine(aFullName + " has duplicate onyens " + anOldOnyen + "," + onyen);
+			}
+//			maybeQuotedNameToOnyen.put(firstName + " " + lastName, onyen);
+			nameToOnyen.put(aFullName, onyen);
+
 		}
 	}
 	

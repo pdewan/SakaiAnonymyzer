@@ -26,63 +26,65 @@ public class PiazzaFaker extends GeneralFaker {
 //	Pattern onyenPattern = Pattern.compile(".*\\((.*)@.*\\)");
 	Pattern fullNamePattern = Pattern.compile("(.*) (.*)\\((.*)@.*\\)");
 	Pattern firstNamePattern = Pattern.compile("(.*)\\((.*)@.*\\)");
-	Map<String, String> authorToFakeAuthor;
-	Map<String, String> emailToFakeAuthor;
-	Map<String, String> uidToFakeAuthor;
-	Map<String, String> fullNameToFakeFullName;
-	Map<String, String> firstNameToFakeFirstName;
-	Map<String, String> lastNameToFakeLastName;
+//	Map<String, String> authorToFakeAuthor;
+//	Map<String, String> emailToFakeAuthor;
+//	Map<String, String> uidToFakeAuthor;
+//	Map<String, String> fullNameToFakeFullName;
+//	Map<String, String> firstNameToFakeFirstName;
+//	Map<String, String> lastNameToFakeLastName;
 
-	Map<String, String> someNameToFakeAuthor;
-	List<String> originalNameList;
-	List<String> replacementNameList;
+//	Map<String, String> someNameToFakeAuthor;
+//	List<String> originalNameList;
+//	List<String> replacementNameList;
+	
+	
 //	Map<String, String> firstNameToFakeFirstName;
 
-	Map<String, String> uidToAuthor;
+//	Map<String, String> uidToAuthor;
 	static final String NOT_MATCHED_FILE = "not matched authors.txt";
 
 	public PiazzaFaker() throws IOException {
 		super();
-		authorToFakeAuthor = new HashMap<>();
-		uidToAuthor = new HashMap<>();
-		uidToFakeAuthor = new HashMap<>();
-		emailToFakeAuthor = new HashMap<>();
-		fullNameToFakeFullName = new HashMap<>();
-		firstNameToFakeFirstName = new HashMap<>();
-		lastNameToFakeLastName = new HashMap<>();
+//		authorToFakeAuthor = new HashMap<>();
+//		uidToAuthor = new HashMap<>();
+//		uidToFakeAuthor = new HashMap<>();
+//		emailToFakeAuthor = new HashMap<>();
+//		fullNameToFakeFullName = new HashMap<>();
+//		firstNameToFakeFirstName = new HashMap<>();
+//		lastNameToFakeLastName = new HashMap<>();
 	}
 
-	protected void processElements(Map<String, String> aMap) {
-		for (String aKey : aMap.keySet()) {
-			originalNameList.add(aKey);
-			String aValue = aMap.get(aKey);
-			replacementNameList.add(aValue);
-			someNameToFakeAuthor.put(aKey, aValue);
-		}
-	}
-
-	protected void replacementSetup() {
-		if (someNameToFakeAuthor == null) {
-			originalNameList = new ArrayList();
-			replacementNameList = new ArrayList();
-			someNameToFakeAuthor = new HashMap<>();
-			processElements(authorToFakeAuthor);
-			processElements(emailToFakeAuthor);
-			processElements(uidToFakeAuthor);
-			processElements(fullNameToFakeFullName);
-			processElements(firstNameToFakeFirstName);
-			processElements(lastNameToFakeLastName);
-			try {
-				specificLogger.write(authorToFakeAuthor.toString() + "/n");
-				specificLogger.flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			// first add
-		}
-	}
+//	protected void processElements(Map<String, String> aMap) {
+//		for (String aKey : aMap.keySet()) {
+//			originalNameList.add(aKey);
+//			String aValue = aMap.get(aKey);
+//			replacementNameList.add(aValue);
+//			someNameToFakeAuthor.put(aKey, aValue);
+//		}
+//	}
+//
+//	protected void replacementSetup() {
+//		if (someNameToFakeAuthor == null) {
+//			originalNameList = new ArrayList();
+//			replacementNameList = new ArrayList();
+//			someNameToFakeAuthor = new HashMap<>();
+//			processElements(authorToFakeAuthor);
+//			processElements(emailToFakeAuthor);
+//			processElements(uidToFakeAuthor);
+//			processElements(fullNameToFakeFullName);
+//			processElements(firstNameToFakeFirstName);
+//			processElements(lastNameToFakeLastName);
+//			try {
+//				specificLogger.write(authorToFakeAuthor.toString() + "/n");
+//				specificLogger.flush();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//
+//			// first add
+//		}
+//	}
 
 	public static void main(String[] args) throws IOException {
 		if (args.length != 1) {
@@ -125,7 +127,7 @@ public class PiazzaFaker extends GeneralFaker {
 		}
 		File piazzaPostsFolder = (File) args;
 		try {
-			createSpecificLoggerAndMetrics(piazzaPostsFolder);
+			createSpecificLoggerAndMetrics(piazzaPostsFolder, false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -387,36 +389,44 @@ public class PiazzaFaker extends GeneralFaker {
 		}
 		return retVal;
 	}
-	
+
 	protected String normalizeString(String aString) {
 		return aString;
 	}
 
 	protected String anonymyzeUsingLineReplacer(String aPiazzaPostsString) {
 		String aNormalizedString = normalizeString(aPiazzaPostsString);
-		String[] aSplitPiazzaPostsStrings = aNormalizedString.split(",");
+		String[] aCommaSplitPiazzaPostsStrings = aNormalizedString.split(",");
 		StringBuffer retVal = new StringBuffer(aPiazzaPostsString.length());
 		boolean hasName = false;
-		for (int index = 0; index < aSplitPiazzaPostsStrings.length; index++) {
-			if (index != 0) {
+		for (int aCommaSplitIndex = 0; aCommaSplitIndex < aCommaSplitPiazzaPostsStrings.length; aCommaSplitIndex++) {
+
+			if (aCommaSplitIndex != 0) {
 				retVal.append(",");
 			}
-			assignmentMetrics.numLinesProcessed++;
-			
-			String aSegment = aSplitPiazzaPostsStrings[index];
-			int numCharsInSegment = aSegment.length();
-			assignmentMetrics.numCharactersProcessed += numCharsInSegment;
-			String aReplacedSegment = aSegment;
-			if (AnonUtil.hasName(aSegment, originalNameList)) {
-				hasName = true;
-				assignmentMetrics.numLinesWithNames++;
-				assignmentMetrics.numCharactersInLinesWithNames += numCharsInSegment;
-				
-				aReplacedSegment = LineReplacerFactory.replaceLine(index, aSegment, messagesOutput, specificLogger,
-						KeywordFactory.keywordsRegex(), originalNameList, replacementNameList, someNameToFakeAuthor,
-						assignmentMetrics);
+			String aCommaSplitSegment = aCommaSplitPiazzaPostsStrings[aCommaSplitIndex];
+			String[] aParaSplitStrings = aCommaSplitSegment.split("<p>");
+			for (int aParaSplitIndex = 0; aParaSplitIndex < aParaSplitStrings.length; aParaSplitIndex++) {
+				if (aParaSplitIndex != 0) {
+					retVal.append("<p>");
+				}
+				assignmentMetrics.numLinesProcessed++;
+
+				String aParaSplitSegment = aParaSplitStrings[aParaSplitIndex];
+				int numCharsInSegment = aParaSplitSegment.length();
+				assignmentMetrics.numCharactersProcessed += numCharsInSegment;
+				String aReplacedSegment = aParaSplitSegment;
+				if (AnonUtil.hasName(aParaSplitSegment, originalNameList)) {
+					hasName = true;
+					assignmentMetrics.numLinesWithNames++;
+					assignmentMetrics.numCharactersInLinesWithNames += numCharsInSegment;
+
+					aReplacedSegment = LineReplacerFactory.replaceLine(aParaSplitIndex, aParaSplitSegment,
+							messagesOutput, specificLogger, KeywordFactory.keywordsRegex(), originalNameList,
+							replacementNameList, someNameToFakeAuthor, assignmentMetrics);
+				}
+				retVal.append(aReplacedSegment);
 			}
-			retVal.append(aReplacedSegment);
 		}
 		if (hasName) {
 			assignmentMetrics.numFilesWithNames++;
@@ -540,26 +550,52 @@ public class PiazzaFaker extends GeneralFaker {
 		return null;
 	}
 
-
-	protected void nonDuplicatePut(Map<String, String> aMap, String aKey, String aValue) {
-		if (aKey.contains("nstructor")) {
-			return;
-		}
-		String anExistingValue = aMap.get(aKey);
-		if (anExistingValue != null && !aValue.equals(anExistingValue)) {
-			aMap.put(aKey, HIDDEN_NAME);
-			
+//	protected void nonDuplicatePut(Map<String, String> aMap, String aKey, String aValue) {
+//		if (aKey.contains("nstructor")) {
+//			return;
+//		}
+//		String anExistingValue = aMap.get(aKey);
+//		if (anExistingValue != null && !aValue.equals(anExistingValue)) {
+//			aMap.put(aKey, HIDDEN_NAME);
+//
+//			try {
+//				specificLogger.write("Key:" + aKey + " Duplicate Values:" + anExistingValue + "," + aValue + "\n");
+//				specificLogger.flush();
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//
+//		} else {
+//			aMap.put(aKey, aValue);
+//			aMap.put(aKey.toLowerCase(), aValue);
+//		}
+//	}
+	
+	protected boolean setUpDone = false;
+	protected void replacementSetup() {
+//		if (someNameToFakeAuthor == null) {
+		if (!setUpDone) {
+			setUpDone = true;
+//			originalNameList = new ArrayList();
+//			replacementNameList = new ArrayList();
+//			someNameToFakeAuthor = new HashMap<>();
+			processElementsOfAllMaps();
+//			processElements(authorToFakeAuthor);
+//			processElements(emailToFakeAuthor);
+//			processElements(uidToFakeAuthor);
+//			processElements(fullNameToFakeFullName);
+//			processElements(firstNameToFakeFirstName);
+//			processElements(lastNameToFakeLastName);
 			try {
-				specificLogger.write("Key:" + aKey + " Duplicate Values:" + anExistingValue + "," + aValue + "\n");
+				specificLogger.write(authorToFakeAuthor.toString() + "/n");
 				specificLogger.flush();
-			} catch (Exception e) {
+			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
-		} else {
-			aMap.put(aKey, aValue);
-			aMap.put(aKey.toLowerCase(), aValue);
+			// first add
 		}
 	}
 
@@ -567,7 +603,6 @@ public class PiazzaFaker extends GeneralFaker {
 		String piazzaPostsString = readFile(piazzaPosts).toString();
 		assignmentMetrics.numFilesProcessed++;
 		JSONObject piazzaPostsJson = new JSONObject(piazzaPostsString);
-		
 
 		for (String author : piazzaPostsJson.keySet()) {
 			if (author.startsWith("Instructor")) {
@@ -585,7 +620,7 @@ public class PiazzaFaker extends GeneralFaker {
 //				String aFakeLastName = null;
 //				String aMiddleName = null;
 				JSONArray anAuthorPosts = piazzaPostsJson.getJSONArray(author);
-				
+
 				String aUid = getUIDFromPost(anAuthorPosts);
 				if (aUid == null) {
 					aUid = getUIDFromLog(anAuthorPosts);
@@ -594,12 +629,11 @@ public class PiazzaFaker extends GeneralFaker {
 				String aFullName = getFullName(author).trim();
 				String[] aNames = aFullName.split(" ");
 				String aFirstName = aNames[0];
-				String aLastName = aNames[aNames.length -1];
+				String aLastName = aNames[aNames.length - 1];
 				String aMiddleName = null;
 				if (aNames.length == 3) {
 					aMiddleName = aNames[1];
 				}
-				
 
 				String aFakeAuthor = getFakeAuthor(author);
 				String aFakeEmail = getEmail(aFakeAuthor);
@@ -614,11 +648,15 @@ public class PiazzaFaker extends GeneralFaker {
 				nonDuplicatePut(fullNameToFakeFullName, aFullName, aFakeFullName);
 				nonDuplicatePut(firstNameToFakeFirstName, aFirstName, aFakeFirstName);
 				nonDuplicatePut(lastNameToFakeLastName, aLastName, aFakeLastName);
+
+				nonDuplicatePut(fullNameToFakeFullName, aFullName.toLowerCase(), aFakeFullName);
+				nonDuplicatePut(firstNameToFakeFirstName, aFirstName.toLowerCase(), aFakeFirstName);
+				nonDuplicatePut(lastNameToFakeLastName, aLastName.toLowerCase(), aFakeLastName);
+
 				if (aMiddleName != null) {
 					nonDuplicatePut(firstNameToFakeFirstName, aMiddleName, HIDDEN_NAME);
 				}
 				nonDuplicatePut(lastNameToFakeLastName, aLastName, aFakeLastName);
-
 
 				if (aUid != null) {
 //					uidToFakeAuthor.put(aUid, aFakeAuthor);
