@@ -17,6 +17,10 @@ public interface StrikeOutManager {
 			 AssignmentMetrics anAssignmentMetrics
 			 );
 
+	String[][] getStrikeOutTable();
+
+	void setStrikeOutTable(String[][] newVal);
+
 
 //	Map<String, String> originalToStrikeOut();
 

@@ -112,7 +112,16 @@ public class ZoomChatFaker extends GeneralFaker {
 	protected void loadAnonNameMap(String[] vals) {
 		// TODO Auto-generated method stub
 		super.loadAnonNameMap(vals);
-		fullNameIdenMap.put(vals[1] + " " + vals[2], concat(vals[3], vals[4], vals[5]));
+		String aKey = vals[1] + " " + vals[2];
+		String aValue = concat(vals[3], vals[4], vals[5]);
+//		fullNameIdenMap.put(vals[1] + " " + vals[2], concat(vals[3], vals[4], vals[5]));
+		fullNameIdenMap.put(aKey, aValue);
+//		if (aKey.contains("avid") && aKey.contains("ite")) {
+//			System.out.println("Found problemantic key");
+//		}
+//		fullNameIdenMap.put(aKey.toLowerCase(), aValue);
+		putAliases(fullNameIdenMap, aKey, aValue);
+
 	}
 
 	@Override
@@ -273,7 +282,7 @@ public class ZoomChatFaker extends GeneralFaker {
 		if (aNames.length > 3) {
 			return null;
 		}
-		return aName;
+		return aName.trim();
 	}
 	public void anonymizeChat(File chat) {
 		String chatString = chatMap.get(chat);
@@ -483,9 +492,17 @@ public class ZoomChatFaker extends GeneralFaker {
 			System.out.println("first name == last name");
 		}
 		
-		String fakeName = CommentsIdenMap.get(onyen);
+//		String fakeName = CommentsIdenMap.get(onyen);
+		String fakeName = getFakeOfNameOfPossiblyAlias(onyen);
+
 		if (fakeName == null) {
-			fakeName = fullNameIdenMap.get(firstName + " " + lastName);
+			String aFullName = firstName + " " + lastName;
+//			fakeName = fullNameIdenMap.get(firstName + " " + lastName);
+			fakeName = fullNameIdenMap.get(aFullName);
+			if (fakeName == null) {
+				fakeName = fullNameIdenMap.get(aFullName.toLowerCase());
+			}
+
 		}
 		if (fakeName == null) {
 			String fakeFirstName = faker.name().firstName();
@@ -500,7 +517,8 @@ public class ZoomChatFaker extends GeneralFaker {
 	}
 
 	public String getFakeName(String onyen) {
-		String fakeName = CommentsIdenMap.get(onyen);
+//		String fakeName = CommentsIdenMap.get(onyen);
+		String fakeName = getFakeOfNameOfPossiblyAlias(onyen);
 		return fakeName.substring(0, fakeName.indexOf(','));
 	}
 

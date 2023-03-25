@@ -306,7 +306,9 @@ public class PiazzaFaker extends GeneralFaker {
 			}
 		}
 
-		String fakeName = CommentsIdenMap.get(onyen);
+//		String fakeName = CommentsIdenMap.get(onyen);
+		String fakeName = getFakeOfNameOfPossiblyAlias(onyen);
+
 		String fakeAuthor = "";
 
 		if (fakeName == null || onyen.equals("instructor")) {

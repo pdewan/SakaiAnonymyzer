@@ -9,4 +9,7 @@ public interface KeywordGenerator {
 
 	String keywordsRegex();
 
+
+	void setKeywords(String[] newVal);
+
 }

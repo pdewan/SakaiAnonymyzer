@@ -18,6 +18,7 @@ import java.util.Set;
 import com.github.javafaker.Faker;
 import com.github.javafaker.service.FakeValuesGrouping;
 
+import anonymyzer.factories.AliasesManagerFactory;
 import anonymyzer.factories.LoggerFactory;
 
 public abstract class GeneralFaker {
@@ -234,8 +235,52 @@ public abstract class GeneralFaker {
 		} 
 	}
 	
+	public static void putAliases(Map<String, String> aMap, String aKey, String aValue) {
+		List<String> anAliases = AliasesManagerFactory.getAliases(aKey);
+		for (String anAlias:anAliases) {
+			aMap.put(anAlias, aValue);	
+			aMap.put(anAlias.toLowerCase(), aValue);
+		}
+	}
+	
+	// ugh duplicating code in AnonFaker!
+	protected String getFakeOfNameOfPossiblyAlias(String aName) {
+		String retVal = CommentsIdenMap.get(aName);
+		if (retVal != null) {
+			return retVal;
+		}
+		List<String> anAliases = AliasesManagerFactory.getAliases(aName);
+		for (String anAlias:anAliases) {
+			retVal = CommentsIdenMap.get(anAlias);
+			if (retVal == null) {
+				retVal = CommentsIdenMap.get(anAlias.toLowerCase());
+
+			}
+			if (retVal != null) {
+				String aMessage = "Using alias " + anAlias + " for " + aName;
+				assignmentMetrics.numAliasesUsed++;
+				if (!messagesOutput.contains(aMessage)) {
+					try {
+						specificLogger.write(aMessage + "\n");
+						specificLogger.flush();
+						assignmentMetrics.numUniqueAliasesUsed++;
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				return retVal;
+			}
+		}
+		return null;
+	}
+
+	
 	protected void loadAnonNameMap(String[] vals) {
-		CommentsIdenMap.put(vals[0], concat(vals[3], vals[4], vals[5]));
+		String aKey = vals[0];
+		String aValue = concat(vals[3], vals[4], vals[5]);
+//		CommentsIdenMap.put(vals[0], concat(vals[3], vals[4], vals[5]));
+		CommentsIdenMap.put(aKey, aValue);
+
 		fakeNameSet.add(vals[3]);
 	}
 	

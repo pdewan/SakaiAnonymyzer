@@ -45,7 +45,13 @@ public class SakaiGradebookFaker extends GeneralFaker {
 		if (!(arg instanceof File)) {
 			return;
 		}
+		
 		File gradebook = (File) arg;
+		try {
+			createSpecificLoggerAndMetrics(gradebook, true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		String[] lines = readFile(gradebook).toString().split("\\R");
 		List<String> nextLine = new ArrayList<>();
 		List<Integer> gradesIdx = new ArrayList<>();
@@ -94,10 +100,21 @@ public class SakaiGradebookFaker extends GeneralFaker {
 				}
 				nextLine.clear();
 				try {
-					String[] fakeNames = getFakeNames(line[onyenIdx], line[nameIdx]);
+					String anOnyen = line[onyenIdx];
+					String aName = line[nameIdx];
+//					String[] fakeNames = getFakeNames(line[onyenIdx], line[nameIdx]);
+					String[] fakeNames = getFakeNames(anOnyen, aName);
+
 					nextLine.add(fakeNames[1]);
 					nextLine.add(fakeNames[2]);
 					nextLine.add(fakeNames[0]);
+					String aMessage = anOnyen + ":" +  aName + "-->" + fakeNames[0] ; 
+//					assignmentMetrics.numLinesWithPositives++;
+					if (!messagesOutput.contains(aMessage)) {
+						messagesOutput.add(aMessage);
+						specificLogLine(aMessage);
+
+					}
 					for (int idx : gradesIdx) {
 						String s = maybeUnquote(line[idx]);
 						if (s.isEmpty()) {
@@ -117,7 +134,8 @@ public class SakaiGradebookFaker extends GeneralFaker {
 	}
 
 	public String[] getFakeNames(String onyen, String name) {
-		String fakeName = CommentsIdenMap.get(onyen);
+//		String fakeName = CommentsIdenMap.get(onyen);
+		String fakeName = getFakeOfNameOfPossiblyAlias(onyen);
 		if (fakeName == null) {
 			String[] names = name.split(", ");
 			String fakeFirstName = faker.name().firstName();

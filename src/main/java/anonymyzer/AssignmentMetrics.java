@@ -26,6 +26,9 @@ public class AssignmentMetrics {
 	public int numUniqueWordsIgnored = 0; // for each word, count it once
 	public int numWordsHidden = 0; // each word hidden
 	public int numUniqueWordsHidden = 0; // num unique words
+	
+	public int numAliasesUsed = 0; 
+	public int numUniqueAliasesUsed = 0;
 
 
 	
@@ -49,7 +52,9 @@ public class AssignmentMetrics {
 				"Number of Words Ignored:" + numWordsIgnored + "\n" +
 				"Number of Unique Ignores:" + numUniqueWordsIgnored + "\n" +
 				"Number of Words Hidden:" + numWordsHidden + "\n" +
-				"Number of Unique Hides:" + numUniqueWordsHidden;
+				"Number of Unique Hides:" + numUniqueWordsHidden +
+				"Number of Aliases Used:" + numAliasesUsed +
+				"Number of Unique Aliases Used:" + numUniqueAliasesUsed;
 
 	}
 

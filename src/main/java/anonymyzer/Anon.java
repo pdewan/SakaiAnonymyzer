@@ -1257,7 +1257,13 @@ public class Anon {
 //		
 		String orig_line = file.getPath();
 		List<String> names = NameExtractorFactory.extractNames(file, topFolderName);
+		if (!namesSeen.contains(names)) {
 		namesSeen.add(names);
+		deriveNamesAndReplacements(names);
+		} else {
+//			System.out.println("Repeated names for:" + file);
+		}
+
 //		if (previousNames == null || !names.equals(previousNames)) {
 ////			messagesOutput.clear();
 //			specificLogger.write("New Names:" + names + "\n");
@@ -1267,7 +1273,6 @@ public class Anon {
 //		}
 
 //		List<String> names = extractNames (file, topFolderName);
-		deriveNamesAndReplacements(names);
 				
 
 		// make a new file to write to
@@ -1639,20 +1644,21 @@ public class Anon {
 		return KeywordFactory.getKeywords();
 	}
 	
-	protected String capitalizeWordStart(String aWord) {
-		if (aWord.length() > 1) {
-			return Character.toUpperCase(aWord.charAt(0)) + aWord.substring(1);
-		}
-		return aWord;
-	}
+//	public static String capitalizeWordStart(String aWord) {
+//		if (aWord.length() > 1) {
+//			return Character.toUpperCase(aWord.charAt(0)) + aWord.substring(1);
+//		}
+//		return aWord;
+//	}
 
 	protected Set<String> keywordsSet() {
 		if (keywordsSet == null) {
 			keywordsSet = new HashSet();
-			for (String aString:keywords()) {				
-				keywordsSet.add(aString);
-				keywordsSet.add(capitalizeWordStart(aString));
-			}
+			AnonUtil.arraysToWordSet(keywords(), keywordsSet);
+//			for (String aString:keywords()) {				
+//				keywordsSet.add(aString);
+//				keywordsSet.add(AnonUtil.capitalizeWordStart(aString));
+//			}
 
 		}
 		return keywordsSet;

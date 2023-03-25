@@ -39,6 +39,20 @@ public class AnonUtil {
 	}
 
 	static String idRegex = "\\b_*[a-zA-Z][_a-zA-Z0-9]*\\b";
+	
+	public static String capitalizeWordStart(String aWord) {
+		if (aWord.length() > 1) {
+			return Character.toUpperCase(aWord.charAt(0)) + aWord.substring(1);
+		}
+		return aWord;
+	}
+	
+	public static void arraysToWordSet(String[] anArray, Set<String> aSet) {
+		for (String aWord:anArray) {
+			aSet.add(aWord);
+			aSet.add(AnonUtil.capitalizeWordStart(aWord));
+		}
+	}
 
 	public static List<String> getIdentifiers(String aLine) {
 		List<String> list = new ArrayList<String>();

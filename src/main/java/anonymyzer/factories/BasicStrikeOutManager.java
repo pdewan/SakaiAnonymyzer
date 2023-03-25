@@ -88,9 +88,13 @@ public class BasicStrikeOutManager implements StrikeOutManager{
 //		}
 //		return originalToStrikeOut;
 //	}
-	
-	public String[][] strikeOutTable() {
+	@Override
+	public String[][] getStrikeOutTable() {
 		return strikeOutTable;
+	}
+	@Override
+	public void setStrikeOutTable( String[][] newVal) {
+		strikeOutTable = newVal;
 	}
 	protected boolean strikeOut(String aReplacement) {
 		return aReplacement.length() == 1 && aReplacement.charAt(0) == STRIKE_OUT_CHARACTER;
@@ -106,7 +110,7 @@ public class BasicStrikeOutManager implements StrikeOutManager{
 
 //	public String srikeOutOriginals(List<String> aNames, String aString) {
 		
-		String[][] aStrikeOutTable = strikeOutTable();
+		String[][] aStrikeOutTable = getStrikeOutTable();
 		String retVal = aString;
 		
 		for (String[] aRow:aStrikeOutTable) {

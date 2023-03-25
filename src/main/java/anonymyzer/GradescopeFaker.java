@@ -148,12 +148,24 @@ public class GradescopeFaker extends GeneralFaker {
 				nextLine.add(fakeNames[1]);
 				nextLine.add(fakeNames[2]);
 				nextLine.add(fakeNames[0]);
+				
+				String anEmail = line[emailIdx];
+				String aFullName = line[fullNameIdx];				
+				String aFakeFullName = fakeNames[0];
+				String aMessage = anEmail + ":" + aFullName + "-->" + fakeNames[0];
+				if (!messagesOutput.contains(aMessage)) {
+					messagesOutput.add(aMessage);
+					specificLogLine(aMessage);
+				}
+				
+				
 				for (int idx : assigns) {
 					nextLine.add(line[idx]);
 				}
 				
 				bw.write(String.join(",", nextLine) + System.lineSeparator());
-				specificLogLine(line[fullNameIdx] + "," + line[emailIdx] + " -> " + Arrays.toString(fakeNames));
+				
+//				specificLogLine(line[fullNameIdx] + ":" + line[emailIdx] + " -> " + Arrays.toString(fakeNames));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -207,7 +219,15 @@ public class GradescopeFaker extends GeneralFaker {
 				nextLine.add(fakeNames[0]);
 				nextLine.add(line[gradeIdx]);
 				bw.write(String.join(",", nextLine) + System.lineSeparator());
-				specificLogLine(line[fullNameIdx] + "," + line[emailIdx] + " -> " + Arrays.toString(fakeNames));
+				String anEmail = line[emailIdx];
+				String aFullName = line[fullNameIdx];				
+				String aFakeFullName = fakeNames[0];
+				String aMessage = anEmail + ":" + aFullName + "-->" + fakeNames[0];
+				if (!messagesOutput.contains(aMessage)) {
+					messagesOutput.add(aMessage);
+					specificLogLine(aMessage);
+				}
+//				specificLogLine(line[fullNameIdx] + ":" + line[emailIdx] + " -> " + Arrays.toString(fakeNames));
 
 			}
 		} catch (IOException e) {
@@ -217,7 +237,9 @@ public class GradescopeFaker extends GeneralFaker {
 	
 	public String[] getFakeNames(String[] line, int emailIdx, int firstNameIdx, int lastNameIdx, int fullNameIdx) {
 		String onyen = line[emailIdx].substring(0, line[emailIdx].indexOf("@"));
-		String fakeName = CommentsIdenMap.get(onyen);
+//		String fakeName = CommentsIdenMap.get(onyen);
+		String fakeName = getFakeOfNameOfPossiblyAlias(onyen);
+
 		if (fakeName == null) {
 			String fullName = firstNameIdx != -1 ? line[firstNameIdx] + " " + line[lastNameIdx] 
 												 : line[fullNameIdx];

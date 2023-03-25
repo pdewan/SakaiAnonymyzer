@@ -52,8 +52,13 @@ public class BasicKeywordGenerator implements KeywordGenerator {
 //			"timestamp",
 //			"random" 
 			};
+	@Override
 	public String[] getKeywords() {
 		return keywords;
+	}
+	@Override
+	public void setKeywords(String[] newVal) {
+		keywords = newVal;
 	}
 	protected Set<String> keywordsSet;
 	

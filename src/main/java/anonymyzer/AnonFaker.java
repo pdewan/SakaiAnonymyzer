@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import com.github.javafaker.Faker;
 import com.github.javafaker.service.FakeValuesGrouping;
 
+import anonymyzer.factories.AliasesManagerFactory;
 import anonymyzer.factories.KeywordFactory;
 import anonymyzer.factories.LineReplacerFactory;
 
@@ -331,6 +332,8 @@ public class AnonFaker extends Anon {
 
 		return aReplacedValue;
 	}
+	
+	
 	protected void deriveNamesAndReplacements(List<String> aNames) {
 //		super.setNames(aNames);
 //		originalToReplacement.clear();
@@ -345,19 +348,68 @@ public class AnonFaker extends Anon {
 			String aToken = tokens[idx[index]];
 			aDerivedReplacements.add(aToken);
 			aDerivedReplacements.add(aToken.toLowerCase());
-		}
-		String aFullReplacementNameNoSpaces = aDerivedReplacements.get(2) + aDerivedReplacements.get(0);
-		aDerivedReplacements.add(aFullReplacementNameNoSpaces);
-		aDerivedReplacements.add(aFullReplacementNameNoSpaces.toLowerCase());
+		} // consstent with passed aNames
+		
+		String anOnyen = aNames.get(2);
+		String anOyenReplacement = aDerivedReplacements.get(2);
+		
+
+		String aFullNameNoSpaces = aNames.get(1).replace(" ", "") + aNames.get(0).replace(" ", "");
+		
+		String aFullNameSpace = aNames.get(1) + " " + aNames.get(0);
+
+		String aFullReplacementNoSpaces = aDerivedReplacements.get(2) + aDerivedReplacements.get(0); // no middle name here
+		String aFullReplacementSpace = aDerivedReplacements.get(2) + " " + aDerivedReplacements.get(0);
+		String aFullReplacementSpaceLowerCase = aFullReplacementSpace.toLowerCase();
+		String aFullReplacementNoSpacesLowerCase = aFullReplacementNoSpaces.toLowerCase();
+		
+
+		
+		
+		
+		
+//		String aFullReplacementNameNoSpaces = aDerivedReplacements.get(2) + aDerivedReplacements.get(0);
+		aDerivedReplacements.add(aFullReplacementNoSpaces);
+		aDerivedReplacements.add(aFullReplacementNoSpacesLowerCase);
 		for (int index = 0; index < aNames.size(); index++) {
 			aDerivedNames.add(aNames.get(index));
 			aDerivedNames.add(aNames.get(index).toLowerCase());
-		}
-		String aFullNameNoSpaces = aNames.get(1) + aNames.get(0);
+		} // a derived names consistent with names plus a lower case
 		aDerivedNames.add(aFullNameNoSpaces);
 		aDerivedNames.add(aFullNameNoSpaces.toLowerCase());
 		super.deriveNamesAndReplacements(aDerivedNames);
 		setNameReplacements(aDerivedReplacements);
+		
+		
+		List<String> anOnyenAliases = AliasesManagerFactory.getAliases(anOnyen);
+		for (String anOnyenAlias:anOnyenAliases) {
+			aDerivedNames.add(anOnyenAlias);
+			aDerivedReplacements.add(anOyenReplacement);
+		}
+		
+		List<String> aFullNameAliases = AliasesManagerFactory.getAliases(aFullNameSpace);
+		for (String aFullNameAlias:aFullNameAliases) {			
+			
+			String aFullNameAliasLowerCase = aFullNameAlias.toLowerCase();
+			
+			String aFullNameAliasNoSpace = aFullNameAlias.replace(" ", "");
+			String aFullNameAliasNoSpaceLowerCase = aFullNameAliasNoSpace.toLowerCase();
+			
+			aDerivedNames.add(aFullNameAlias);
+			aDerivedReplacements.add(aFullReplacementSpace);
+			
+			aDerivedNames.add(aFullNameAliasLowerCase);
+			aDerivedReplacements.add(aFullReplacementSpaceLowerCase);
+			
+			aDerivedNames.add(aFullNameAliasNoSpace);
+			aDerivedReplacements.add(aFullReplacementNoSpaces);
+			
+			aDerivedNames.add(aFullNameAliasNoSpaceLowerCase);
+			aDerivedReplacements.add(aFullReplacementNoSpacesLowerCase);
+			
+			
+		}
+		
 		originalToReplacement = new HashMap();
 		for (int index = 0; index < aDerivedNames.size(); index++) {
 			originalToReplacement.put(aDerivedNames.get(index), aDerivedReplacements.get(index));
@@ -584,9 +636,39 @@ public class AnonFaker extends Anon {
 		}
 		return tokens[2] + ", " + tokens[1] + "(" + tokens[0] + ")";
 	}
-
+	
+	protected String getFakeOfNameOfPossiblyAlias(String aName) {
+		String retVal = commentsIdenMap.get(aName);
+		if (retVal != null) {
+			return retVal;
+		}
+		List<String> anAliases = AliasesManagerFactory.getAliases(aName);
+		for (String anAlias:anAliases) {
+			retVal = commentsIdenMap.get(anAlias);
+			if (retVal == null) {
+				retVal = commentsIdenMap.get(anAlias.toLowerCase());
+			}
+			if (retVal != null) {
+				String aMessage = "Using alias " + anAlias + " for " + aName;
+				assignmentMetrics.numAliasesUsed++;
+				if (!messagesOutput.contains(aMessage)) {
+					try {
+						specificLogger.write(aMessage + "\n");
+						specificLogger.flush();
+						assignmentMetrics.numUniqueAliasesUsed++;
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				return retVal;
+			}
+		}
+		return null;
+	}
+	
 	protected String[] getTokens(String firstName, String lastName, String onyen) {
-		String fake = commentsIdenMap.get(onyen);
+//		String fake = commentsIdenMap.get(onyen);
+		String fake = getFakeOfNameOfPossiblyAlias(onyen);
 		if (fake != null) {
 			return fake.split(",");
 		}
