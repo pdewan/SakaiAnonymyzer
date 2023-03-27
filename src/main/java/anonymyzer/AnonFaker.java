@@ -357,6 +357,8 @@ public class AnonFaker extends Anon {
 		String aFullNameNoSpaces = aNames.get(1).replace(" ", "") + aNames.get(0).replace(" ", "");
 		
 		String aFullNameSpace = aNames.get(1) + " " + aNames.get(0);
+		String aFullNameSpaceLowerCase = aFullNameSpace.toLowerCase();
+
 
 		String aFullReplacementNoSpaces = aDerivedReplacements.get(2) + aDerivedReplacements.get(0); // no middle name here
 		String aFullReplacementSpace = aDerivedReplacements.get(2) + " " + aDerivedReplacements.get(0);
@@ -369,8 +371,8 @@ public class AnonFaker extends Anon {
 		
 		
 //		String aFullReplacementNameNoSpaces = aDerivedReplacements.get(2) + aDerivedReplacements.get(0);
-		aDerivedReplacements.add(aFullReplacementNoSpaces);
-		aDerivedReplacements.add(aFullReplacementNoSpacesLowerCase);
+		aDerivedReplacements.add(aFullReplacementNoSpaces+"[NS]");
+		aDerivedReplacements.add(aFullReplacementNoSpacesLowerCase+"[L]");
 		for (int index = 0; index < aNames.size(); index++) {
 			aDerivedNames.add(aNames.get(index));
 			aDerivedNames.add(aNames.get(index).toLowerCase());
@@ -380,11 +382,18 @@ public class AnonFaker extends Anon {
 		super.deriveNamesAndReplacements(aDerivedNames);
 		setNameReplacements(aDerivedReplacements);
 		
+		aDerivedNames.add(aFullNameSpace);
+		aDerivedReplacements.add(aFullReplacementSpace);
+		aDerivedNames.add(aFullNameSpaceLowerCase);
+		aDerivedReplacements.add(aFullReplacementSpaceLowerCase);
+		
+		
+		
 		
 		List<String> anOnyenAliases = AliasesManagerFactory.getAliases(anOnyen);
 		for (String anOnyenAlias:anOnyenAliases) {
 			aDerivedNames.add(anOnyenAlias);
-			aDerivedReplacements.add(anOyenReplacement);
+			aDerivedReplacements.add(anOyenReplacement+"[A]");
 		}
 		
 		List<String> aFullNameAliases = AliasesManagerFactory.getAliases(aFullNameSpace);
@@ -396,16 +405,16 @@ public class AnonFaker extends Anon {
 			String aFullNameAliasNoSpaceLowerCase = aFullNameAliasNoSpace.toLowerCase();
 			
 			aDerivedNames.add(aFullNameAlias);
-			aDerivedReplacements.add(aFullReplacementSpace);
+			aDerivedReplacements.add(aFullReplacementSpace+"[A]");
 			
 			aDerivedNames.add(aFullNameAliasLowerCase);
-			aDerivedReplacements.add(aFullReplacementSpaceLowerCase);
+			aDerivedReplacements.add(aFullReplacementSpaceLowerCase+"[A]");
 			
 			aDerivedNames.add(aFullNameAliasNoSpace);
-			aDerivedReplacements.add(aFullReplacementNoSpaces);
+			aDerivedReplacements.add(aFullReplacementNoSpaces+"[A]");
 			
 			aDerivedNames.add(aFullNameAliasNoSpaceLowerCase);
-			aDerivedReplacements.add(aFullReplacementNoSpacesLowerCase);
+			aDerivedReplacements.add(aFullReplacementNoSpacesLowerCase+"[A]");
 			
 			
 		}
@@ -714,4 +723,8 @@ public class AnonFaker extends Anon {
 		line = line.replaceAll(names[3], tokens[2]);
 		return line;
 	}
+	protected void nonDuplicatePut(Map<String, String> aMap, String aKey, String aValue) {
+		aMap.put(aKey, aValue);
+	}
+
 }

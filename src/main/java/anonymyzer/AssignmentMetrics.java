@@ -29,11 +29,15 @@ public class AssignmentMetrics {
 	
 	public int numAliasesUsed = 0; 
 	public int numUniqueAliasesUsed = 0;
+	
+	public int numMiddleNames = 0;
+	
 
 
 	
 	public String toString() {
 		return 
+				"Number of middle names:" + numMiddleNames + "\n" +
 				"Number of Files Processed:" + numFilesProcessed + "\n" +
 				"Number of Lines Processed:" + numLinesProcessed + "\n" +
 				"Number of Characters Processed:" + numCharactersProcessed + "\n" +

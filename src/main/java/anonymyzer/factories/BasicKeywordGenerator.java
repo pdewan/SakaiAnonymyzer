@@ -26,14 +26,17 @@ public class BasicKeywordGenerator implements KeywordGenerator {
 //			"do not",
 //			"Undo",
 			"doPrivileged",
+			"long-winded",
 			"doIntersection",
+			"anIn",
 			"doFinish",
 			"does",
 			"double",
 			"window",
 			"Myer-Patel",
 			"wait(long,int)",
-			"be An", // args should be An to Am
+			"anIntegers",
+//			"be An", // args should be An to Am
 //			"an alternative",
 //			"an expression",
 //			"an integer",

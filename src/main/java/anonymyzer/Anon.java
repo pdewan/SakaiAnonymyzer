@@ -51,7 +51,7 @@ After this i can get aikat and whoever else to use this and hand me sakai folder
  so I can then do a high-low-median in similiarity 
  scores for a semester's course and finally get some graphs going!!
  */
-public class Anon {
+public class Anon  extends GeneralFaker{
 	boolean courseMode = false;
 	boolean deleteTXTAndHTML = false;
 	String currIden;
@@ -1686,5 +1686,11 @@ public class Anon {
 	static {
 //		hardwiredSubstitutions = new HashMap();
 		// add hardwired sustitutions
+	}
+
+	@Override
+	public void anonymize(Object arg) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -10,8 +10,12 @@ public class BasicDoNotFakeManager implements DoNotFakeManager{
 	String[] doNotReplaceWordArray = {
 			"do",
 			"an",
+			"long",
 			"uh",
-			"he"
+			"he",
+//			"anIntegers",
+			"white",
+//			"anIndex"
 	};
 	String[] hideWordArray = {
 			

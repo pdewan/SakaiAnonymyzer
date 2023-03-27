@@ -377,7 +377,7 @@ public class AnonUtil {
 		return aFragmentStart;
 	}
 
-	public static int findLeftFramgmentLimitShort(String aString, int aFragmentStart) {
+	public static int findLeftFragmentLimitShort(String aString, int aFragmentStart) {
 		for (int index = aFragmentStart - 1; index >= 0; index--) {
 			char aChar = aString.charAt(index);
 			if (isIdentifierCharacter(aChar)) {
@@ -401,14 +401,16 @@ public class AnonUtil {
 			return aFragmentEnd;
 		}
 		// assuming one blank after a word
-		for (int index = aFragmentEnd; index < aString.length(); index++) {
+		int index = aFragmentEnd;
+		for (; index < aString.length(); index++) {
 			char aChar = aString.charAt(index);
 			if (isIdentifierCharacter(aChar)) {
 				foundIdentifier = true;
 			} else if (foundIdentifier) {
 				return index;
-			} else if (index == aFragmentEnd) { // skip the space after the fragment to get the next word
-				index = aFragmentEnd + 1;
+			} else if (index == aFragmentEnd) { // skip the spaces after the fragment to get the next word
+//				index = aFragmentEnd + 1;
+				continue;
 			} else {
 				break;
 			}
@@ -419,7 +421,7 @@ public class AnonUtil {
 //			}
 //			return index;  
 		}
-		return aFragmentEnd;
+		return index;
 	}
 
 	public static int findRightFragmentLimitShort(String aString, int aFragmentEnd) {
@@ -435,15 +437,15 @@ public class AnonUtil {
 	}
 	
 	public static boolean isCompleteWord(String aFragmentWithContext, String anOriginal) {
-//		if (aFragmentWithContext.contains("...whether (he) has...")) {
-//			System.out.println("Found offending text");
-//		}
+		if (aFragmentWithContext.contains("David (White)")) {
+			System.out.println("Found offending text");
+		}
 				
-		int aStartIndex = aFragmentWithContext.indexOf(anOriginal);
+		int aStartIndex = aFragmentWithContext.indexOf("(" + anOriginal + ")");
 		int anEndIndex = aStartIndex + anOriginal.length();	
 		int aDotsLength = "...".length();
-		char aPrecedingChar = aFragmentWithContext.charAt(aStartIndex - 2);
-		char aSucceedingChar = aFragmentWithContext.charAt(anEndIndex + 1);
+		char aPrecedingChar = aFragmentWithContext.charAt(aStartIndex - 1);
+		char aSucceedingChar = aFragmentWithContext.charAt(anEndIndex + 2);
 		boolean isStartOfWord = aStartIndex == aDotsLength || !isIdentifierCharacter(aPrecedingChar);
 		boolean isEndOfWord = (anEndIndex + 1 == 
 				(aFragmentWithContext.length() - aDotsLength)) ||
@@ -483,8 +485,14 @@ public class AnonUtil {
 //		if (aContextPrefix.contains(">")) {
 //			System.out.println("found >");
 //		}
-		return "..." + aContextPrefix + "(" + aFragment + ")" + aContextSuffix + "...";
-
+		//Replaced ...CDATA[(Jillian)...
+//		return "..." + aContextPrefix + "(" + aFragment + ")" + aContextSuffix + "...";
+		
+		String retVal =  "..." + aContextPrefix + "(" + aFragment + ")" + aContextSuffix + "...";
+//		if (retVal.contains("whether (he) has")) {
+//			System.out.println("found offending context");
+//		}
+		return retVal;
 	}
 
 	public static List<String> fragmentsWithContext(String aString, Map<Integer, String> anIndexToFragment) {
@@ -577,6 +585,10 @@ public class AnonUtil {
 					anIndex + anOriginalAtIndex.length());
 			aNumReplacements++;
 			String aReplacementMessage = "Replaced " + anOriginalWithContext + " with" + aReplacementWithContext + "\n";
+//			if (aReplacementMessage.contains("Replaced ...CDATA[(Jillian)...")) {
+//				System.out.println(" found context ");
+//			}
+			
 			aReplacementsWithContext.append(aReplacementMessage);
 ////			aChanged = true;
 //			if (aLogger != null) {

@@ -38,7 +38,7 @@ public abstract class GeneralFaker {
 	String logFileName = "faker_log";
 	FileWriter logger, specificLogger;
 	AssignmentMetrics assignmentMetrics;
-	public final static String HIDDEN_NAME = "";
+	public final static String HIDDEN_NAME = "[h]";
 	Map<String, String> maybeQuotedNameToOnyen = new HashMap<>();
 	Map<String, String> nameToOnyen = new HashMap<>();
 
@@ -89,26 +89,14 @@ public abstract class GeneralFaker {
 	}
 
 	protected void processElementsOfAllMaps() {
-//		if (someNameToFakeAuthor == null) {
-//			originalNameList = new ArrayList();
-//			replacementNameList = new ArrayList();
-//			someNameToFakeAuthor = new HashMap<>();
+
 			processElements(authorToFakeAuthor);
 			processElements(emailToFakeAuthor);
 			processElements(uidToFakeAuthor);
 			processElements(fullNameToFakeFullName);
 			processElements(firstNameToFakeFirstName);
 			processElements(lastNameToFakeLastName);
-//			try {
-//				specificLogger.write(authorToFakeAuthor.toString() + "/n");
-//				specificLogger.flush();
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
 
-			// first add
-//		}
 	}
 	
 	protected void nonDuplicatePut(Map<String, String> aMap, String aKey, String aValue) {
@@ -129,7 +117,7 @@ public abstract class GeneralFaker {
 
 		} else {
 			aMap.put(aKey, aValue);
-			aMap.put(aKey.toLowerCase(), aValue);
+//			aMap.put(aKey.toLowerCase(), aValue);
 		}
 	}
 
@@ -235,13 +223,71 @@ public abstract class GeneralFaker {
 		} 
 	}
 	
-	public static void putAliases(Map<String, String> aMap, String aKey, String aValue) {
+	protected void  putAliases(Map<String, String> aMap, String aKey, String aValue) {
 		List<String> anAliases = AliasesManagerFactory.getAliases(aKey);
 		for (String anAlias:anAliases) {
-			aMap.put(anAlias, aValue);	
-			aMap.put(anAlias.toLowerCase(), aValue);
+			putFullName(aMap, anAlias, aValue + "[a]");			
 		}
 	}
+	
+	protected void  putNameAndLowerCase(Map<String, String> aMap, String aName, String aReplacement) {
+//		String[] aNameComponents = aName.split(" ");
+		nonDuplicatePut(aMap, aName, aReplacement);
+		nonDuplicatePut(aMap, aName.toLowerCase(), aReplacement.toLowerCase()+"[lc]");
+	}
+	
+	protected void putFullNameAndLiases(Map<String, String> aMap, String aName, String aReplacement) {
+		putFullName(aMap, aName, aReplacement);
+		putAliases(aMap, aName, aReplacement);
+	}
+
+	
+	protected void putFullName(Map<String, String> aMap, String aName, String aReplacement) {
+		String[] aNameComponents = aName.split(" ");
+		String[] aReplacementComponents = aReplacement.split(" ");
+		putNameAndLowerCase(aMap, aName, aReplacement);
+
+		if (aNameComponents.length == 1 || aReplacementComponents.length == 1 ) {
+//			putNameAndLowerCase(aMap, aName, aReplacement);
+			return;
+		}
+		String aFirstName = aNameComponents[0];
+		String aLastName = aNameComponents[aNameComponents.length - 1];
+		String aReplacementFirst = aReplacementComponents[0];
+		String aReplacementLast = aReplacementComponents[aReplacementComponents.length - 1];
+		
+
+		putNameAndLowerCase(aMap, aFirstName, aReplacementFirst+"[f]");
+		putNameAndLowerCase(aMap, aLastName, aReplacementLast+"[l]");	
+		
+		if (aNameComponents.length >= 3) {
+			assignmentMetrics.numMiddleNames++;
+			String aMiddleName = aNameComponents[1];
+			putMiddleName(aMap, aFirstName, aMiddleName, aLastName, aReplacementFirst, aReplacementLast);
+		}
+
+	}
+	
+	protected void  putMiddleName(
+			Map<String, String> aMap, 
+			String aFirstName,
+			String aMiddleName,
+			String aLastName,
+			String aReplacementFirst,
+			String aReplacementLast) {
+		
+		putNameAndLowerCase(aMap, aMiddleName, aReplacementFirst+"[m]");
+		putNameAndLowerCase(aMap, 
+				aMiddleName + " " + aLastName, 
+				aReplacementFirst+ " " + aReplacementLast + "[ml]");
+		putNameAndLowerCase(aMap, 
+				aFirstName + " " + aMiddleName, 
+				aReplacementFirst + "[fm]");
+		putNameAndLowerCase(aMap, 
+				aFirstName + " " + aLastName, 
+				aReplacementFirst + " " + aReplacementLast +  "[fl]");
+		}
+	
 	
 	// ugh duplicating code in AnonFaker!
 	protected String getFakeOfNameOfPossiblyAlias(String aName) {

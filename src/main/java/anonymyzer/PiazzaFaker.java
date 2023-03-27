@@ -629,6 +629,9 @@ public class PiazzaFaker extends GeneralFaker {
 				}
 				String anEmail = getEmail(author);
 				String aFullName = getFullName(author).trim();
+// 				if (aFullName.contains("White")) {
+//					System.out.println(" found offending text");
+//				}
 				String[] aNames = aFullName.split(" ");
 				String aFirstName = aNames[0];
 				String aLastName = aNames[aNames.length - 1];
@@ -640,25 +643,39 @@ public class PiazzaFaker extends GeneralFaker {
 				String aFakeAuthor = getFakeAuthor(author);
 				String aFakeEmail = getEmail(aFakeAuthor);
 				String aFakeFullName = getFullName(aFakeAuthor).trim();
+		
 				String[] aFakeNames = aFakeFullName.split(" ");
 				String aFakeFirstName = aFakeNames[0];
 				String aFakeLastName = aFakeNames[1];
+				
+				putFullNameAndLiases(fullNameToFakeFullName, aFullName, aFakeFullName);
+				
+//				putFullName(fullNameToFakeFullName, 
+//						aFullName, aFakeFullName);
+//				putAliases(fullNameToFakeFullName, aFullName, aFakeFullName);
+//				
+//				if (aMiddleName != null) {
+//					String aFakeFirstLastName = aFirstName + " " + aLastName;
+//					nonDuplicatePut(fullNameToFakeFullName, aFakeFirstLastName, aFakeFullName);
+//					nonDuplicatePut(fullNameToFakeFullName, aMiddleName, aFakeFirstName);
+//					nonDuplicatePut(fullNameToFakeFullName, aMiddleName + " " + aLastName, aFakeFullName);
+//  
+//				}
 
-//				authorToFakeAuthor.put(author, getFakeAuthor(author));
 
 				authorToFakeAuthor.put(author, aFakeAuthor);
-				nonDuplicatePut(fullNameToFakeFullName, aFullName, aFakeFullName);
-				nonDuplicatePut(firstNameToFakeFirstName, aFirstName, aFakeFirstName);
-				nonDuplicatePut(lastNameToFakeLastName, aLastName, aFakeLastName);
-
-				nonDuplicatePut(fullNameToFakeFullName, aFullName.toLowerCase(), aFakeFullName);
-				nonDuplicatePut(firstNameToFakeFirstName, aFirstName.toLowerCase(), aFakeFirstName);
-				nonDuplicatePut(lastNameToFakeLastName, aLastName.toLowerCase(), aFakeLastName);
-
-				if (aMiddleName != null) {
-					nonDuplicatePut(firstNameToFakeFirstName, aMiddleName, HIDDEN_NAME);
-				}
-				nonDuplicatePut(lastNameToFakeLastName, aLastName, aFakeLastName);
+//				nonDuplicatePut(fullNameToFakeFullName, aFullName, aFakeFullName);
+//				nonDuplicatePut(firstNameToFakeFirstName, aFirstName, aFakeFirstName);
+//				nonDuplicatePut(lastNameToFakeLastName, aLastName, aFakeLastName);
+//
+//				nonDuplicatePut(fullNameToFakeFullName, aFullName.toLowerCase(), aFakeFullName);
+//				nonDuplicatePut(firstNameToFakeFirstName, aFirstName.toLowerCase(), aFakeFirstName);
+//				nonDuplicatePut(lastNameToFakeLastName, aLastName.toLowerCase(), aFakeLastName);
+//
+//				if (aMiddleName != null) {
+//					nonDuplicatePut(firstNameToFakeFirstName, aMiddleName, HIDDEN_NAME);
+//				}
+//				nonDuplicatePut(lastNameToFakeLastName, aLastName, aFakeLastName);
 
 				if (aUid != null) {
 //					uidToFakeAuthor.put(aUid, aFakeAuthor);

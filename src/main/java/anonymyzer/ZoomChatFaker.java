@@ -114,13 +114,11 @@ public class ZoomChatFaker extends GeneralFaker {
 		super.loadAnonNameMap(vals);
 		String aKey = vals[1] + " " + vals[2];
 		String aValue = concat(vals[3], vals[4], vals[5]);
-//		fullNameIdenMap.put(vals[1] + " " + vals[2], concat(vals[3], vals[4], vals[5]));
-		fullNameIdenMap.put(aKey, aValue);
-//		if (aKey.contains("avid") && aKey.contains("ite")) {
-//			System.out.println("Found problemantic key");
-//		}
-//		fullNameIdenMap.put(aKey.toLowerCase(), aValue);
-		putAliases(fullNameIdenMap, aKey, aValue);
+		
+		putFullName(fullNameIdenMap, aKey, aValue);
+//		fullNameIdenMap.put(aKey, aValue);
+
+//		putAliases(fullNameIdenMap, aKey, aValue);
 
 	}
 
