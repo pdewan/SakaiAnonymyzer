@@ -114,6 +114,7 @@ public class BasicStrikeOutManager implements StrikeOutManager{
 		String retVal = aString;
 		
 		for (String[] aRow:aStrikeOutTable) {
+			
 			if (!matches(aNames, aRow[0])) {
 				continue;
 			}

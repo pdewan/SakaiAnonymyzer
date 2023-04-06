@@ -13,6 +13,7 @@ public class BasicDoNotFakeManager implements DoNotFakeManager{
 			"long",
 			"uh",
 			"he",
+			"son",
 //			"anIntegers",
 			"white",
 //			"anIndex"

@@ -57,10 +57,9 @@ public class GradescopeFaker extends GeneralFaker {
 			UpdateNameMap.main(args);
 		}
 	}
-
-	@Override
-	public void anonymize(Object arg) {
-		if (!(arg instanceof File[])) {
+	
+ protected void processExecuteArg(Object arg) {
+	 if (!(arg instanceof File[])) {
 			return;
 		}
 		
@@ -71,6 +70,22 @@ public class GradescopeFaker extends GeneralFaker {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+ }
+
+
+	@Override
+	public void anonymize(Object arg) {
+		if (!(arg instanceof File[])) {
+			return;
+		}
+		
+		File[] files = (File[]) arg;
+		File gradescopeGrades = files[0];
+//		try {
+//			createSpecificLoggerAndMetrics(gradescopeGrades, true);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 		File gradesCsv = files[1];
 		loadNameToOnyenMap(gradesCsv);
 		String[] lines = readFile(gradescopeGrades).toString().split("\\R");
@@ -238,31 +253,38 @@ public class GradescopeFaker extends GeneralFaker {
 	public String[] getFakeNames(String[] line, int emailIdx, int firstNameIdx, int lastNameIdx, int fullNameIdx) {
 		String onyen = line[emailIdx].substring(0, line[emailIdx].indexOf("@"));
 //		String fakeName = CommentsIdenMap.get(onyen);
-		String fakeName = getFakeOfNameOfPossiblyAlias(onyen);
+		String fakeName = getFakeOfNameOrPossiblyAlias(onyen);
+		if (fakeName != null) {
+			return toFakeNames(fakeName);
+		}
+		else {
 
-		if (fakeName == null) {
+//		if (fakeName == null) {
 			String fullName = firstNameIdx != -1 ? line[firstNameIdx] + " " + line[lastNameIdx] 
 												 : line[fullNameIdx];
-			boolean found = false;
+//			boolean found = false;
 			for (Entry<String, String> entry : nameToOnyen.entrySet()) {
 				if (entry.getKey().contains(fullName)) {
 					onyen = entry.getValue();
 					fakeName = CommentsIdenMap.get(onyen);
-					found = true;
-					break;
+					return fakeName.split(",");
+//					found = true;
+//					break;
 				}
 			}
-			if (!found) {
+//			if (!found) {
 				String fakeFirstName = faker.name().firstName();
 				String fakeLastName = faker.name().lastName();
 				String fakeOnyen = fakeFirstName + " " + fakeLastName + "?";
 				newPairs.put(concat(onyen, fullName.substring(0, fullName.indexOf(" ")), fullName.substring(fullName.indexOf(" ")+1)), 
 						concat(fakeOnyen, fakeFirstName, fakeLastName));
 				fakeName = concat(fakeOnyen, fakeFirstName, fakeLastName);
-			}
+				return fakeName.split(",");
+//			}
 		}
+//		return fakeName.split(",");
 		
-		return fakeName.split(",");
+//		return fakeName.split(",");
 	}
 	
 	public void loadNameToOnyenMap(File gradesCsv) {

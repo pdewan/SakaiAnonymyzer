@@ -35,7 +35,7 @@ public class ZoomChatFaker extends GeneralFaker {
 //	Map<String, String> nameToFakeName = new HashMap<>();
 	Map<String, String> nameToFakeName = authorToFakeAuthor;
 //	Map<String, String> maybeQuotedNameToOnyen = new HashMap<>();
-	Map<String, String> fullNameIdenMap = new HashMap<>();
+//	Map<String, String> fullNameIdenMap = new HashMap<>();
 	Map<File, String> chatMap = new HashMap<>();
 	String logFileName = "zoom_chat_faker_log";
 //	List<String> originalNameList = new ArrayList();
@@ -109,18 +109,30 @@ public class ZoomChatFaker extends GeneralFaker {
 		return "";
 	}
 
-	protected void loadAnonNameMap(String[] vals) {
-		// TODO Auto-generated method stub
-		super.loadAnonNameMap(vals);
-		String aKey = vals[1] + " " + vals[2];
-		String aValue = concat(vals[3], vals[4], vals[5]);
-		
-		putFullName(fullNameIdenMap, aKey, aValue);
-//		fullNameIdenMap.put(aKey, aValue);
-
-//		putAliases(fullNameIdenMap, aKey, aValue);
-
-	}
+//	protected void loadAnonNameMap(String[] vals) {
+//		// TODO Auto-generated method stub
+//		super.loadAnonNameMap(vals);
+//		String aKey = vals[1] + " " + vals[2];
+//		String aValue = concat(vals[3], vals[4], vals[5]);
+//		putFullNameAndAliases(fullNameIdenMap, aKey, aValue, false);
+////		fullNameIdenMap.put(aKey, aValue);
+////
+////		putAliases(fullNameIdenMap, aKey, aValue);
+//
+//	}
+	
+	protected void processExecuteArg(Object args)  {
+		 if (!(args instanceof File[])) {
+				return;
+			}
+		 File[] files = (File[]) args;
+		 File zoomChatFolder = files[0];
+			try {
+				createSpecificLoggerAndMetrics(zoomChatFolder, false);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+	 }
 
 	@Override
 	public void anonymize(Object args) {
@@ -132,12 +144,12 @@ public class ZoomChatFaker extends GeneralFaker {
 		loadNameToOnyenMap(gradesCsv);
 
 		File zoomChatFolder = files[0];
-		try {
-			createSpecificLoggerAndMetrics(zoomChatFolder, false);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			createSpecificLoggerAndMetrics(zoomChatFolder, false);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		File[] chatFolders = zoomChatFolder.listFiles((file) -> {
 			return file.isDirectory() && !file.getName().equals("Anon");
 		});
@@ -298,34 +310,7 @@ public class ZoomChatFaker extends GeneralFaker {
 		System.out.println("Anonymizing " + chatName);
 		String[] aChatLines = chatString.split("\r\n");
 
-//		Matcher matcher = pattern.matcher(chatString);
-//		Matcher speakerMatcher = null; 
-//		int aMatchNumber = 0;
-//		while (matcher.find()) {
-//			aMatchNumber++;
-////			String aString = matcher.group(groupIdx).trim();
-//			speakerMatcher = speakerPattern.matcher(matcher.group(groupIdx).trim());
-//			if (speakerMatcher.matches()) {
-//				String speaker = speakerMatcher.group(1);
-//				mapNameToFakeName(speaker);
-//			}
-//		}
 
-//		for (int anIndex = 0; anIndex < aChatLines.length; anIndex++) {
-//			String aChatLine = aChatLines[anIndex];
-//			Matcher matcher = pattern.matcher(aChatLine);
-//			Matcher speakerMatcher = null; 
-//			int aMatchNumber = 0;
-//			while (matcher.find()) {
-//				aMatchNumber++;
-////				String aString = matcher.group(groupIdx).trim();
-//				speakerMatcher = speakerPattern.matcher(matcher.group(groupIdx).trim());
-//				if (speakerMatcher.matches()) {
-//					String speaker = speakerMatcher.group(1);
-//					mapNameToFakeName(speaker);
-//				}
-//			}
-//		}
 		boolean lastLineWasTime = false;
 		for (int anIndex = 0; anIndex < aChatLines.length; anIndex++) {
 			String aChatLine = aChatLines[anIndex];
@@ -337,13 +322,7 @@ public class ZoomChatFaker extends GeneralFaker {
 				continue;
 			} 
 
-//			Matcher matcher = pattern.matcher(aChatLine);
-//			Matcher speakerMatcher = null; 
-//			int aMatchNumber = 0;
-//			while (matcher.find()) {
-//				aMatchNumber++;
-//				String aString = matcher.group(groupIdx).trim();
-//				Matcher speakerMatcher = speakerPattern.matcher(matcher.group(groupIdx).trim());
+
 			if (lastLineWasTime) {
 				lastLineWasTime = false;
 				String aSpeaker = getSpeakerFromSplit(aChatLine);
@@ -351,14 +330,7 @@ public class ZoomChatFaker extends GeneralFaker {
 					mapNameToFakeName(aSpeaker);
 
 				}				
-//				
-//				Matcher speakerMatcher = speakerPattern.matcher(aChatLine);
-//
-//				if (speakerMatcher.matches()) {
-//					String speaker = speakerMatcher.group(1);
-//					String group0 = speakerMatcher.group(0);
-//					mapNameToFakeName(speaker);
-//				}
+
 			}
 //			}
 		}
@@ -491,7 +463,7 @@ public class ZoomChatFaker extends GeneralFaker {
 		}
 		
 //		String fakeName = CommentsIdenMap.get(onyen);
-		String fakeName = getFakeOfNameOfPossiblyAlias(onyen);
+		String fakeName = getFakeOfNameOrPossiblyAlias(onyen);
 
 		if (fakeName == null) {
 			String aFullName = firstName + " " + lastName;
@@ -508,15 +480,16 @@ public class ZoomChatFaker extends GeneralFaker {
 			String fakeOnyen = fakeFirstName + " " + fakeLastName + "?";
 			newPairs.put(concat(onyen, firstName, lastName), concat(fakeOnyen, fakeFirstName, fakeLastName));
 			fakeName = fakeOnyen;
-		} else {
-			fakeName = fakeName.substring(0, fakeName.indexOf(','));
-		}
+		} 
+//		else {
+//			fakeName = fakeName.substring(0, fakeName.indexOf(','));
+//		}
 		return fakeName;
 	}
 
 	public String getFakeName(String onyen) {
-//		String fakeName = CommentsIdenMap.get(onyen);
-		String fakeName = getFakeOfNameOfPossiblyAlias(onyen);
+
+		String fakeName = getFakeOfNameOrPossiblyAlias(onyen);
 		return fakeName.substring(0, fakeName.indexOf(','));
 	}
 

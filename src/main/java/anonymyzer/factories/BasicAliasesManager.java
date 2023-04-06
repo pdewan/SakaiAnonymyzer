@@ -10,9 +10,10 @@ import anonymyzer.AnonUtil;
 
 public class BasicAliasesManager implements AliasesManager{
 	String[][] aliasesArray = {
-			{"Matt Do", "Hoang Son Do"},
-			{"Kian W", "Kian Watkins"},
-			{"Qi An Lee", "Lee Qi An"}
+//			{"Matt Do", "Hoang Son Do"},
+//			{"Kian W", "Kian Watkins"},
+//			{"ajwortas@cs.unc.edu", "ajwortas@ad.unc.edu"},
+//			{"Qi An Lee", "Lee Qi An"},
 	};
 			
 	List<List<String>> aliasesList =  new ArrayList();

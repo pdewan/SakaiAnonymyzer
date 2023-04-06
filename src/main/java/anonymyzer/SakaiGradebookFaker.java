@@ -39,6 +39,20 @@ public class SakaiGradebookFaker extends GeneralFaker {
 	public SakaiGradebookFaker() throws IOException {
 		super();
 	}
+	
+	 protected void processExecuteArg(Object arg)  {
+		 if (!(arg instanceof File)) {
+				return;
+			}
+			
+			File gradebook = (File) arg;
+			try {
+				createSpecificLoggerAndMetrics(gradebook, true);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+	 }
+
 
 	@Override
 	public void anonymize(Object arg) {
@@ -47,11 +61,11 @@ public class SakaiGradebookFaker extends GeneralFaker {
 		}
 		
 		File gradebook = (File) arg;
-		try {
-			createSpecificLoggerAndMetrics(gradebook, true);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			createSpecificLoggerAndMetrics(gradebook, true);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 		String[] lines = readFile(gradebook).toString().split("\\R");
 		List<String> nextLine = new ArrayList<>();
 		List<Integer> gradesIdx = new ArrayList<>();
@@ -134,8 +148,9 @@ public class SakaiGradebookFaker extends GeneralFaker {
 	}
 
 	public String[] getFakeNames(String onyen, String name) {
+		String[] retVal = null;
 //		String fakeName = CommentsIdenMap.get(onyen);
-		String fakeName = getFakeOfNameOfPossiblyAlias(onyen);
+		String fakeName = getFakeOfNameOrPossiblyAlias(onyen);
 		if (fakeName == null) {
 			String[] names = name.split(", ");
 			String fakeFirstName = faker.name().firstName();
@@ -143,8 +158,13 @@ public class SakaiGradebookFaker extends GeneralFaker {
 			String fakeOnyen = fakeFirstName + " " + fakeLastName + "?";
 			fakeName = concat(fakeOnyen, fakeFirstName, fakeLastName);
 			newPairs.put(concat(onyen, names[1], names[0]), fakeName);
+			retVal =  fakeName.split(",");
+		} else {
+			return toFakeNames(fakeName);
+//			String[] aNames = fakeName.split(" ");
+//			retVal = new String[] {aNames[0] + " " + aNames[aNames.length -1], aNames[0], aNames[aNames.length - 1]};
 		}
-
-		return fakeName.split(",");
+		return retVal;
+//		return fakeName.split(",");
 	}
 }

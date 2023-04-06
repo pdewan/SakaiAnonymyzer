@@ -5,7 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import com.github.javafaker.Faker;
 
-public class FakeNameGenerator extends GeneralFaker {
+public  class FakeNameGenerator extends GeneralFaker {
 	
 //	protected static final String NAME_MAP = "name map.csv";
 //	protected static final String NAME_FILE = "name.yml";
@@ -176,4 +176,9 @@ public class FakeNameGenerator extends GeneralFaker {
 //		}
 //		return arg;
 //	}
+	@Override
+	protected void processExecuteArg(Object arg) {
+		// TODO Auto-generated method stub
+		
+	}
 }

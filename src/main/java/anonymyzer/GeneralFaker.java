@@ -22,7 +22,8 @@ import anonymyzer.factories.AliasesManagerFactory;
 import anonymyzer.factories.LoggerFactory;
 
 public abstract class GeneralFaker {
-	
+	protected Map<String, String> fullNameIdenMap = new HashMap<>();
+
 	protected static final String NAME_MAP = "name map.csv";
 	protected static final String NAME_FILE = "name.yml";
 	protected static final String NAME_MAP_ID = "1Q0zDNvbMmXKN7p7TVYVbsFsqYSrPaeIR";
@@ -42,23 +43,29 @@ public abstract class GeneralFaker {
 	Map<String, String> maybeQuotedNameToOnyen = new HashMap<>();
 	Map<String, String> nameToOnyen = new HashMap<>();
 
+//	Map<String, String> onyenToFakeName = new HashMap<>();
+
 	Map<String, String> authorToFakeAuthor = new HashMap<>();
-	Map<String, String> emailToFakeAuthor = new HashMap<>() ;
+	Map<String, String> emailToFakeAuthor = new HashMap<>();
 	Map<String, String> uidToFakeAuthor = new HashMap<>();
 	Map<String, String> fullNameToFakeFullName = new HashMap<>();
+	Map<String, String> someNameToFakeFullName = new HashMap<>();
+//	Map<String, String> firstNameToFakeFullName = new HashMap<>();
+//	Map<String, String> middleNameToFakeFullName = new HashMap<>();
+
+	Map<String, String> singlePersonTemporaryMap = new HashMap<>();
+
 	Map<String, String> firstNameToFakeFirstName = new HashMap<>();
 	Map<String, String> lastNameToFakeLastName = new HashMap<>();
 	Map<String, String> someNameToFakeAuthor = new HashMap<>();
-	List<String> originalNameList  = new ArrayList();
-	List<String> replacementNameList =new ArrayList() ;
-	
+	protected List<String> originalNameList = new ArrayList();
+	protected List<String> replacementNameList = new ArrayList();
 
 	Map<String, String> uidToAuthor;
 
-
 //	FileWriter logger;
 	Set<String> messagesOutput = new HashSet();
-	
+
 	public GeneralFaker() throws IOException {
 		log_file = new File(logFileName);
 		log_file.delete();
@@ -72,15 +79,22 @@ public abstract class GeneralFaker {
 //		firstNameToFakeFirstName = new HashMap<>();
 //		lastNameToFakeLastName = new HashMap<>();
 	}
-	
+
+	protected boolean isLocalSpace() {
+		return false;
+	}
+
 	protected void processElements(Map<String, String> aMap) {
 		for (String aKey : aMap.keySet()) {
 //			originalNameList.add(aKey);
 			String aValue = aMap.get(aKey);
 			String anExistingValue = someNameToFakeAuthor.get(aKey);
-			if (aValue.equals(anExistingValue)) {
-				continue; // already processed
-				
+//			if (aValue.equals(anExistingValue) && !isLocalSpace()) {
+//				continue; // already processed
+//
+//			}
+			if (anExistingValue != null) {
+				continue;
 			}
 			originalNameList.add(aKey);
 			replacementNameList.add(aValue);
@@ -90,44 +104,100 @@ public abstract class GeneralFaker {
 
 	protected void processElementsOfAllMaps() {
 
-			processElements(authorToFakeAuthor);
-			processElements(emailToFakeAuthor);
-			processElements(uidToFakeAuthor);
-			processElements(fullNameToFakeFullName);
-			processElements(firstNameToFakeFirstName);
-			processElements(lastNameToFakeLastName);
+		processElements(authorToFakeAuthor);
+		processElements(emailToFakeAuthor);
+		processElements(uidToFakeAuthor);
+		processElements(fullNameToFakeFullName);
+		processElements(firstNameToFakeFirstName);
+		processElements(lastNameToFakeLastName);
 
 	}
-	
+
+	protected String normalizedName(String aName) {
+		return aName.split("\\[")[0].trim();
+	}
+
+	protected boolean normalizedEquals(String aValue1, String aValue2) {
+		String aNormalizedValue1 = normalizedName(aValue1);
+		String aNormalizedValue2 = normalizedName(aValue2);
+		return aNormalizedValue1.equals(aNormalizedValue2);
+	}
+
+	protected void nonDuplicateLocalPut(Map<String, String> aMap, String aKey, String aValue) {
+		if (aMap.get(aKey) != null) {
+			return;
+		}
+//		if (aKey.equals("jilland")) {
+//			System.out.println("found problematic string");
+//		}
+		aMap.put(aKey, aValue);
+	}
+
 	protected void nonDuplicatePut(Map<String, String> aMap, String aKey, String aValue) {
 		if (aKey.contains("nstructor")) {
 			return;
 		}
+
+//		if (aKey.equals("kianw")) {
+//			System.out.println("found offending text");
+//		}
+		if (localPhase) {
+			nonDuplicateLocalPut(aMap, aKey, aValue);
+			return;
+		}
+//		if (aKey.equals("Lee") ) {
+//			System.out.println(" found offending text");
+//		}
 		String anExistingValue = aMap.get(aKey);
-		if (anExistingValue != null && !aValue.equals(anExistingValue)) {
+
+//		String[] anExistingValueComponents = anExistingValue.split("\\[");
+//		String anExistingValueNormalized = anExistingValueComponents[0];
+		if (anExistingValue == null) {
+			aMap.put(aKey, aValue);
+//			if (aValue.contains("[f]")) {
+//				System.out.println("Found first name \n");
+//			}
+			return;
+		}
+		if (anExistingValue.equals(HIDDEN_NAME)) {
+			return;
+		}
+
+		if (!normalizedEquals(aValue, anExistingValue)) {
+//		if (anExistingValue != null && 
+//				!normalizedEquals(aValue, anExistingValue)) {
+			String aMessage = "Duplicate Value for (" + aKey.toLowerCase() + ")" + normalizedName(anExistingValue)
+					+ "-->" + normalizedName(aValue);
+			assignmentMetrics.numNameClashes++;
 			aMap.put(aKey, HIDDEN_NAME);
 
 			try {
-				specificLogger.write("Key:" + aKey + " Duplicate Values:" + anExistingValue + "," + aValue + "\n");
-				specificLogger.flush();
+				if (!messagesOutput.contains(aMessage)) {
+					specificLogger.write("Key:" + aKey + " Duplicate Values:" + anExistingValue + "," + aValue + "\n");
+					specificLogger.flush();
+					messagesOutput.add(aMessage);
+				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
-		} else {
-			aMap.put(aKey, aValue);
-//			aMap.put(aKey.toLowerCase(), aValue);
 		}
+//		else {
+//			
+//			aMap.put(aKey, aValue);
+//
+////			aMap.put(aKey.toLowerCase(), aValue);
+//		}
 	}
 
-	
 	public Faker getFaker() {
 		if (faker == null) {
 			faker = new Faker();
 		}
 		return faker;
 	}
+
 	protected void createSpecificLoggerAndMetrics(File folder, boolean useParent) throws IOException {
 //		File folder = new File(folderName);
 //		File specificLoggerFile = new File(folder.getParentFile(), folder.getName() + " Log.csv");
@@ -140,13 +210,14 @@ public abstract class GeneralFaker {
 		specificLogger = aLoggerFactory.getSpecificLogger();
 		assignmentMetrics = aLoggerFactory.getAssignmentMetrics();
 	}
+
 	public static String[] parseArgs(String[] args) {
 		for (int i = 0; i < args.length; i++) {
 			args[i] = parseArg(args[i]);
 		}
 		return args;
 	}
-	
+
 	public boolean setNameMapAndNameFile() {
 		File namemap = new File(NAME_MAP);
 		if (!namemap.exists()) {
@@ -159,15 +230,15 @@ public abstract class GeneralFaker {
 			System.err.println("name.yml not found, please download name map.csv first");
 			return false;
 		}
-		((FakeValuesGrouping)this.getFaker().fakeValuesService().getFakeValueList().get(0))
-			.setSpecifiedFileName("name", nameFile.getPath());
+		((FakeValuesGrouping) this.getFaker().fakeValuesService().getFakeValueList().get(0))
+				.setSpecifiedFileName("name", nameFile.getPath());
 		return true;
 	}
-		
-	public static GeneralFaker createFaker() throws IOException{
+
+	public static GeneralFaker createFaker() throws IOException {
 		return new FakeNameGenerator();
 	}
-	
+
 	public void setNameMap(String path) throws IOException {
 		nameMapPath = path;
 		nameMapCSV = new File(path);
@@ -181,29 +252,30 @@ public abstract class GeneralFaker {
 			e.printStackTrace();
 		}
 	}
-	
+
 	protected void maybeSpecificLogLine(String aString) {
 		if (messagesOutput.contains(aString)) {
 			return;
 		}
 		specificLogLine(aString);
 	}
-	
-	
-	
+
+	abstract protected void processExecuteArg(Object arg);
+
 	public void execute(Object arg) throws IOException, InterruptedException {
+		processExecuteArg(arg);
 		loadNameMap();
 		anonymize(arg);
 		updateNameMap();
 	}
 
 	public abstract void anonymize(Object arg);
-	
+
 	public void setNameMap(File file) {
 		nameMapPath = file.getPath();
 		nameMapCSV = file;
 	}
-	
+
 	public void loadNameMap() throws IOException {
 		if (!nameMapCSV.exists()) {
 			logger.write(nameMapPath + " not found, creating name map: " + nameMapPath);
@@ -220,88 +292,251 @@ public abstract class GeneralFaker {
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		} 
-	}
-	
-	protected void  putAliases(Map<String, String> aMap, String aKey, String aValue) {
-		List<String> anAliases = AliasesManagerFactory.getAliases(aKey);
-		for (String anAlias:anAliases) {
-			putFullName(aMap, anAlias, aValue + "[a]");			
 		}
 	}
-	
-	protected void  putNameAndLowerCase(Map<String, String> aMap, String aName, String aReplacement) {
-//		String[] aNameComponents = aName.split(" ");
-		nonDuplicatePut(aMap, aName, aReplacement);
-		nonDuplicatePut(aMap, aName.toLowerCase(), aReplacement.toLowerCase()+"[lc]");
-	}
-	
-	protected void putFullNameAndLiases(Map<String, String> aMap, String aName, String aReplacement) {
-		putFullName(aMap, aName, aReplacement);
-		putAliases(aMap, aName, aReplacement);
+
+	protected void putAliases(Map<String, String> aMap, String aKey, String aValue, boolean isId) {
+		List<String> anAliases = AliasesManagerFactory.getAliases(aKey);
+		for (String anAlias : anAliases) {
+//			if (anAlias.equals("mattdo")) {
+//				System.out.println("found offending text");
+//			}
+			putFullName(aMap, anAlias, aValue + "[a]", isId, true);
+		}
 	}
 
-	
-	protected void putFullName(Map<String, String> aMap, String aName, String aReplacement) {
+	protected void putNameAndLowerCase(Map<String, String> aMap, String aName, String aReplacement) {
+//		String[] aNameComponents = aName.split(" ");
+		nonDuplicatePut(aMap, aName, aReplacement);
+		String aNameLowercase = aName.toLowerCase();
+		if (aName.equals(aNameLowercase)) {
+			return;
+		}
+//		if (aNameLowercase.equals("jilland")) {
+//			System.out.println("found problematic string");
+//		}
+//		nonDuplicatePut(aMap, aNameLowercase, aReplacement.toLowerCase() + "[lc]");
+		nonDuplicatePut(aMap, aNameLowercase, aReplacement + "[lc]");
+
+	}
+
+	protected boolean localPhase = false;
+
+	protected void putFullNameAndAliases(Map<String, String> aMap, String aName, String aReplacement, boolean isId) {
+//		localPhase = true;
+		putFullName(aMap, aName, aReplacement, isId, false);
+		putAliases(aMap, aName, aReplacement, isId);
+//		localPhase = false;
+
+//		singlePersonTemporaryMap.clear();
+//		putFullName(singlePersonTemporaryMap, aName, aReplacement, isId, false);
+//		putAliases(singlePersonTemporaryMap, aName, aReplacement, isId);
+//		for (String aName:singlePersonTemporaryMap)
+	}
+
+	protected void putFullName(Map<String, String> aMap, String aName, String aReplacement, boolean isId,
+			boolean isAlias) {
+//		if (aName.equals("kianw")) {
+//			System.out.println("found offending text");
+//		}
+//		boolean isAlias = aReplacement.endsWith("[a]");
+		String aSuffix = isAlias ? "[a]" : "";
+
 		String[] aNameComponents = aName.split(" ");
 		String[] aReplacementComponents = aReplacement.split(" ");
 		putNameAndLowerCase(aMap, aName, aReplacement);
 
-		if (aNameComponents.length == 1 || aReplacementComponents.length == 1 ) {
+		if (aNameComponents.length == 1 || aReplacementComponents.length == 1 || isId) {
 //			putNameAndLowerCase(aMap, aName, aReplacement);
 			return;
 		}
 		String aFirstName = aNameComponents[0];
 		String aLastName = aNameComponents[aNameComponents.length - 1];
+
 		String aReplacementFirst = aReplacementComponents[0];
 		String aReplacementLast = aReplacementComponents[aReplacementComponents.length - 1];
-		
 
-		putNameAndLowerCase(aMap, aFirstName, aReplacementFirst+"[f]");
-		putNameAndLowerCase(aMap, aLastName, aReplacementLast+"[l]");	
-		
-		if (aNameComponents.length >= 3) {
+		String aFullNameNoSpace = aFirstName + aLastName;
+//		String aFullReplacementNoSpace = aReplacementFirst + aReplacementLast;
+
+//		putNameAndLowerCase(aMap, aFullNameNoSpace, aFullReplacementNoSpace + "[ns]");
+		putNameAndLowerCase(aMap, aFullNameNoSpace, aReplacement + "[ns]");
+
+//		putNameAndLowerCase(aMap, aFirstName, aReplacementFirst + "[f]" + aSuffix);
+//		putNameAndLowerCase(aMap, aLastName, aReplacementLast + "[l]");
+
+		putNameAndLowerCase(aMap, aFirstName, aReplacement + "[f]" + aSuffix);
+		putNameAndLowerCase(aMap, aLastName, aReplacement + "[l]");
+
+		if (aNameComponents.length >= 3 && assignmentMetrics != null) {
 			assignmentMetrics.numMiddleNames++;
 			String aMiddleName = aNameComponents[1];
-			putMiddleName(aMap, aFirstName, aMiddleName, aLastName, aReplacementFirst, aReplacementLast);
+			putMiddleName(aMap, aFirstName, aMiddleName, aLastName, aReplacement, aReplacementFirst, aReplacementLast,
+					isAlias);
+
 		}
+	}
+
+	protected void putMiddleName(Map<String, String> aMap, String aFirstName, String aMiddleName, String aLastName,
+			String aReplacement, String aReplacementFirst, String aReplacementLast, boolean isAlias) {
+		String aSuffix = isAlias ? "[a]" : "";
+//		putNameAndLowerCase(aMap, aMiddleName, aReplacementFirst + "[m]" + aSuffix);
+//		putNameAndLowerCase(aMap, aMiddleName + " " + aLastName,
+//				aReplacementFirst + " " + aReplacementLast + "[ml]" + aSuffix);
+//		putNameAndLowerCase(aMap, aFirstName + " " + aMiddleName, aReplacementFirst + "[fm]" + aSuffix);
+//		putNameAndLowerCase(aMap, aFirstName + " " + aLastName,
+//				aReplacementFirst + " " + aReplacementLast + "[fl]" + aSuffix);
+//		putNameAndLowerCase(aMap, aFirstName + aMiddleName + aLastName,
+//				aReplacementFirst + aReplacementLast + "[fml]" + aSuffix);
+
+		putNameAndLowerCase(aMap, aMiddleName, aReplacement + "[m]" + aSuffix);
+		putNameAndLowerCase(aMap, aMiddleName + " " + aLastName, aReplacement + "[ml]" + aSuffix);
+		putNameAndLowerCase(aMap, aFirstName + " " + aMiddleName, aReplacement + "[fm]" + aSuffix);
+		putNameAndLowerCase(aMap, aFirstName + " " + aLastName, aReplacement + "[fl]" + aSuffix);
+		putNameAndLowerCase(aMap, aFirstName + aMiddleName + aLastName, aReplacement + "[fml]" + aSuffix);
 
 	}
-	
-	protected void  putMiddleName(
-			Map<String, String> aMap, 
-			String aFirstName,
-			String aMiddleName,
-			String aLastName,
-			String aReplacementFirst,
-			String aReplacementLast) {
-		
-		putNameAndLowerCase(aMap, aMiddleName, aReplacementFirst+"[m]");
-		putNameAndLowerCase(aMap, 
-				aMiddleName + " " + aLastName, 
-				aReplacementFirst+ " " + aReplacementLast + "[ml]");
-		putNameAndLowerCase(aMap, 
-				aFirstName + " " + aMiddleName, 
-				aReplacementFirst + "[fm]");
-		putNameAndLowerCase(aMap, 
-				aFirstName + " " + aLastName, 
-				aReplacementFirst + " " + aReplacementLast +  "[fl]");
+
+	protected String nonDuplicateGet(Map<String, String> aMap, String aKey) {
+		String retVal = aMap.get(aKey);
+		if (retVal != null && !HIDDEN_NAME.equals(retVal)) {
+			return retVal;
 		}
+		return retVal;
+	}
+
+	protected String nonDuplicateCaseIndependentGet(Map<String, String> aMap, String aKey) {
+		String retVal = nonDuplicateGet(aMap, aKey);
+		if (retVal == null) {
+			retVal = nonDuplicateGet(aMap, aKey.toLowerCase());
+		}
+		return retVal;
+	}
+
+	protected String getFakeOfName(String aName) {
+//		String retVal = CommentsIdenMap.get(aName);
+//		if (retVal != null) {
+//			return retVal;
+//		}
+//		retVal = CommentsIdenMap.get(aName.toLowerCase());
+//		if (retVal != null) {
+//			return retVal;
+//		}
+//		String retVal = fullNameToFakeFullName.get(aName);
+		String retVal = nonDuplicateCaseIndependentGet(fullNameToFakeFullName, aName);
+		String[] aNameComponents = aName.split(" ");
+
+		if (retVal != null) {
+			if (aNameComponents.length > 1) {
+				assignmentMetrics.numFullNameResolutions++;
+			}
+			return retVal;
+		}
+
+//		if (retVal != null && !HIDDEN_NAME.equals(retVal)) {
+//			return retVal;
+//		}
+//		return null;
+		// do we really need this as we are adding all combinations in the
+		// loadAnonNameMap
+//		retVal = fullNameToFakeFullName.get(aName.toLowerCase());
+//		if (retVal != null) {
+//			return retVal;
+//		}
+
+//		String[] aNameComponents = aName.split(" ");
+		if (aNameComponents.length == 1) {
+			return null;
+		}
+		for (String aNameComponent : aNameComponents) {
+			retVal = nonDuplicateCaseIndependentGet(fullNameToFakeFullName, aNameComponent);
+
+			if (retVal != null) {
+				assignmentMetrics.numNameComponentResolutions++;
+
+				return retVal;
+			}
+
+		}
+		String aFullNameNoSpace = aNameComponents[0] + aNameComponents[aNameComponents.length - 1];
+		retVal = nonDuplicateCaseIndependentGet(fullNameToFakeFullName, aFullNameNoSpace);
+		if (retVal != null) {
+			assignmentMetrics.numFullNameNoSpaceResolutions++;
+
+			return retVal;
+		}
+
+		String aLastNameFirst = aNameComponents[aNameComponents.length - 1] + " " + aNameComponents[0];
+		retVal = nonDuplicateCaseIndependentGet(fullNameToFakeFullName, aLastNameFirst);
+
+		if (retVal != null) {
+			assignmentMetrics.numNameReversalResolutions++;
+
+			return retVal;
+		}
+
+		if (aNameComponents.length >= 3) {
+			String aFirstLastSpace = aNameComponents[0] + " " + aNameComponents[aNameComponents.length - 1];
+			retVal = nonDuplicateCaseIndependentGet(fullNameToFakeFullName, aFirstLastSpace);
+			if (retVal != null) {
+				assignmentMetrics.numNameDropResolutions++;
+				return retVal;
+			}
+
+			String aMiddleLastNameNoSpace = aNameComponents[1] + aNameComponents[2];
+			retVal = nonDuplicateCaseIndependentGet(fullNameToFakeFullName, aMiddleLastNameNoSpace);
+			if (retVal != null) {
+				assignmentMetrics.numNameDropResolutions++;
+
+				return retVal;
+			}
+//			retVal = nonDuplicateGet(fullNameToFakeFullName, aMiddleLastNameNoSpace.toLowerCase());
+//			if (retVal != null) {
+//				return retVal;
+//			}
+			String aMiddleLastSpace = aNameComponents[1] + " " + aNameComponents[2];
+			retVal = nonDuplicateCaseIndependentGet(fullNameToFakeFullName, aMiddleLastSpace);
+			if (retVal != null) {
+				assignmentMetrics.numNameDropResolutions++;
+				return retVal;
+			}
+//			retVal = nonDuplicateGet((aMiddleLastSpace.toLowerCase());
+//			if (retVal != null) {
+//				return retVal;
+//			}
+			aLastNameFirst = aNameComponents[3] + " " + aNameComponents[1] + " " + aNameComponents[2];
+			retVal = nonDuplicateCaseIndependentGet(fullNameToFakeFullName, aLastNameFirst);
+			if (retVal != null) {
+				assignmentMetrics.numNameReversalResolutions++;
+				return retVal;
+			}
+
+		}
+		return retVal;
+	}
 	
-	
+	protected String[] toFakeNames(String aFakeName) {
+		String[] aNames = aFakeName.split(" ");
+		String[] retVal = new String[] {aNames[0] + " " + aNames[aNames.length -1], aNames[0], aNames[aNames.length - 1]};
+		return retVal;
+	}
+
 	// ugh duplicating code in AnonFaker!
-	protected String getFakeOfNameOfPossiblyAlias(String aName) {
-		String retVal = CommentsIdenMap.get(aName);
+	protected String getFakeOfNameOrPossiblyAlias(String aName) {
+//		String retVal = CommentsIdenMap.get(aName);
+		String retVal = getFakeOfName(aName);
+
 		if (retVal != null) {
 			return retVal;
 		}
 		List<String> anAliases = AliasesManagerFactory.getAliases(aName);
-		for (String anAlias:anAliases) {
-			retVal = CommentsIdenMap.get(anAlias);
-			if (retVal == null) {
-				retVal = CommentsIdenMap.get(anAlias.toLowerCase());
-
-			}
+		for (String anAlias : anAliases) {
+//			retVal = CommentsIdenMap.get(anAlias);
+			retVal = getFakeOfName(anAlias);
+//			if (retVal == null) {
+//				retVal = CommentsIdenMap.get(anAlias.toLowerCase());
+//
+//			}
 			if (retVal != null) {
 				String aMessage = "Using alias " + anAlias + " for " + aName;
 				assignmentMetrics.numAliasesUsed++;
@@ -320,7 +555,6 @@ public abstract class GeneralFaker {
 		return null;
 	}
 
-	
 	protected void loadAnonNameMap(String[] vals) {
 		String aKey = vals[0];
 		String aValue = concat(vals[3], vals[4], vals[5]);
@@ -328,8 +562,21 @@ public abstract class GeneralFaker {
 		CommentsIdenMap.put(aKey, aValue);
 
 		fakeNameSet.add(vals[3]);
+
+//		if (aKey.equals("jergle")) {
+//			System.out.println("found offending onyen");
+//		}
+
+		String aKey2 = vals[1] + " " + vals[2];
+//		String aValue2 = concat(vals[3], vals[4], vals[5]);
+//		putFullNameAndAliases(fullNameToFakeFullName, aKey2, aValue2, false);
+//		putFullNameAndAliases(fullNameToFakeFullName, aKey, aValue2, true);
+
+		putFullNameAndAliases(fullNameToFakeFullName, aKey, vals[3], true);
+		putFullNameAndAliases(fullNameToFakeFullName, aKey2, vals[3], false);
+
 	}
-	
+
 	public void updateNameMap() throws IOException {
 		if (!nameMapCSV.exists()) {
 			logger.write("Default name map not found, creating default name map: " + NAME_MAP);
@@ -338,50 +585,50 @@ public abstract class GeneralFaker {
 		}
 		logger.write("Updating name map: " + nameMapCSV.getPath());
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(nameMapCSV, true))) {
-			for (Entry<String, String> entry: newPairs.entrySet()) {
+			for (Entry<String, String> entry : newPairs.entrySet()) {
 				bw.write(entry.getKey() + "," + entry.getValue());
 				bw.newLine();
 			}
-		} 
+		}
 //		DriveAPI.updateFile(NAME_MAP_ID, nameMapPath);
 	}
-	
+
 	protected String concatFirst3(String[] tokens) {
 		return concat(tokens[0], tokens[1], tokens[2]);
 	}
-	
+
 	protected String concat(String onyen, String firstName, String lastName) {
-		return onyen+","+firstName+","+lastName;
+		return onyen + "," + firstName + "," + lastName;
 	}
-		
+
 	public static String parseArg(String arg) {
 		if (arg.startsWith("'") && arg.endsWith("'")) {
-			return arg.substring(1, arg.length()-1);
+			return arg.substring(1, arg.length() - 1);
 		}
 		return arg;
 	}
-	
+
 	public StringBuilder readFile(File file) {
 		StringBuilder content = new StringBuilder();
-		try (BufferedReader br = new BufferedReader(new FileReader(file))){
+		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 			String nextLine = "";
-			while((nextLine = br.readLine()) != null) {
-				content.append(nextLine+System.lineSeparator());
+			while ((nextLine = br.readLine()) != null) {
+				content.append(nextLine + System.lineSeparator());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return content;
 	}
-	
+
 	public void writeFile(File file, String content) {
-		try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))){
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
 			bw.write(content);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 //	public String maybeUnquote(String s) {
 //		if (s.startsWith("\"") && s.endsWith("\"")) {
 //			return s.substring(1, s.length() - 1);
@@ -389,7 +636,7 @@ public abstract class GeneralFaker {
 //			return s;
 //		}
 //	}
-	
+
 	public String maybeUnquote(String s) {
 		return unquote(s);
 //		if (s.startsWith("\"") && s.endsWith("\"")) {
@@ -398,7 +645,7 @@ public abstract class GeneralFaker {
 //			return s;
 //		}
 	}
-	
+
 	public void loadNameToOnyenMap(File gradesCsv) {
 		String gradesCsvString = readFile(gradesCsv).toString();
 		String[] lines = gradesCsvString.split("\\R");
@@ -408,19 +655,20 @@ public abstract class GeneralFaker {
 			String lastName = maybeUnquote(fields[2]);
 			String firstName = maybeUnquote(fields[3]);
 			String aFullName = firstName + " " + lastName;
-			
+
 			String anUnquotedOnyen = unquote(onyen);
 			String anUnquotedLastName = unquote(lastName);
 			String anUnquotedFirstName = unquote(firstName);
-			String anUnquotedFullName = anUnquotedFirstName + " " + anUnquotedLastName; 
+			String anUnquotedFullName = anUnquotedFirstName + " " + anUnquotedLastName;
 
 //			maybeQuotedNameToOnyen.put(firstName + " " + lastName, onyen);
 			maybeQuotedNameToOnyen.put(aFullName, onyen);
-			nameToOnyen.put(anUnquotedFullName, anUnquotedOnyen);			
+			nameToOnyen.put(anUnquotedFullName, anUnquotedOnyen);
 
 //			mapNames(aFullName, firstName, lastName, fakeName);
 		}
 	}
+
 	public String unquote(String s) {
 		if (s.startsWith("\"") && s.endsWith("\"")) {
 			return s.substring(1, s.length() - 1);

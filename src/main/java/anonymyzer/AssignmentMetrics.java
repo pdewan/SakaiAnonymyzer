@@ -31,6 +31,25 @@ public class AssignmentMetrics {
 	public int numUniqueAliasesUsed = 0;
 	
 	public int numMiddleNames = 0;
+	public int numEmails = 0; // number of matches of the email pattern
+	public int numNameClashes = 0;
+	public int numFullNameResolutions = 0;
+	public int numFullNameNoSpaceResolutions = 0;
+
+	public int numNameComponentResolutions = 0;
+	public int numNameReversalResolutions = 0;
+//	public int numDropMiddleNameResolutions = 0;
+
+	public int numNameDropResolutions = 0;
+//	public int numLastNameResolutions = 0;
+//	public int numFirstLastNameResolutions = 0;
+//
+//	public int numMiddleNameResolutions = 0;
+//	public int numFirstMiddleNameResolutions = 0;
+//	public int numMiddleLastNameResolutions = 0;
+	
+
+
 	
 
 
@@ -56,9 +75,28 @@ public class AssignmentMetrics {
 				"Number of Words Ignored:" + numWordsIgnored + "\n" +
 				"Number of Unique Ignores:" + numUniqueWordsIgnored + "\n" +
 				"Number of Words Hidden:" + numWordsHidden + "\n" +
-				"Number of Unique Hides:" + numUniqueWordsHidden +
-				"Number of Aliases Used:" + numAliasesUsed +
-				"Number of Unique Aliases Used:" + numUniqueAliasesUsed;
+				"Number of Emails:" + numEmails + "\n" + 
+				"Number of Unique Hides:" + numUniqueWordsHidden + "\n" +
+				"Number of Name Clashes:" + numNameClashes + "\n" +
+
+				"Number of Aliases Used:" + numAliasesUsed + "\n" +
+				"Number of Unique Aliases Used:" + numUniqueAliasesUsed + "\n" +
+				"Number of Full Name Resolutions:" + numFullNameResolutions + "\n" +
+				"Number of Full Name No Space Resolutions:" + numFullNameNoSpaceResolutions + "\n" +
+
+				"Number of Name Component Resolutions:" + numNameComponentResolutions + "\n" +
+//				"Number of Drop Middie Name Resolutions:" + numDropMiddleNameResolutions + "\n" +
+
+				"Number of Name Permutation Resolutions:" + numNameDropResolutions + "\n" +
+				"Number of Name Reversal Resolutions:" + numNameReversalResolutions + "\n" ;
+//				"Number of First Name Resolutions:" + numFirstNameResolutions + "\n" +
+//				"Number of Middle Name Resolutions:" + numMiddleNameResolutions + "\n" +
+//				"Number of Last Name Resolutions:" + numLastNameResolutions + "\n" +
+
+//				"Number of First Middle Name Resolutions:" + numFirstMiddleNameResolutions + "\n" +
+//				"Number of Middle Last Name Resolutions:" + numMiddleLastNameResolutions + "\n" ;
+
+
 
 	}
 

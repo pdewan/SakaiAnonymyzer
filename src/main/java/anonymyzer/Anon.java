@@ -51,7 +51,7 @@ After this i can get aikat and whoever else to use this and hand me sakai folder
  so I can then do a high-low-median in similiarity 
  scores for a semester's course and finally get some graphs going!!
  */
-public class Anon  extends GeneralFaker{
+public  class Anon  extends GeneralFaker{
 	boolean courseMode = false;
 	boolean deleteTXTAndHTML = false;
 	String currIden;
@@ -73,9 +73,9 @@ public class Anon  extends GeneralFaker{
 	static final String USERNAME = "username";
 	HashMap<String, String> classNameMap;
 	static Map<String, String> hardwiredSubstitutions = new HashMap();
-	AssignmentMetrics assignmentMetrics;
+//	AssignmentMetrics assignmentMetrics;
 
-	Set<String> messagesOutput = new HashSet();
+//	Set<String> messagesOutput = new HashSet();
 	StringBuffer replacementsMessageList = new StringBuffer();
     protected Map<String, String> originalToReplacement = new HashMap();
 	
@@ -235,7 +235,10 @@ public class Anon  extends GeneralFaker{
 			return true;
 		}
 	}
-	
+	@Override
+	protected void processExecuteArg(Object arg) {
+		
+	}
 	protected void createSpecificLoggerAndMetrics(File folder) throws IOException {
 //		File folder = new File(folderName);
 //		File specificLoggerFile = new File(folder.getParentFile(), folder.getName() + " Log.csv");
@@ -1204,11 +1207,13 @@ public class Anon  extends GeneralFaker{
 	protected String userName;
 	protected void deriveNamesAndReplacements(List<String> aNames) {
 		userName = null;
-		originalNames = aNames;
+//		originalNames = aNames;
+		originalNameList = aNames;
 	}
 	
 	protected List<String> getNames() {
-		return originalNames;
+//		return originalNames;
+		return originalNameList;
 	}
 	
 	protected void setUserName(String aName) {
@@ -1257,12 +1262,18 @@ public class Anon  extends GeneralFaker{
 //		
 		String orig_line = file.getPath();
 		List<String> names = NameExtractorFactory.extractNames(file, topFolderName);
-		if (!namesSeen.contains(names)) {
+		if (!namesSeen.contains(names)) { // assume files of students are processed in order
 		namesSeen.add(names);
+		originalNameList.clear();
+		someNameToFakeAuthor.clear();
+		originalToReplacement.clear();
+		fullNameToFakeFullName.clear();
+//		lastNameToFakeFullName.clear();
 		deriveNamesAndReplacements(names);
-		} else {
+		} 
+//		else {
 //			System.out.println("Repeated names for:" + file);
-		}
+//		}
 
 //		if (previousNames == null || !names.equals(previousNames)) {
 ////			messagesOutput.clear();
@@ -1314,11 +1325,13 @@ public class Anon  extends GeneralFaker{
 			assignmentMetrics.numLinesProcessed++;
 			assignmentMetrics.numCharactersProcessed += aReplacableLine.length();
 			
+//			Set<String> anOriginals = originalToReplacement.keySet();
+			if (AnonUtil.hasName(aReplacableLine, originalNameList)) {
 
-			if (AnonUtil.hasName(aReplacableLine, names)) {
+//			if (AnonUtil.hasName(aReplacableLine, names)) {
 				aFileHasName = true;
 				aReplacableLine = StrikeOutManagerFactory.
-						srikeOutOriginals(line_num, aReplacableLine, specificLogger, messagesOutput, names, assignmentMetrics);
+						srikeOutOriginals(line_num, aReplacableLine, specificLogger, messagesOutput, originalNameList, assignmentMetrics);
 
 				assignmentMetrics.numLinesWithNames++;
 				assignmentMetrics.numCharactersInLinesWithNames += aReplacableLine.length();
@@ -1693,4 +1706,6 @@ public class Anon  extends GeneralFaker{
 		// TODO Auto-generated method stub
 		
 	}
+
+	
 }

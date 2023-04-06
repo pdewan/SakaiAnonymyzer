@@ -36,8 +36,7 @@ public class PiazzaFaker extends GeneralFaker {
 //	Map<String, String> someNameToFakeAuthor;
 //	List<String> originalNameList;
 //	List<String> replacementNameList;
-	
-	
+
 //	Map<String, String> firstNameToFakeFirstName;
 
 //	Map<String, String> uidToAuthor;
@@ -119,9 +118,7 @@ public class PiazzaFaker extends GeneralFaker {
 			UpdateNameMap.main(args);
 		}
 	}
-
-	@Override
-	public void anonymize(Object args) {
+	protected void processExecuteArg(Object args) {
 		if (!(args instanceof File)) {
 			return;
 		}
@@ -131,6 +128,19 @@ public class PiazzaFaker extends GeneralFaker {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void anonymize(Object args) {
+		if (!(args instanceof File)) {
+			return;
+		}
+		File piazzaPostsFolder = (File) args;
+//		try {
+//			createSpecificLoggerAndMetrics(piazzaPostsFolder, false);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 		File[] files = piazzaPostsFolder.listFiles();
 		File anonFolder = new File(piazzaPostsFolder, "Anon");
 		if (!anonFolder.exists()) {
@@ -307,7 +317,7 @@ public class PiazzaFaker extends GeneralFaker {
 		}
 
 //		String fakeName = CommentsIdenMap.get(onyen);
-		String fakeName = getFakeOfNameOfPossiblyAlias(onyen);
+		String fakeName = getFakeOfNameOrPossiblyAlias(onyen);
 
 		String fakeAuthor = "";
 
@@ -573,8 +583,9 @@ public class PiazzaFaker extends GeneralFaker {
 //			aMap.put(aKey.toLowerCase(), aValue);
 //		}
 //	}
-	
+
 	protected boolean setUpDone = false;
+
 	protected void replacementSetup() {
 //		if (someNameToFakeAuthor == null) {
 		if (!setUpDone) {
@@ -600,6 +611,136 @@ public class PiazzaFaker extends GeneralFaker {
 			// first add
 		}
 	}
+	protected String extractFakeName(String aMapValue) {
+		return aMapValue.split(",")[0];
+	}
+	public void anonymyzeByAuthor(JSONObject piazzaPostsJson, String author) {
+		if (author.startsWith("Instructor")) {
+			return;
+		}
+		if (!authorToFakeAuthor.containsKey(author)) {
+
+			JSONArray anAuthorPosts = piazzaPostsJson.getJSONArray(author);
+
+			String aUid = getUIDFromPost(anAuthorPosts);
+			if (aUid == null) {
+				aUid = getUIDFromLog(anAuthorPosts);
+			}
+			String anEmail = getEmail(author);
+//			String[] anEmailComponents = author.split("@");
+			String anOnyen = anEmail.split("@")[0];
+
+			
+			String aFullName = getFullName(author).trim();
+//				if (aFullName.contains("White")) {
+//				System.out.println(" found offending text");
+//			}
+			String[] aNames = aFullName.split(" ");
+			String aFirstName = aNames[0];
+			String aLastName = aNames[aNames.length - 1];
+			String aMiddleName = null;
+//			if (aNames.length == 3) {
+//				aMiddleName = aNames[1];
+//			}
+			String aFakeAuthor = null;
+			String aFakeEmail = anEmail;
+			String aFakeFullName = null;
+			boolean isInstructorEmail = false;
+			String aKey = anOnyen;
+			if (anOnyen.contains("instructor")) {
+//				aFakeEmail= anEmail;
+//			 aFakeAuthor = getFakeAuthor(author);
+//			 aFakeEmail = getEmail(aFakeAuthor);
+				aKey = aFullName;
+				anOnyen = (aFirstName + aLastName).toLowerCase();
+
+//				String anEntry = getFakeOfNameOrPossiblyAlias(aFullName).trim();
+//				if (anEntry != null) {
+//					
+//			
+//					aFakeFullName = extractFakeName(anEntry);
+//				}
+
+			} 
+			else {
+//				String anEntry = getFakeOfNameOrPossiblyAlias(anOnyen).trim();
+//				if (anEntry != null) {
+//					aFakeFullName = extractFakeName(anEntry);
+//
+//				}
+//				aFakeEmail = aFakeFullName;
+			}
+			String anEntry = getFakeOfNameOrPossiblyAlias(aKey);
+			if (anEntry == null) {
+				anEntry = getFakeOfNameOrPossiblyAlias(aFullName);
+			}
+			if (anEntry != null) {
+//				aFakeFullName = extractFakeName(anEntry);
+				aFakeFullName = anEntry;
+
+
+			} else {
+//				String[] aNames = aFullName.split(" ");
+//				String aFirstName = aNames[0];
+//				String aLastName = aNames[aNames.length - 1];
+				String fakeFirstName = faker.name().firstName();
+				String fakeLastName = faker.name().lastName();
+				aFakeFullName = fakeFirstName + " " + fakeLastName;
+				aFakeEmail = aFakeFullName;
+
+//				onyenToFakeName.put(anOnyen, aFakeFullName);
+//				CommentsIdenMap.put(anOnyen, aFakeFullName);
+//				fullNameToFakeFullName.put(anOnyen, aFakeFullName);
+				
+				fullNameToFakeFullName.put(aFirstName + " " + aLastName, aFakeFullName);
+
+				newPairs.put(concat(anOnyen, aFirstName, aLastName), 
+							concat(aFakeFullName, fakeFirstName, fakeLastName));
+								
+			
+				
+			}
+			aFakeEmail = aFakeFullName;
+
+			
+//			String aFakeFullName = getFullName(aFakeAuthor).trim();
+
+//			String[] aFakeNames = aFakeFullName.split(" ");
+//			String aFakeFirstName = aFakeNames[0];
+//			String aFakeLastName = aFakeNames[1];
+			
+			
+			
+
+			putFullNameAndAliases(fullNameToFakeFullName, aFullName, aFakeFullName, false);
+//			putFullNameAndAliases(fullNameToFakeFullName, anEmail, aFakeFullName, true);
+
+
+//			if (aFakeAuthor != null) {
+			authorToFakeAuthor.put(author, aFakeFullName);
+//			}
+
+
+			if (aUid != null) {
+				nonDuplicatePut(uidToFakeAuthor, aUid, aFakeFullName);
+			} else {
+				System.err.println("Could not find uid");
+			}
+			if (anEmail != null) {
+//				if (anEmail.contains("ajwortas")) {
+//					System.out.println("found offending text");
+//				}
+				putFullNameAndAliases(emailToFakeAuthor, anEmail, aFakeFullName, true);
+
+//				nonDuplicatePut(emailToFakeAuthor, anEmail, aFakeFullName);
+
+			}
+//			else {
+//				System.err.println("Could not find email");
+//
+//			}
+		}
+	}
 
 	public void anonymizeByAuthors(File piazzaPosts, File anonFolder) {
 		String piazzaPostsString = readFile(piazzaPosts).toString();
@@ -607,109 +748,100 @@ public class PiazzaFaker extends GeneralFaker {
 		JSONObject piazzaPostsJson = new JSONObject(piazzaPostsString);
 
 		for (String author : piazzaPostsJson.keySet()) {
-			if (author.startsWith("Instructor")) {
-				continue;
-			}
-			if (!authorToFakeAuthor.containsKey(author)) {
-//				String aUid = null;
-//				String anEmail = null;
-//				String aFullName = null;
-//				String aFirstName = null;
-//				String aLastName = null;
+			anonymyzeByAuthor(piazzaPostsJson, author);
+//			if (author.startsWith("Instructor")) {
+//				continue;
+//			}
+//			if (!authorToFakeAuthor.containsKey(author)) {
 //
-//				String aFakeFullName = null;
-//				String aFakeFirstName = null;
-//				String aFakeLastName = null;
+//				JSONArray anAuthorPosts = piazzaPostsJson.getJSONArray(author);
+//
+//				String aUid = getUIDFromPost(anAuthorPosts);
+//				if (aUid == null) {
+//					aUid = getUIDFromLog(anAuthorPosts);
+//				}
+//				String anEmail = getEmail(author);
+//				String aFullName = getFullName(author).trim();
+//// 				if (aFullName.contains("White")) {
+////					System.out.println(" found offending text");
+////				}
+//				String[] aNames = aFullName.split(" ");
+//				String aFirstName = aNames[0];
+//				String aLastName = aNames[aNames.length - 1];
 //				String aMiddleName = null;
-				JSONArray anAuthorPosts = piazzaPostsJson.getJSONArray(author);
-
-				String aUid = getUIDFromPost(anAuthorPosts);
-				if (aUid == null) {
-					aUid = getUIDFromLog(anAuthorPosts);
-				}
-				String anEmail = getEmail(author);
-				String aFullName = getFullName(author).trim();
-// 				if (aFullName.contains("White")) {
-//					System.out.println(" found offending text");
+//				if (aNames.length == 3) {
+//					aMiddleName = aNames[1];
 //				}
-				String[] aNames = aFullName.split(" ");
-				String aFirstName = aNames[0];
-				String aLastName = aNames[aNames.length - 1];
-				String aMiddleName = null;
-				if (aNames.length == 3) {
-					aMiddleName = aNames[1];
-				}
-
-				String aFakeAuthor = getFakeAuthor(author);
-				String aFakeEmail = getEmail(aFakeAuthor);
-				String aFakeFullName = getFullName(aFakeAuthor).trim();
-		
-				String[] aFakeNames = aFakeFullName.split(" ");
-				String aFakeFirstName = aFakeNames[0];
-				String aFakeLastName = aFakeNames[1];
-				
-				putFullNameAndLiases(fullNameToFakeFullName, aFullName, aFakeFullName);
-				
-//				putFullName(fullNameToFakeFullName, 
-//						aFullName, aFakeFullName);
-//				putAliases(fullNameToFakeFullName, aFullName, aFakeFullName);
-//				
-//				if (aMiddleName != null) {
-//					String aFakeFirstLastName = aFirstName + " " + aLastName;
-//					nonDuplicatePut(fullNameToFakeFullName, aFakeFirstLastName, aFakeFullName);
-//					nonDuplicatePut(fullNameToFakeFullName, aMiddleName, aFakeFirstName);
-//					nonDuplicatePut(fullNameToFakeFullName, aMiddleName + " " + aLastName, aFakeFullName);
-//  
-//				}
-
-
-				authorToFakeAuthor.put(author, aFakeAuthor);
-//				nonDuplicatePut(fullNameToFakeFullName, aFullName, aFakeFullName);
-//				nonDuplicatePut(firstNameToFakeFirstName, aFirstName, aFakeFirstName);
-//				nonDuplicatePut(lastNameToFakeLastName, aLastName, aFakeLastName);
 //
-//				nonDuplicatePut(fullNameToFakeFullName, aFullName.toLowerCase(), aFakeFullName);
-//				nonDuplicatePut(firstNameToFakeFirstName, aFirstName.toLowerCase(), aFakeFirstName);
-//				nonDuplicatePut(lastNameToFakeLastName, aLastName.toLowerCase(), aFakeLastName);
+//				String aFakeAuthor = getFakeAuthor(author);
+//				String aFakeEmail = getEmail(aFakeAuthor);
+//				String aFakeFullName = getFullName(aFakeAuthor).trim();
 //
-//				if (aMiddleName != null) {
-//					nonDuplicatePut(firstNameToFakeFirstName, aMiddleName, HIDDEN_NAME);
+//				String[] aFakeNames = aFakeFullName.split(" ");
+//				String aFakeFirstName = aFakeNames[0];
+//				String aFakeLastName = aFakeNames[1];
+//
+//				putFullNameAndAliases(fullNameToFakeFullName, aFullName, aFakeFullName, false);
+//
+////				putFullName(fullNameToFakeFullName, 
+////						aFullName, aFakeFullName);
+////				putAliases(fullNameToFakeFullName, aFullName, aFakeFullName);
+////				
+////				if (aMiddleName != null) {
+////					String aFakeFirstLastName = aFirstName + " " + aLastName;
+////					nonDuplicatePut(fullNameToFakeFullName, aFakeFirstLastName, aFakeFullName);
+////					nonDuplicatePut(fullNameToFakeFullName, aMiddleName, aFakeFirstName);
+////					nonDuplicatePut(fullNameToFakeFullName, aMiddleName + " " + aLastName, aFakeFullName);
+////  
+////				}
+//
+//				authorToFakeAuthor.put(author, aFakeAuthor);
+////				nonDuplicatePut(fullNameToFakeFullName, aFullName, aFakeFullName);
+////				nonDuplicatePut(firstNameToFakeFirstName, aFirstName, aFakeFirstName);
+////				nonDuplicatePut(lastNameToFakeLastName, aLastName, aFakeLastName);
+////
+////				nonDuplicatePut(fullNameToFakeFullName, aFullName.toLowerCase(), aFakeFullName);
+////				nonDuplicatePut(firstNameToFakeFirstName, aFirstName.toLowerCase(), aFakeFirstName);
+////				nonDuplicatePut(lastNameToFakeLastName, aLastName.toLowerCase(), aFakeLastName);
+////
+////				if (aMiddleName != null) {
+////					nonDuplicatePut(firstNameToFakeFirstName, aMiddleName, HIDDEN_NAME);
+////				}
+////				nonDuplicatePut(lastNameToFakeLastName, aLastName, aFakeLastName);
+//
+//				if (aUid != null) {
+////					uidToFakeAuthor.put(aUid, aFakeAuthor);
+//					nonDuplicatePut(uidToFakeAuthor, aUid, aFakeAuthor);
+//				} else {
+//					System.err.println("Could not find uid");
 //				}
-//				nonDuplicatePut(lastNameToFakeLastName, aLastName, aFakeLastName);
-
-				if (aUid != null) {
-//					uidToFakeAuthor.put(aUid, aFakeAuthor);
-					nonDuplicatePut(uidToFakeAuthor, aUid, aFakeAuthor);
-				} else {
-					System.err.println("Could not find uid");
-				}
-				if (anEmail != null) {
-//					emailToFakeAuthor.put(anEmail, aFakeAuthor);
-					nonDuplicatePut(emailToFakeAuthor, anEmail, aFakeEmail);
-
-				} else {
-					System.err.println("Could not find email");
-
-				}
-
-//				if (anAuthorPost.has("uid")) {
-//					aUid = anAuthorPost.getString("uid");
-//					authorToFakeAuthor.put(aUid, aFakeAuthor);
+//				if (anEmail != null) {
+////					emailToFakeAuthor.put(anEmail, aFakeAuthor);
+//					nonDuplicatePut(emailToFakeAuthor, anEmail, aFakeEmail);
+//
+//				} else {
+//					System.err.println("Could not find email");
 //
 //				}
-
-			}
-
-//			piazzaPostsString = piazzaPostsString.replace(author, authorToFakeAuthor.get(author));
-//			anEmail = emailToFakeAuthor.get(anEmail);
-//			if (anEmail != null) {
-//				piazzaPostsString = piazzaPostsString.replace(anEmail, emailToFakeAuthor.get(anEmail));
 //
-//			} if (aUid != null) {
-//				piazzaPostsString = piazzaPostsString.replace(anEmail,uidToFakeAuthor.get(aUid));
+////				if (anAuthorPost.has("uid")) {
+////					aUid = anAuthorPost.getString("uid");
+////					authorToFakeAuthor.put(aUid, aFakeAuthor);
+////
+////				}
 //
 //			}
-//			aUid = uidToFakeAuthor.get(aUid);
+//
+////			piazzaPostsString = piazzaPostsString.replace(author, authorToFakeAuthor.get(author));
+////			anEmail = emailToFakeAuthor.get(anEmail);
+////			if (anEmail != null) {
+////				piazzaPostsString = piazzaPostsString.replace(anEmail, emailToFakeAuthor.get(anEmail));
+////
+////			} if (aUid != null) {
+////				piazzaPostsString = piazzaPostsString.replace(anEmail,uidToFakeAuthor.get(aUid));
+////
+////			}
+////			aUid = uidToFakeAuthor.get(aUid);
 		}
 //		replace(piazzaPostsString, authorToFakeAuthor);
 //		replace(piazzaPostsString, emailToFakeAuthor);

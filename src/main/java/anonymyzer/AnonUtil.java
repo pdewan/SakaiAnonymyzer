@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +22,9 @@ import anonymyzer.factories.IndicesFinderFactory;
 import anonymyzer.factories.StringReplacerFactory;
 
 public class AnonUtil {
+//	Pattern emailPattern = Pattern.compile(".*@[a-zA-Z0-9.-]+.*");
+	final static String EMAIL_REGEX = "@[a-zA-Z0-9.-]+(.com|.edu|.org)";
+	final static String EMAIL_REPLACEMENT = "[email]";
 	public static String[] splitCamelCaseHyphenDash(String aCamelCaseName) {
 		// return
 		// aCamelCaseName.split("(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[0-9])(?=[A-Z][a-z])|(?<=[a-zA-Z])(?=[0-9])");
@@ -437,9 +441,9 @@ public class AnonUtil {
 	}
 	
 	public static boolean isCompleteWord(String aFragmentWithContext, String anOriginal) {
-		if (aFragmentWithContext.contains("David (White)")) {
-			System.out.println("Found offending text");
-		}
+//		if (aFragmentWithContext.contains("@cs")) {
+//			System.out.println("Found offending text");
+//		}
 				
 		int aStartIndex = aFragmentWithContext.indexOf("(" + anOriginal + ")");
 		int anEndIndex = aStartIndex + anOriginal.length();	
@@ -490,6 +494,8 @@ public class AnonUtil {
 		
 		String retVal =  "..." + aContextPrefix + "(" + aFragment + ")" + aContextSuffix + "...";
 //		if (retVal.contains("whether (he) has")) {
+//		if (retVal.contains("(mattdo)")) {
+//
 //			System.out.println("found offending context");
 //		}
 		return retVal;
@@ -698,6 +704,7 @@ public class AnonUtil {
 //				System.out.println("found non matching original:");
 //			}
 			String aReplacementAtIndex = anOriginalToReplacement.get(anOriginalAtIndex);
+			
 			String anOriginalWithContext = fragmentWithContext(aString, anOriginalAtIndex, anIndex,
 					anIndex + anOriginalAtIndex.length());
 //			String aReplacementWithContext = fragmentWithContext(aString, aReplacementAtIndex, anIndex,
@@ -745,6 +752,9 @@ public class AnonUtil {
 			
 			String aReplacementWithContext = fragmentWithContext(aString, aReplacementAtIndex, anIndex,
 					anIndex + anOriginalAtIndex.length());
+//			if (aReplacementWithContext.contains("@cs")) {
+//				System.out.println("Found offending text");
+//			}
 //			aNumReplacements++;
 			anAssignmentMetrics.numStructuredKeywordPositives++;
 			String aNormalizedMessage = "Replaced " + anOriginalWithContext + " with" + aReplacementWithContext + "\n";
@@ -847,6 +857,11 @@ public class AnonUtil {
 		return retVal;
 
 	}
+	
+	
+	public static String replaceEmails(String aSplit) {
+		return aSplit.replaceAll(EMAIL_REGEX, EMAIL_REPLACEMENT);
+	}
 
 	public static String replaceAllNonKeywords(String aKeywordsRegex, String aString, String anOriginal,
 			String aReplacement) {
@@ -857,6 +872,8 @@ public class AnonUtil {
 		String aRemainingString = aString;
 		String anOriginalLowerCase = anOriginal.toLowerCase();
 		for (String aSplit : aSplits) {
+//			String aSplitWithoutEmails = replaceEmails(aSplit);
+			
 			String aSplitSubstitution = aSplit.replaceAll(anOriginal, aReplacement).replaceAll(anOriginalLowerCase,
 					aReplacement);
 			aRemainingString = aRemainingString.substring(aLastEnd);
@@ -868,10 +885,12 @@ public class AnonUtil {
 		return aReplacedValue.toString();
 	}
 
-	public static boolean hasName(String aString, List<String> aNames) {
+	public static boolean hasName(String aString, Collection<String> aNames) {
 		String aStringLowerCase = aString.toLowerCase();
 		for (String aName : aNames) {
-			if (aStringLowerCase.contains(aName.toLowerCase())) {
+			if (aString.contains(aName)) {
+
+//			if (aStringLowerCase.contains(aName.toLowerCase())) {
 				return true;
 			}
 		}
@@ -971,7 +990,7 @@ public class AnonUtil {
 //				System.out.println("found problemantic split");
 //			}
 			
-		
+			
 
 
 			Map<Integer, String> aSplitIndexWordKeysMap = indexToFragment(aSplit, anOriginals, true);
@@ -1019,8 +1038,23 @@ public class AnonUtil {
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
-//		}		
-		return aReplacedValue.toString();
+//		}
+		String aReplacedString = aReplacedValue.toString();
+		
+				String aReplacedStringWithoutEmail = replaceEmails(aReplacedString);
+		if (aReplacedString.length() != aReplacedStringWithoutEmail.length()) {
+			String aMessage = "Emails in " + aReplacedString + "\n";
+			if (!aMessagesOutput.contains(aMessage))
+			try {
+				aMessagesOutput.add(aMessage);				
+				aLogger.write(aMessage);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+//		return aReplacedValue.toString();
+		return aReplacedStringWithoutEmail;
+
 	}
 
 
