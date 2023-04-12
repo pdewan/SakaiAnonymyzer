@@ -6,9 +6,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -118,6 +120,7 @@ public class PiazzaFaker extends GeneralFaker {
 			UpdateNameMap.main(args);
 		}
 	}
+
 	protected void processExecuteArg(Object args) {
 		if (!(args instanceof File)) {
 			return;
@@ -312,7 +315,7 @@ public class PiazzaFaker extends GeneralFaker {
 				String fakeFirstName = faker.name().firstName();
 				String fakeLastName = faker.name().lastName();
 				String fakeOnyen = fakeFirstName + " " + fakeLastName;
-				return fakeFirstName + " " + fakeLastName + "(" + fakeOnyen + "@live.unc.edu)?";
+				return fakeFirstName + " " + fakeLastName + "(" + fakeOnyen + "([email]))?";
 			}
 		}
 
@@ -328,10 +331,11 @@ public class PiazzaFaker extends GeneralFaker {
 			if (fakeName == null) {
 				newPairs.put(concat(onyen, firstName, lastName), concat(fakeOnyen, fakeFirstName, fakeLastName));
 			}
-			fakeAuthor = fakeFirstName + " " + fakeLastName + "(" + fakeOnyen + "@live.unc.edu)";
+			fakeAuthor = fakeFirstName + " " + fakeLastName + "(" + fakeOnyen + "[email])";
 		} else {
-			fakeName = fakeName.substring(0, fakeName.indexOf(','));
-			fakeAuthor = fakeName + "(" + fakeName + "@live.unc.edu)";
+//			fakeName = fakeName.substring(0, fakeName.indexOf(','));
+//			fakeAuthor = fakeName + "(" + fakeName + "@live.unc.edu)";
+			fakeAuthor = fakeName + "([email])";
 		}
 		return fakeAuthor;
 	}
@@ -611,9 +615,107 @@ public class PiazzaFaker extends GeneralFaker {
 			// first add
 		}
 	}
+
 	protected String extractFakeName(String aMapValue) {
 		return aMapValue.split(",")[0];
 	}
+
+	public static void add(JSONArray aContainer, JSONArray aContained, int aStartIndex) {
+		for (int anIndex = aStartIndex; anIndex < aContained.length(); anIndex++) {
+			aContainer.put(aContained.get(anIndex));
+		}
+
+	}
+
+	public static JSONArray merge(JSONArray first, JSONArray second) {
+		if (second.length() == 0) {
+			return first;
+		}
+		if (first.length() == 0) {
+			return second;
+		}
+		int index1 = 0;
+		int index2 = 0;
+		JSONObject anElement1 = first.getJSONObject(index1);
+		JSONObject anElement2 = second.getJSONObject(index2);
+
+		JSONArray retVal = new JSONArray();
+		long aTime1 = anElement1.getLong("time");
+		long aTime2 = anElement2.getLong("time");
+
+		while (true) {
+			
+			if (aTime1 <= aTime2) {
+				retVal.put(anElement1);
+				index1++;
+				if (index1 < first.length()) {
+					anElement1 = first.getJSONObject(index1);
+					aTime1 = anElement1.getLong("time");
+				} else {
+					add(retVal, second, index2);
+					return retVal;
+				}
+
+			} else {
+				retVal.put(anElement2);
+				index2++;
+				if (index2 < second.length()) {
+					anElement2 = second.getJSONObject(index2);
+					aTime2 = anElement2.getLong("time");
+				} else {
+					add(retVal, first, index1);
+					return retVal;
+				}
+
+			}
+
+		}
+	}
+
+	public JSONObject removeDuplicates(JSONObject piazzaPostsJson) {
+		Map<String, String> anIdToAuthor = new HashMap<String, String>();
+		Map<String, String> aFullNameToAuthor = new HashMap<String, String>();
+		Set<String> aDeletedAuthors = new HashSet<String>();
+		for (String author : piazzaPostsJson.keySet()) {
+			JSONArray anAuthorArray = (JSONArray) piazzaPostsJson.getJSONArray(author);
+//			anAuthorArray.put(index, value)
+			String anEmail = getEmail(author);
+			String anId = anEmail.split("@")[0];
+			String aFullName = getFullName(author).trim();
+
+			String anExistingIdAuthor = aFullNameToAuthor.get(aFullName);
+			String anExistingFullNameAuthor = aFullNameToAuthor.get(aFullName);
+			String anExistingAuthor = null;
+			JSONArray anExistingJSONArray = null;
+
+			if (anExistingIdAuthor != null) {
+				String aFakeNameDetails = CommentsIdenMap.get(anId);
+				if (aFakeNameDetails != null) {
+					anExistingAuthor = anExistingIdAuthor;
+					anExistingJSONArray = piazzaPostsJson.getJSONArray(anExistingIdAuthor);
+				}
+			}
+			if (anExistingJSONArray == null && anExistingFullNameAuthor != null) {
+				anExistingAuthor = anExistingFullNameAuthor;
+				anExistingJSONArray = piazzaPostsJson.getJSONArray(anExistingFullNameAuthor);
+
+			}
+			if (anExistingJSONArray != null && anExistingAuthor != null) {
+				JSONArray aMergedRecord = merge(anExistingJSONArray, anAuthorArray);
+				piazzaPostsJson.put(anExistingAuthor, aMergedRecord);
+				aDeletedAuthors.add(author);
+			} else {
+				anIdToAuthor.put(anId, author);
+				aFullNameToAuthor.put(aFullName, author);
+			}
+
+		}
+		for (String aDeletedAuthor : aDeletedAuthors) {
+			piazzaPostsJson.remove(aDeletedAuthor);
+		}
+		return piazzaPostsJson;
+	}
+
 	public void anonymyzeByAuthor(JSONObject piazzaPostsJson, String author) {
 		if (author.startsWith("Instructor")) {
 			return;
@@ -630,7 +732,6 @@ public class PiazzaFaker extends GeneralFaker {
 //			String[] anEmailComponents = author.split("@");
 			String anOnyen = anEmail.split("@")[0];
 
-			
 			String aFullName = getFullName(author).trim();
 //				if (aFullName.contains("White")) {
 //				System.out.println(" found offending text");
@@ -661,8 +762,7 @@ public class PiazzaFaker extends GeneralFaker {
 //					aFakeFullName = extractFakeName(anEntry);
 //				}
 
-			} 
-			else {
+			} else {
 //				String anEntry = getFakeOfNameOrPossiblyAlias(anOnyen).trim();
 //				if (anEntry != null) {
 //					aFakeFullName = extractFakeName(anEntry);
@@ -678,7 +778,6 @@ public class PiazzaFaker extends GeneralFaker {
 //				aFakeFullName = extractFakeName(anEntry);
 				aFakeFullName = anEntry;
 
-
 			} else {
 //				String[] aNames = aFullName.split(" ");
 //				String aFirstName = aNames[0];
@@ -691,35 +790,27 @@ public class PiazzaFaker extends GeneralFaker {
 //				onyenToFakeName.put(anOnyen, aFakeFullName);
 //				CommentsIdenMap.put(anOnyen, aFakeFullName);
 //				fullNameToFakeFullName.put(anOnyen, aFakeFullName);
-				
+
 				fullNameToFakeFullName.put(aFirstName + " " + aLastName, aFakeFullName);
 
-				newPairs.put(concat(anOnyen, aFirstName, aLastName), 
-							concat(aFakeFullName, fakeFirstName, fakeLastName));
-								
-			
-				
+				newPairs.put(concat(anOnyen, aFirstName, aLastName),
+						concat(aFakeFullName, fakeFirstName, fakeLastName));
+
 			}
 			aFakeEmail = aFakeFullName;
 
-			
 //			String aFakeFullName = getFullName(aFakeAuthor).trim();
 
 //			String[] aFakeNames = aFakeFullName.split(" ");
 //			String aFakeFirstName = aFakeNames[0];
 //			String aFakeLastName = aFakeNames[1];
-			
-			
-			
 
 			putFullNameAndAliases(fullNameToFakeFullName, aFullName, aFakeFullName, false);
 //			putFullNameAndAliases(fullNameToFakeFullName, anEmail, aFakeFullName, true);
 
-
 //			if (aFakeAuthor != null) {
 			authorToFakeAuthor.put(author, aFakeFullName);
 //			}
-
 
 			if (aUid != null) {
 				nonDuplicatePut(uidToFakeAuthor, aUid, aFakeFullName);
@@ -743,11 +834,15 @@ public class PiazzaFaker extends GeneralFaker {
 	}
 
 	public void anonymizeByAuthors(File piazzaPosts, File anonFolder) {
-		String piazzaPostsString = readFile(piazzaPosts).toString();
+		String piazzaPostsOriginalString = readFile(piazzaPosts).toString();
 		assignmentMetrics.numFilesProcessed++;
-		JSONObject piazzaPostsJson = new JSONObject(piazzaPostsString);
-
+		JSONObject piazzaPostsJson = new JSONObject(piazzaPostsOriginalString);
+		removeDuplicates(piazzaPostsJson);
+		String piazzaPostsString = piazzaPostsJson.toString();
 		for (String author : piazzaPostsJson.keySet()) {
+//			if (author.contains("Andrew")) {
+//				System.out.println("found offending text");
+//			}
 			anonymyzeByAuthor(piazzaPostsJson, author);
 //			if (author.startsWith("Instructor")) {
 //				continue;

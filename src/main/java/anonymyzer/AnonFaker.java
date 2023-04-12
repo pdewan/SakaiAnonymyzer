@@ -343,6 +343,9 @@ public class AnonFaker extends Anon {
 	protected void deriveNamesAndReplacements(List<String> aNames) {
 //		super.setNames(aNames);
 //		originalToReplacement.clear();
+//		if (aNames.get(1).contains("Andrew")) {
+//			System.out.println("Found offending text");
+//		}
 		String[] tokens = getTokens(aNames.get(1), aNames.get(0), aNames.get(2)); // computing them each time
 		if (tokens == null) {
 			currentReplacementFullName = null;
@@ -357,6 +360,7 @@ public class AnonFaker extends Anon {
 			aDerivedReplacements.add(aToken.toLowerCase());
 		} // consstent with passed aNames
 		String aFullNameSpace = aNames.get(1) + " " + aNames.get(0);
+		
 		String aFullReplacementSpace = aDerivedReplacements.get(2) + " " + aDerivedReplacements.get(0);
 		originalToReplacement = new HashMap();
 

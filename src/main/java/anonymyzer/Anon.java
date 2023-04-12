@@ -51,7 +51,7 @@ After this i can get aikat and whoever else to use this and hand me sakai folder
  so I can then do a high-low-median in similiarity 
  scores for a semester's course and finally get some graphs going!!
  */
-public  class Anon  extends GeneralFaker{
+public class Anon extends GeneralFaker {
 	boolean courseMode = false;
 	boolean deleteTXTAndHTML = false;
 	String currIden;
@@ -77,8 +77,8 @@ public  class Anon  extends GeneralFaker{
 
 //	Set<String> messagesOutput = new HashSet();
 	StringBuffer replacementsMessageList = new StringBuffer();
-    protected Map<String, String> originalToReplacement = new HashMap();
-	
+	protected Map<String, String> originalToReplacement = new HashMap();
+
 	public Map<String, String> getOriginalToReplacement() {
 		return originalToReplacement;
 	}
@@ -86,9 +86,6 @@ public  class Anon  extends GeneralFaker{
 	public void setOriginalToReplacement(Map<String, String> newVal) {
 		this.originalToReplacement = newVal;
 	}
-
-	
-
 
 	public Anon() throws IOException {
 		log_file = new File("anon_log");
@@ -235,10 +232,12 @@ public  class Anon  extends GeneralFaker{
 			return true;
 		}
 	}
+
 	@Override
 	protected void processExecuteArg(Object arg) {
-		
+
 	}
+
 	protected void createSpecificLoggerAndMetrics(File folder) throws IOException {
 //		File folder = new File(folderName);
 //		File specificLoggerFile = new File(folder.getParentFile(), folder.getName() + " Log.csv");
@@ -265,8 +264,12 @@ public  class Anon  extends GeneralFaker{
 			unzip(folderName, dest);
 			folderName = dest;
 		}
-		unzipAllZipFiles(new File(folderName));
-		
+		boolean retVal = unzipAllZipFiles(new File(folderName));
+		if (!retVal) {
+			System.err.println("Please unzip failed entries in  " + folderName + " and try again with unzipped version of " + folderName);
+			return;
+		}
+
 		File folder = new File(folderName);
 //		File specificLoggerFile = new File(folder.getParentFile(), folder.getName() + " Log.csv");
 //		if (!specificLoggerFile.exists()) {
@@ -275,8 +278,7 @@ public  class Anon  extends GeneralFaker{
 //		specificLogger = new FileWriter(specificLoggerFile);
 //		assignmentMetrics = new AssignmentMetrics();
 		createSpecificLoggerAndMetrics(folder);
-		
-		
+
 //		System.out.println("Anonymizing");
 //		logger.write("Anonymizing");
 		if (isCourseFolder(folderName)) {
@@ -439,12 +441,13 @@ public  class Anon  extends GeneralFaker{
 		}
 		return aFileName.replace(" \\", "\\").replace(" /", "/");
 	}
-
-	public void unzipAllZipFiles(File folder) {
+	protected boolean unzipUnsuccessful = false;
+	public boolean unzipAllZipFiles(File folder) {
+		boolean retVal = true;
 		File[] aFiles = folder.listFiles();
 		for (File zipFile : aFiles) {
 			if (zipFile.isDirectory()) {
-				unzipAllZipFiles(zipFile);
+				retVal &= unzipAllZipFiles(zipFile);
 			} else if (zipFile.getName().endsWith(".zip")) {
 				try {
 					unzip(zipFile.getPath(), zipFile.getParent());
@@ -452,9 +455,11 @@ public  class Anon  extends GeneralFaker{
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					retVal = false;
 				}
 			}
 		}
+		return retVal;
 	}
 
 	public void unzip(String zipFilePath, String destDirectory) throws IOException {
@@ -482,7 +487,22 @@ public  class Anon  extends GeneralFaker{
 				dir.mkdirs();
 			}
 			zipIn.closeEntry();
+//			boolean getNextEntry = true;
 			entry = zipIn.getNextEntry();
+//			while (getNextEntry) {
+//				try {
+//					entry = zipIn.getNextEntry();
+//					if (entry == null) {
+//						break; // we will probably get null after exception
+//					}
+//					getNextEntry = false;
+//					
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//					getNextEntry = true;
+//
+//				}
+//			}
 		}
 		zipIn.close();
 	}
@@ -969,13 +989,16 @@ public  class Anon  extends GeneralFaker{
 
 		// r.close();
 	}
-	
+
 	protected String lastFileProcessed = null;
 	protected boolean lastFilePrinted = false;
 
 	protected void findJavaFiles_Windows(File folder, String topFolderName) throws IOException {
 		// File folder = new File(folderName);
+		File[] aFiles = folder.listFiles();
 		for (File file : folder.listFiles()) {
+
+//		for (File file : folder.listFiles()) {
 			if (file.isDirectory()) {
 //				specificLogger.write("Anonymyzing folder:" + file);
 				findJavaFiles_Windows(file, topFolderName);
@@ -1188,7 +1211,7 @@ public  class Anon  extends GeneralFaker{
 		}
 		return aReplacedValue.toString();
 	}
-	
+
 	protected String extractUserName(String aReplacableLine) {
 		String retVal = null;
 		// /Users/username for mac C:\Users\\username\
@@ -1196,35 +1219,37 @@ public  class Anon  extends GeneralFaker{
 		Matcher macMatcher = MAC_USER.matcher(aReplacableLine);
 //		String retVal = null;
 		if (winMatcher.find()) {
-			 retVal = winMatcher.group(1);
-		}  else if (macMatcher.find()) {
-			 retVal = macMatcher.group(1);
+			retVal = winMatcher.group(1);
+		} else if (macMatcher.find()) {
+			retVal = macMatcher.group(1);
 		}
 		return retVal;
-		
+
 	}
+
 	protected List<String> originalNames;
 	protected String userName;
+
 	protected void deriveNamesAndReplacements(List<String> aNames) {
 		userName = null;
 //		originalNames = aNames;
 		originalNameList = aNames;
 	}
-	
+
 	protected List<String> getNames() {
 //		return originalNames;
 		return originalNameList;
 	}
-	
+
 	protected void setUserName(String aName) {
 		userName = aName;
 	}
+
 	protected String getUserName() {
 		return userName;
 	}
 
-	
-	protected List<String> extractNames (File aFile, String aTopFolderName) {
+	protected List<String> extractNames(File aFile, String aTopFolderName) {
 		String aNormalizedPath = aFile.getPath().replace(aTopFolderName, "");
 //		String orig_line = aFile.getPath();
 		aNormalizedPath = aNormalizedPath.replaceAll("\\\\", "/"); // sanitize
@@ -1239,11 +1264,10 @@ public  class Anon  extends GeneralFaker{
 		names.add(split[depth].substring(split[depth].indexOf("(") + 1, split[depth].indexOf(")")));
 		return names;
 	}
-	
-	List<String> previousNames;
-	
-	protected Set<List<String>> namesSeen = new HashSet();
 
+	List<String> previousNames;
+
+	protected Set<List<String>> namesSeen = new HashSet();
 
 	protected void replaceHeaders_Windows(File file, String topFolderName) throws IOException {
 
@@ -1263,14 +1287,14 @@ public  class Anon  extends GeneralFaker{
 		String orig_line = file.getPath();
 		List<String> names = NameExtractorFactory.extractNames(file, topFolderName);
 		if (!namesSeen.contains(names)) { // assume files of students are processed in order
-		namesSeen.add(names);
-		originalNameList.clear();
-		someNameToFakeAuthor.clear();
-		originalToReplacement.clear();
-		fullNameToFakeFullName.clear();
+			namesSeen.add(names);
+			originalNameList.clear();
+			someNameToFakeAuthor.clear();
+			originalToReplacement.clear();
+			fullNameToFakeFullName.clear();
 //		lastNameToFakeFullName.clear();
-		deriveNamesAndReplacements(names);
-		} 
+			deriveNamesAndReplacements(names);
+		}
 //		else {
 //			System.out.println("Repeated names for:" + file);
 //		}
@@ -1284,7 +1308,6 @@ public  class Anon  extends GeneralFaker{
 //		}
 
 //		List<String> names = extractNames (file, topFolderName);
-				
 
 		// make a new file to write to
 		File f = new File(orig_line);
@@ -1302,8 +1325,7 @@ public  class Anon  extends GeneralFaker{
 		int line_num = 0;
 //		String aReplacedValue = AnonUtil.replaceAllNonKeywords(replacementsMessageList, specificLogger, aNumFragments, keywordsRegex(), aLine,
 //				aDerivedNames, aDerivedReplacements);
-		
-		
+
 		String aUserName = null;
 		assignmentMetrics.numFilesProcessed++;
 		boolean aFileHasName = false;
@@ -1324,14 +1346,14 @@ public  class Anon  extends GeneralFaker{
 			}
 			assignmentMetrics.numLinesProcessed++;
 			assignmentMetrics.numCharactersProcessed += aReplacableLine.length();
-			
+
 //			Set<String> anOriginals = originalToReplacement.keySet();
 			if (AnonUtil.hasName(aReplacableLine, originalNameList)) {
 
 //			if (AnonUtil.hasName(aReplacableLine, names)) {
 				aFileHasName = true;
-				aReplacableLine = StrikeOutManagerFactory.
-						srikeOutOriginals(line_num, aReplacableLine, specificLogger, messagesOutput, originalNameList, assignmentMetrics);
+				aReplacableLine = StrikeOutManagerFactory.srikeOutOriginals(line_num, aReplacableLine, specificLogger,
+						messagesOutput, originalNameList, assignmentMetrics);
 
 				assignmentMetrics.numLinesWithNames++;
 				assignmentMetrics.numCharactersInLinesWithNames += aReplacableLine.length();
@@ -1381,8 +1403,6 @@ public  class Anon  extends GeneralFaker{
 //				
 //				
 //			}
-			
-
 
 			// write it to new file
 			if (messagesOutput.size() != anOriginalNumberOfMessages) {
@@ -1409,7 +1429,8 @@ public  class Anon  extends GeneralFaker{
 		}
 	}
 
-	public String replaceHeaders(int line_num, File f, String aLine, AssignmentMetrics anAssignmentMetrics) throws IOException {
+	public String replaceHeaders(int line_num, File f, String aLine, AssignmentMetrics anAssignmentMetrics)
+			throws IOException {
 		String aReplacableLine = aLine;
 		List<String> aNames = getNames();
 		for (int i = 0; i < aNames.size(); i++) {
@@ -1656,7 +1677,7 @@ public  class Anon  extends GeneralFaker{
 	protected String[] keywords() {
 		return KeywordFactory.getKeywords();
 	}
-	
+
 //	public static String capitalizeWordStart(String aWord) {
 //		if (aWord.length() > 1) {
 //			return Character.toUpperCase(aWord.charAt(0)) + aWord.substring(1);
@@ -1704,8 +1725,7 @@ public  class Anon  extends GeneralFaker{
 	@Override
 	public void anonymize(Object arg) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	
 }
