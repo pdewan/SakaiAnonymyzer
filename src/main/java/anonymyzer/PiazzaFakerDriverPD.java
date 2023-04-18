@@ -8,7 +8,12 @@ public class PiazzaFakerDriverPD {
 //	public static final String  PIAZZA_FOLDER =
 //			"C:\\Users\\dewan\\Downloads\\PiazzaOutput\\Comp401f18";
 	public static final String  PIAZZA_FOLDER = 
-			"D:\\PiazzaOutput\\Comp524f22";
+//			"D:\\PiazzaOutput\\Comp524f22";
+			"D:\\PiazzaOutput\\Comp533s21";
+//	static String GRADES_CSV_PATH = "D:\\ZoomChats\\533\\s21\\grades.csv";
+	static String GRADES_CSV_PATH = "D:\\PiazzaOutput\\Comp533s21\\grades.csv";
+			
+
 //	public static final String  PIAZZA_FOLDER =
 //			"C:\\Users\\dewan\\Downloads\\PiazzaOutput\\Comp533s22"	;
 //	public static final String  PIAZZA_FOLDER =
@@ -19,7 +24,7 @@ public class PiazzaFakerDriverPD {
 //	public static final String AUTHORS = "Authors";
 	public static void main (String[] args) {
 		
-		String[] aFakerAllPostsArgs = {PIAZZA_FOLDER};
+		String[] aFakerAllPostsArgs = {PIAZZA_FOLDER, GRADES_CSV_PATH};
 		try {
 //			String aByAuthorPostsFile = PIAZZA_FILE_ALLPOSTS_NAME.replace(ALL_POSTS, BY_AUTHOR_POSTS );
 //			String anAuthorsTextFile = PIAZZA_FILE_ALLPOSTS_NAME.replace(ALL_POSTS, AUTHORS );

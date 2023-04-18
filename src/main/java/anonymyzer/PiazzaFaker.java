@@ -87,9 +87,48 @@ public class PiazzaFaker extends GeneralFaker {
 //		}
 //	}
 
+//	public static void main(String[] args) throws IOException {
+//		if (args.length != 1) {
+//			System.err.println("Enter main args: path to Piazza posts files folder");
+//			System.exit(1);
+//		}
+//
+//		try {
+//			String piazzaPostsFolderPath = parseArg(args[0]);
+////			String piazzaPostsFolderPath = PIAZZA_POSTS_PATH;
+//
+//			File piazzaPostsFolder = new File(piazzaPostsFolderPath);
+//			if (!piazzaPostsFolder.exists()) {
+//				System.err.println(piazzaPostsFolderPath + " folder does not exist.");
+//				System.exit(1);
+//			}
+//			if (!piazzaPostsFolder.isDirectory()) {
+//				System.err.println(piazzaPostsFolderPath + " is not a directory.");
+//				System.exit(1);
+//			}
+//
+//			DownloadNameMap.main(args);
+//			PiazzaFaker faker = new PiazzaFaker();
+//			if (!faker.setNameMapAndNameFile()) {
+//				System.exit(1);
+//			}
+//
+//			faker.execute(piazzaPostsFolder);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		} finally {
+//			UpdateNameMap.main(args);
+//		}
+//	}
+	
 	public static void main(String[] args) throws IOException {
-		if (args.length != 1) {
-			System.err.println("Enter main args: path to Piazza posts files folder");
+//		if (args.length != 1) {
+//			System.err.println("Enter main args: path to Piazza posts files folder");
+//			System.exit(1);
+//		}
+		
+		if (args.length != 1 && args.length != 2) {
+			System.err.println("Enter main args: path to piazza postsfolder and grades.csv for the class");
 			System.exit(1);
 		}
 
@@ -106,9 +145,18 @@ public class PiazzaFaker extends GeneralFaker {
 				System.err.println(piazzaPostsFolderPath + " is not a directory.");
 				System.exit(1);
 			}
+			
+			PiazzaFaker faker = new PiazzaFaker();
+
+			
+			File gradesCsv = faker.getGradesCSV(args, piazzaPostsFolderPath);
+			if (gradesCsv == null) {
+				System.exit(1);
+			}
+			faker.loadNameToOnyenMap(gradesCsv);
 
 			DownloadNameMap.main(args);
-			PiazzaFaker faker = new PiazzaFaker();
+//			PiazzaFaker faker = new PiazzaFaker();
 			if (!faker.setNameMapAndNameFile()) {
 				System.exit(1);
 			}
@@ -329,7 +377,8 @@ public class PiazzaFaker extends GeneralFaker {
 			String fakeLastName = faker.name().lastName();
 			String fakeOnyen = fakeFirstName + " " + fakeLastName;
 			if (fakeName == null) {
-				newPairs.put(concat(onyen, firstName, lastName), concat(fakeOnyen, fakeFirstName, fakeLastName));
+				putNamePair(concat(onyen, firstName, lastName), concat(fakeOnyen, fakeFirstName, fakeLastName));
+//				newPairs.put(concat(onyen, firstName, lastName), concat(fakeOnyen, fakeFirstName, fakeLastName));
 			}
 			fakeAuthor = fakeFirstName + " " + fakeLastName + "(" + fakeOnyen + "[email])";
 		} else {
@@ -792,8 +841,12 @@ public class PiazzaFaker extends GeneralFaker {
 //				fullNameToFakeFullName.put(anOnyen, aFakeFullName);
 
 				fullNameToFakeFullName.put(aFirstName + " " + aLastName, aFakeFullName);
-
-				newPairs.put(concat(anOnyen, aFirstName, aLastName),
+				specificLogLine(anOnyen + "(" + aFirstName + " " + aLastName + ")->"+ aFakeFullName);
+//				newPairs.put(concat(anOnyen, aFirstName, aLastName),
+//						concat(aFakeFullName, fakeFirstName, fakeLastName));
+//				
+//				specificLogLine(anOnyen + "(" + aFirstName + " " + aLastName + ")->"+ aFakeFullName);
+				putNamePair(concat(anOnyen, aFirstName, aLastName),
 						concat(aFakeFullName, fakeFirstName, fakeLastName));
 
 			}

@@ -276,8 +276,14 @@ public class GradescopeFaker extends GeneralFaker {
 				String fakeFirstName = faker.name().firstName();
 				String fakeLastName = faker.name().lastName();
 				String fakeOnyen = fakeFirstName + " " + fakeLastName + "?";
-				newPairs.put(concat(onyen, fullName.substring(0, fullName.indexOf(" ")), fullName.substring(fullName.indexOf(" ")+1)), 
-						concat(fakeOnyen, fakeFirstName, fakeLastName));
+//				newPairs.put(concat(onyen, fullName.substring(0, fullName.indexOf(" ")), fullName.substring(fullName.indexOf(" ")+1)), 
+//						concat(fakeOnyen, fakeFirstName, fakeLastName));
+				fakeName = concat(fakeOnyen, fakeFirstName, fakeLastName);
+
+				putNamePair(concat(onyen, fullName.substring(0, fullName.indexOf(" ")), fullName.substring(fullName.indexOf(" ")+1)), 
+						fakeName);
+						//						concat(fakeOnyen, fakeFirstName, fakeLastName));
+
 				fakeName = concat(fakeOnyen, fakeFirstName, fakeLastName);
 				return fakeName.split(",");
 //			}

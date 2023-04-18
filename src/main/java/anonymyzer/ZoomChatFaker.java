@@ -50,7 +50,67 @@ public class ZoomChatFaker extends GeneralFaker {
 //		nameToFakeName = new HashMap<>();
 //		maybeQuotedNameToOnyen = new HashMap<>();
 	}
+	
+//	public  void checkGradesCSVAndOtherArg(String[] args, GeneralFaker faker, String folderPath) {
+//		String gradesCsvPath = args.length == 2 ? parseArg(args[1]) : faker.getGradesCsv(folderPath);
+//		if (gradesCsvPath.isEmpty()) {
+//			System.err.println("Path for grades.csv is missing and cannot be found in the folder provided");
+//			System.exit(1);
+//		}
+//		if (!gradesCsv.exists()) {
+//			System.err.println(gradesCsvPath + " file does not exist.");
+//			System.exit(1);
+//		}
+//	}
 
+//	public static void main(String[] args) throws IOException {
+//		if (args.length != 1 && args.length != 2) {
+//			System.err.println("Enter main args: path to Zoom chat files folder and grades.csv for the class");
+//			System.exit(1);
+//		}
+//
+//		try {
+//			ZoomChatFaker faker = new ZoomChatFaker();
+//			String zoomChatFolderPath = parseArg(args[0]);
+//
+//			String gradesCsvPath = args.length == 2 ? parseArg(args[1]) : faker.getGradesCsv(zoomChatFolderPath);
+//			if (gradesCsvPath.isEmpty()) {
+//				System.err.println("Path for grades.csv is missing and cannot be found in the folder provided");
+//				System.exit(1);
+//			}
+////			String zoomChatFolderPath = ZOOM_CHAT_FOLDER_PATH;
+////			String gradesCsvPath = GRADES_CSV_PATH;
+//
+//			File zoomChatFolder = new File(zoomChatFolderPath);
+//			if (!zoomChatFolder.exists()) {
+//				System.err.println(zoomChatFolderPath + " folder does not exist.");
+//				System.exit(1);
+//			}
+//			if (!zoomChatFolder.isDirectory()) {
+//				System.err.println(zoomChatFolderPath + " is not a directory.");
+//				System.exit(1);
+//			}
+//
+//			File gradesCsv = new File(gradesCsvPath);
+//			if (!gradesCsv.exists()) {
+//				System.err.println(gradesCsvPath + " file does not exist.");
+//				System.exit(1);
+//			}
+//
+//			DownloadNameMap.main(args);
+//			if (!faker.setNameMapAndNameFile()) {
+//				System.exit(1);
+//			}
+//			File[] files = { zoomChatFolder, gradesCsv };
+//			faker.execute(files);
+//			System.out.println("Done");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		} finally {
+//			UpdateNameMap.main(args);
+//		}
+//	}
+	
 	public static void main(String[] args) throws IOException {
 		if (args.length != 1 && args.length != 2) {
 			System.err.println("Enter main args: path to Zoom chat files folder and grades.csv for the class");
@@ -61,11 +121,7 @@ public class ZoomChatFaker extends GeneralFaker {
 			ZoomChatFaker faker = new ZoomChatFaker();
 			String zoomChatFolderPath = parseArg(args[0]);
 
-			String gradesCsvPath = args.length == 2 ? parseArg(args[1]) : faker.getGradesCsv(zoomChatFolderPath);
-			if (gradesCsvPath.isEmpty()) {
-				System.err.println("Path for grades.csv is missing and cannot be found in the folder provided");
-				System.exit(1);
-			}
+//			s
 //			String zoomChatFolderPath = ZOOM_CHAT_FOLDER_PATH;
 //			String gradesCsvPath = GRADES_CSV_PATH;
 
@@ -79,11 +135,16 @@ public class ZoomChatFaker extends GeneralFaker {
 				System.exit(1);
 			}
 
-			File gradesCsv = new File(gradesCsvPath);
-			if (!gradesCsv.exists()) {
-				System.err.println(gradesCsvPath + " file does not exist.");
+//			File gradesCsv = new File(gradesCsvPath);
+//			if (!gradesCsv.exists()) {
+//				System.err.println(gradesCsvPath + " file does not exist.");
+//				System.exit(1);
+//			}
+			File gradesCsv = faker.getGradesCSV(args, zoomChatFolderPath);
+			if (gradesCsv == null) {
 				System.exit(1);
 			}
+			faker.loadNameToOnyenMap(gradesCsv);
 
 			DownloadNameMap.main(args);
 			if (!faker.setNameMapAndNameFile()) {
@@ -99,15 +160,15 @@ public class ZoomChatFaker extends GeneralFaker {
 		}
 	}
 
-	protected String getGradesCsv(String path) {
-		File folder = new File(path);
-		for (File file : folder.listFiles()) {
-			if (file.getName().equals("grades.csv")) {
-				return file.getPath();
-			}
-		}
-		return "";
-	}
+//	protected String getGradesCsv(String path) {
+//		File folder = new File(path);
+//		for (File file : folder.listFiles()) {
+//			if (file.getName().equals("grades.csv")) {
+//				return file.getPath();
+//			}
+//		}
+//		return "";
+//	}
 
 //	protected void loadAnonNameMap(String[] vals) {
 //		// TODO Auto-generated method stub
@@ -132,6 +193,7 @@ public class ZoomChatFaker extends GeneralFaker {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		
 	 }
 
 	@Override
@@ -140,8 +202,8 @@ public class ZoomChatFaker extends GeneralFaker {
 			return;
 		}
 		File[] files = (File[]) args;
-		File gradesCsv = files[1];
-		loadNameToOnyenMap(gradesCsv);
+//		File gradesCsv = files[1];
+//		loadNameToOnyenMap(gradesCsv);
 
 		File zoomChatFolder = files[0];
 //		try {

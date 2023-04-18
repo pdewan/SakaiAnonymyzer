@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +43,7 @@ public abstract class GeneralFaker {
 	public final static String HIDDEN_NAME = "[h]";
 	Map<String, String> maybeQuotedNameToOnyen = new HashMap<>();
 	Map<String, String> nameToOnyen = new HashMap<>();
+	Collection<String> onyens;
 
 //	Map<String, String> onyenToFakeName = new HashMap<>();
 
@@ -262,6 +264,10 @@ public abstract class GeneralFaker {
 
 	abstract protected void processExecuteArg(Object arg);
 
+	protected boolean filterByOnyens() {
+		return true;
+	}
+
 	public void execute(Object arg) throws IOException, InterruptedException {
 		processExecuteArg(arg);
 		loadNameMap();
@@ -346,10 +352,13 @@ public abstract class GeneralFaker {
 		String[] aReplacementComponents = aReplacement.split(" ");
 		putNameAndLowerCase(aMap, aName, aReplacement);
 
-		if (aNameComponents.length == 1 || aReplacementComponents.length == 1 || isId) {
+		if (aNameComponents.length == 1 || 
+				aReplacementComponents.length == 1 || 
+				isId) {
 //			putNameAndLowerCase(aMap, aName, aReplacement);
 			return;
 		}
+//		if (addFullName)
 		String aFirstName = aNameComponents[0];
 		String aLastName = aNameComponents[aNameComponents.length - 1];
 
@@ -412,6 +421,16 @@ public abstract class GeneralFaker {
 		}
 		return retVal;
 	}
+	
+	protected String getFakeOfNameFromIDMap(String aName) {
+		String aFullFakeName = CommentsIdenMap.get(aName); // somebody who did not submit an assignment
+		if (aFullFakeName == null) {
+			
+			return null;
+		}
+		String[] aSplitFullFakeName = aFullFakeName.split(",");
+		return aSplitFullFakeName[0];
+	}
 
 	protected String getFakeOfName(String aName) {
 //		String retVal = CommentsIdenMap.get(aName);
@@ -445,9 +464,21 @@ public abstract class GeneralFaker {
 //		}
 
 //		String[] aNameComponents = aName.split(" ");
-		if (aNameComponents.length == 1) {
-			return null;
+		if (aNameComponents.length == 1) { // onyen
+			return getFakeOfNameFromIDMap(aName);
+//			String aFullFakeName = CommentsIdenMap.get(aName); // somebody who did not submit an assignment
+//			if (aFullFakeName == null) {
+//				
+//				return null;
+//			}
+//			String[] aSplitFullFakeName = aFullFakeName.split(",");
+//			return aSplitFullFakeName[0];
 		}
+		String anOnyen = nameToOnyen.get(aName);
+		if (anOnyen != null) {
+			return getFakeOfNameFromIDMap(anOnyen);
+		}
+		
 		for (String aNameComponent : aNameComponents) {
 			retVal = nonDuplicateCaseIndependentGet(fullNameToFakeFullName, aNameComponent);
 
@@ -514,10 +545,11 @@ public abstract class GeneralFaker {
 		}
 		return retVal;
 	}
-	
+
 	protected String[] toFakeNames(String aFakeName) {
 		String[] aNames = aFakeName.split(" ");
-		String[] retVal = new String[] {aNames[0] + " " + aNames[aNames.length -1], aNames[0], aNames[aNames.length - 1]};
+		String[] retVal = new String[] { aNames[0] + " " + aNames[aNames.length - 1], aNames[0],
+				aNames[aNames.length - 1] };
 		return retVal;
 	}
 
@@ -572,9 +604,22 @@ public abstract class GeneralFaker {
 //		putFullNameAndAliases(fullNameToFakeFullName, aKey2, aValue2, false);
 //		putFullNameAndAliases(fullNameToFakeFullName, aKey, aValue2, true);
 
-		putFullNameAndAliases(fullNameToFakeFullName, aKey, vals[3], true);
-		putFullNameAndAliases(fullNameToFakeFullName, aKey2, vals[3], false);
+//		if (!filterByOnyens() || (onyens != null && onyens.contains(aKey))) {
+		if (addFullName(aKey)) {
+			putFullNameAndAliases(fullNameToFakeFullName, aKey, vals[3], true);
+			putFullNameAndAliases(fullNameToFakeFullName, aKey2, vals[3], false);
+		}
+	}
+	
+	protected boolean addFullName(String anOnyen) {
+		return !filterByOnyens() || (onyens != null && onyens.contains(anOnyen));
 
+	}
+	
+
+	public void putNamePair(String aName, String aFakeName) {
+		specificLogLine(aName + "->" + aFakeName);
+		newPairs.put(aName, aFakeName);
 	}
 
 	public void updateNameMap() throws IOException {
@@ -646,6 +691,31 @@ public abstract class GeneralFaker {
 //		}
 	}
 
+	public File getGradesCSV(String[] args, String folderPath) {
+		String gradesCsvPath = args.length == 2 ? parseArg(args[1]) : getGradesCsv(folderPath);
+		if (gradesCsvPath.isEmpty()) {
+			System.err.println("Path for grades.csv is missing and cannot be found in the folder provided");
+			System.exit(1);
+		}
+		File gradesCsv = new File(gradesCsvPath);
+
+		if (!gradesCsv.exists()) {
+			System.err.println(gradesCsvPath + " file does not exist.");
+			return null;
+		}
+		return gradesCsv;
+	}
+
+	protected String getGradesCsv(String path) {
+		File folder = new File(path);
+		for (File file : folder.listFiles()) {
+			if (file.getName().equals("grades.csv")) {
+				return file.getPath();
+			}
+		}
+		return "";
+	}
+
 	public void loadNameToOnyenMap(File gradesCsv) {
 		String gradesCsvString = readFile(gradesCsv).toString();
 		String[] lines = gradesCsvString.split("\\R");
@@ -667,6 +737,7 @@ public abstract class GeneralFaker {
 
 //			mapNames(aFullName, firstName, lastName, fakeName);
 		}
+		onyens = nameToOnyen.values();
 	}
 
 	public String unquote(String s) {

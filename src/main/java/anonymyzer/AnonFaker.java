@@ -338,6 +338,10 @@ public class AnonFaker extends Anon {
 		return true;
 	}
 	
+	protected boolean filterByOnyens() {
+		return false;
+	}
+	
 	String currentReplacementFullName = null;
 	
 	protected void deriveNamesAndReplacements(List<String> aNames) {
@@ -649,8 +653,21 @@ public class AnonFaker extends Anon {
 	}
 
 	protected void loadAnonNameMap(String[] vals) {
+		if (vals.length == 0) {
+			return;
+		}
+		if (vals.length <= 1) {
+			if (vals[0].isEmpty()) {
+				return;
+			}
+			System.err.println("Ignoring name map line:" + Arrays.toString(vals));
+		}
+		try {
 		commentsIdenMap.put(vals[0], concat(vals[3], vals[4], vals[5]));
 		fakeNameSet.add(vals[3]);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	protected void loadUnanonNameMap(String[] vals) {

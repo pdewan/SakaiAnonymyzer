@@ -14,6 +14,7 @@ public class BasicKeywordGenerator implements KeywordGenerator {
 //			"Doc",
 			"doc",
 			"random",
+			"will",
 //			"Random",
 			"constant",
 			"distance",
@@ -36,6 +37,7 @@ public class BasicKeywordGenerator implements KeywordGenerator {
 			"Myer-Patel",
 			"wait(long,int)",
 			"anIntegers",
+			"BeauAnderson",
 //			"be An", // args should be An to Am
 //			"an alternative",
 //			"an expression",
