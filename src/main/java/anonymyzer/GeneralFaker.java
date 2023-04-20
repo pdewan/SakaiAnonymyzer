@@ -43,6 +43,8 @@ public abstract class GeneralFaker {
 	public final static String HIDDEN_NAME = "[h]";
 	Map<String, String> maybeQuotedNameToOnyen = new HashMap<>();
 	Map<String, String> nameToOnyen = new HashMap<>();
+	Map<String, String> storedNamesToOnyen = new HashMap<>();
+
 	Collection<String> onyens;
 
 //	Map<String, String> onyenToFakeName = new HashMap<>();
@@ -431,6 +433,16 @@ public abstract class GeneralFaker {
 		String[] aSplitFullFakeName = aFullFakeName.split(",");
 		return aSplitFullFakeName[0];
 	}
+	
+	protected String getFakeOfNameFromStoredNameMap(String aName) {
+		String anID = storedNamesToOnyen.get(aName);
+		if (anID == null) {
+			return null;
+		}
+		return getFakeOfNameFromIDMap(anID);
+		
+		
+	}
 
 	protected String getFakeOfName(String aName) {
 //		String retVal = CommentsIdenMap.get(aName);
@@ -474,10 +486,14 @@ public abstract class GeneralFaker {
 //			String[] aSplitFullFakeName = aFullFakeName.split(",");
 //			return aSplitFullFakeName[0];
 		}
-		String anOnyen = nameToOnyen.get(aName);
-		if (anOnyen != null) {
-			return getFakeOfNameFromIDMap(anOnyen);
+		retVal = getFakeOfNameFromStoredNameMap(aName);
+		if (retVal != null) {
+			return retVal;
 		}
+//		String anOnyen = nameToOnyen.get(aName);
+//		if (anOnyen != null) {
+//			return getFakeOfNameFromIDMap(anOnyen);
+//		}
 		
 		for (String aNameComponent : aNameComponents) {
 			retVal = nonDuplicateCaseIndependentGet(fullNameToFakeFullName, aNameComponent);
@@ -594,6 +610,10 @@ public abstract class GeneralFaker {
 		CommentsIdenMap.put(aKey, aValue);
 
 		fakeNameSet.add(vals[3]);
+		String aFullRealName = vals[1] + " " + vals[2];
+		String anOnyen = vals[0];
+		
+		storedNamesToOnyen.put(aFullRealName, anOnyen);
 
 //		if (aKey.equals("jergle")) {
 //			System.out.println("found offending onyen");
@@ -620,6 +640,18 @@ public abstract class GeneralFaker {
 	public void putNamePair(String aName, String aFakeName) {
 		specificLogLine(aName + "->" + aFakeName);
 		newPairs.put(aName, aFakeName);
+		String[] aNames = aName.split(",");
+		if (aNames.length == 3) {
+			String[] aMergedArray = new String[6];
+			for (int i = 0; i < aNames.length; i++) {
+				aMergedArray[i] = aNames[i];
+			}
+			aMergedArray[3] = aFakeName;
+			String[] aFakeNames = aFakeName.split(" ");
+			aMergedArray[4] = aFakeNames[0];
+			aMergedArray[5] = aFakeNames[1];
+			loadAnonNameMap(aMergedArray);
+		}
 	}
 
 	public void updateNameMap() throws IOException {
@@ -732,6 +764,9 @@ public abstract class GeneralFaker {
 			String anUnquotedFullName = anUnquotedFirstName + " " + anUnquotedLastName;
 
 //			maybeQuotedNameToOnyen.put(firstName + " " + lastName, onyen);
+//			if (aFullName.contains("Bill")) {
+//				System.out.println("Found Bill");
+//			}
 			maybeQuotedNameToOnyen.put(aFullName, onyen);
 			nameToOnyen.put(anUnquotedFullName, anUnquotedOnyen);
 

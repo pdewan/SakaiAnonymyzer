@@ -11,6 +11,7 @@ import anonymyzer.AnonUtil;
 public class BasicAliasesManager implements AliasesManager{
 	String[][] aliasesArray = {
 			{"harrywh", "harrywang11"},
+			{"Rob Winslow", "Robert Winslow"}
 //			{"Matt Do", "Hoang Son Do"},
 //			{"Kian W", "Kian Watkins"},
 //			{"ajwortas@cs.unc.edu", "ajwortas@ad.unc.edu"},

@@ -158,6 +158,7 @@ public  class FakeNameGenerator extends GeneralFaker {
 		} while (fakeNameSet.contains(tokens[2]));
 		CommentsIdenMap.put(onyen, concatFirst3(tokens));
 		fakeNameSet.add(tokens[2]);
+		// should also add other names here ideally
 
 //		newPairs.put(concat(onyen, firstName, lastName), concatFirst3(tokens));
 		putNamePair(concat(onyen, firstName, lastName), concatFirst3(tokens));
