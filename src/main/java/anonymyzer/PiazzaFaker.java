@@ -22,11 +22,18 @@ import anonymyzer.factories.LineReplacerFactory;
 import anonymyzer.factories.StringReplacerFactory;
 
 public class PiazzaFaker extends GeneralFaker {
+//William Lucia Walker, William H.Lancaster
+// William Jane Wilderman
 
 //	private static final String PIAZZA_POSTS_PATH = "F:\\Hermes Data\\PiazzaOutput\\Comp301ss22";
 	String logFileName = "piazza_faker_log";
 //	Pattern onyenPattern = Pattern.compile(".*\\((.*)@.*\\)");
-	Pattern fullNamePattern = Pattern.compile("(.*) (.*)\\((.*)@.*\\)");
+//	public static final Pattern fullNamePattern2 = Pattern.compile("\"(.*) (.*)\\((.*)@.*\\)\": \\[");
+	public static final Pattern fullNamePattern2 = Pattern.compile("\"(.*) (.*)\\((.*)@.*\\)\":.*");
+
+//	public static final Pattern fullNamePattern2 = Pattern.compile("(.*) (.*)\\((.*)@.*\\).*");
+
+	public static final Pattern fullNamePattern = Pattern.compile("(.*) (.*)\\((.*)@.*\\)");
 	Pattern firstNamePattern = Pattern.compile("(.*)\\((.*)@.*\\)");
 //	Map<String, String> authorToFakeAuthor;
 //	Map<String, String> emailToFakeAuthor;
@@ -462,16 +469,26 @@ public class PiazzaFaker extends GeneralFaker {
 	protected String anonymyzeUsingLineReplacer(String aPiazzaPostsString) {
 		String aNormalizedString = normalizeString(aPiazzaPostsString);
 		String[] aCommaSplitPiazzaPostsStrings = aNormalizedString.split(",");
+//		System.out.println("Num comma split strings:" + aCommaSplitPiazzaPostsStrings.length);
 		StringBuffer retVal = new StringBuffer(aPiazzaPostsString.length());
+//		System.out.println("anonymyze line replacer");
 		boolean hasName = false;
+		int aLineNumber = 0;
 		for (int aCommaSplitIndex = 0; aCommaSplitIndex < aCommaSplitPiazzaPostsStrings.length; aCommaSplitIndex++) {
 
 			if (aCommaSplitIndex != 0) {
 				retVal.append(",");
 			}
+//			System.out.println("Commad split index:" + aCommaSplitIndex);
+//			if (aCommaSplitIndex == 40016) {
+//				System.out.println("found problematic index");
+//			}
+
 			String aCommaSplitSegment = aCommaSplitPiazzaPostsStrings[aCommaSplitIndex];
 			String[] aParaSplitStrings = aCommaSplitSegment.split("<p>");
+			
 			for (int aParaSplitIndex = 0; aParaSplitIndex < aParaSplitStrings.length; aParaSplitIndex++) {
+
 				if (aParaSplitIndex != 0) {
 					retVal.append("<p>");
 				}
@@ -485,10 +502,22 @@ public class PiazzaFaker extends GeneralFaker {
 					hasName = true;
 					assignmentMetrics.numLinesWithNames++;
 					assignmentMetrics.numCharactersInLinesWithNames += numCharsInSegment;
-
-					aReplacedSegment = LineReplacerFactory.replaceLine(aParaSplitIndex, aParaSplitSegment,
-							messagesOutput, specificLogger, KeywordFactory.keywordsRegex(), originalNameList,
+					
+					String aKeywordRegex = KeywordFactory.keywordsRegex(aParaSplitSegment);
+					Matcher matcher = PiazzaFaker.fullNamePattern2.matcher(aParaSplitSegment);
+//					if (aParaSplitSegment.contains("sun.nio")) {
+//						System.out.println("found offending text");
+//					}
+					if (!aParaSplitSegment.contains("\\n") &&
+							
+							matcher.matches()) {
+						aKeywordRegex = null;
+					}
+					
+					aReplacedSegment = LineReplacerFactory.replaceLine(aLineNumber, aParaSplitSegment,
+							messagesOutput, specificLogger, aKeywordRegex, originalNameList,
 							replacementNameList, someNameToFakeAuthor, assignmentMetrics);
+					aLineNumber++;
 				}
 				retVal.append(aReplacedSegment);
 			}
@@ -769,7 +798,13 @@ public class PiazzaFaker extends GeneralFaker {
 		if (author.startsWith("Instructor")) {
 			return;
 		}
+		if (author.startsWith("Anonymous")) {
+			return;
+		}
 		if (!authorToFakeAuthor.containsKey(author)) {
+//			if (author.contains("William H")) {
+//				System.out.println("found william h");
+//			}
 
 			JSONArray anAuthorPosts = piazzaPostsJson.getJSONArray(author);
 
@@ -802,7 +837,10 @@ public class PiazzaFaker extends GeneralFaker {
 //			 aFakeAuthor = getFakeAuthor(author);
 //			 aFakeEmail = getEmail(aFakeAuthor);
 				aKey = aFullName;
+				anOnyen = storedNamesToOnyen.get(aFullName);
+				if (anOnyen == null) {
 				anOnyen = (aFirstName + aLastName).toLowerCase();
+				}
 
 //				String anEntry = getFakeOfNameOrPossiblyAlias(aFullName).trim();
 //				if (anEntry != null) {
@@ -857,12 +895,29 @@ public class PiazzaFaker extends GeneralFaker {
 //			String[] aFakeNames = aFakeFullName.split(" ");
 //			String aFakeFirstName = aFakeNames[0];
 //			String aFakeLastName = aFakeNames[1];
+			
+//			if (//aFakeFullName.contains("Lucia") || 
+//					aFakeFullName.contains("Jane")) {
+//				System.out.println("found Jane:" + aFullName);
+//			}
+			if (!originalNameList.contains(aFullName)) { // somebody who dropped the course
+				putFullNameComponentsAndAliases(fullNameToFakeFullName, anOnyen, aFakeFullName, true, true);
 
-			putFullNameAndAliases(fullNameToFakeFullName, aFullName, aFakeFullName, false);
-//			putFullNameAndAliases(fullNameToFakeFullName, anEmail, aFakeFullName, true);
+				putFullNameComponentsAndAliases(fullNameToFakeFullName, aFullName, aFakeFullName, false, true);
+
+			}
+// wehy do we need this
+//			putFullNameAndAliases(fullNameToFakeFullName, aFullName, aFakeFullName, false);
+//			putFullNameComponentsAndAliases(fullNameToFakeFullName, aFullName, aFakeFullName, false);
+
+			
+	//			putFullNameAndAliases(fullNameToFakeFullName, anEmail, aFakeFullName, true);
 
 //			if (aFakeAuthor != null) {
+			// this will be longer than existing names
 			authorToFakeAuthor.put(author, aFakeFullName);
+			originalNameList.add(0, author);
+			replacementNameList.add(0, aFakeFullName);
 //			}
 
 			if (aUid != null) {
@@ -893,6 +948,7 @@ public class PiazzaFaker extends GeneralFaker {
 		removeDuplicates(piazzaPostsJson);
 		String piazzaPostsString = piazzaPostsJson.toString();
 		for (String author : piazzaPostsJson.keySet()) {
+//			System.out.println("Author:" + author);
 //			if (author.contains("Andrew")) {
 //				System.out.println("found offending text");
 //			}

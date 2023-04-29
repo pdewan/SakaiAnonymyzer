@@ -105,15 +105,39 @@ public abstract class GeneralFaker {
 			someNameToFakeAuthor.put(aKey, aValue);
 		}
 	}
+	protected void processElementsNoListManipulation(Map<String, String> aMap) {
+		for (String aKey : aMap.keySet()) {
+//			originalNameList.add(aKey);
+			String aValue = aMap.get(aKey);
+			String anExistingValue = someNameToFakeAuthor.get(aKey);
+//			if (aValue.equals(anExistingValue) && !isLocalSpace()) {
+//				continue; // already processed
+//
+//			}
+			if (anExistingValue != null) {
+				continue;
+			}
+//			originalNameList.add(aKey);
+//			replacementNameList.add(aValue);
+			someNameToFakeAuthor.put(aKey, aValue);
+		}
+	}
 
 	protected void processElementsOfAllMaps() {
-
-		processElements(authorToFakeAuthor);
-		processElements(emailToFakeAuthor);
-		processElements(uidToFakeAuthor);
-		processElements(fullNameToFakeFullName);
-		processElements(firstNameToFakeFirstName);
-		processElements(lastNameToFakeLastName);
+//
+//		processElements(authorToFakeAuthor);
+//		processElements(emailToFakeAuthor);
+//		processElements(uidToFakeAuthor);
+//		processElements(fullNameToFakeFullName);
+//		processElements(firstNameToFakeFirstName);
+//		processElements(lastNameToFakeLastName);
+		
+		processElementsNoListManipulation(authorToFakeAuthor);
+		processElementsNoListManipulation(emailToFakeAuthor);
+		processElementsNoListManipulation(uidToFakeAuthor);
+		processElementsNoListManipulation(fullNameToFakeFullName);
+		processElementsNoListManipulation(firstNameToFakeFirstName);
+		processElementsNoListManipulation(lastNameToFakeLastName);
 
 	}
 
@@ -135,6 +159,8 @@ public abstract class GeneralFaker {
 //			System.out.println("found problematic string");
 //		}
 		aMap.put(aKey, aValue);
+		originalNameList.add(aKey);
+		replacementNameList.add(aValue);
 	}
 
 	protected void nonDuplicatePut(Map<String, String> aMap, String aKey, String aValue) {
@@ -158,6 +184,8 @@ public abstract class GeneralFaker {
 //		String anExistingValueNormalized = anExistingValueComponents[0];
 		if (anExistingValue == null) {
 			aMap.put(aKey, aValue);
+			originalNameList.add(aKey);
+			replacementNameList.add(aValue);
 //			if (aValue.contains("[f]")) {
 //				System.out.println("Found first name \n");
 //			}
@@ -174,6 +202,8 @@ public abstract class GeneralFaker {
 					+ "-->" + normalizedName(aValue);
 			assignmentMetrics.numNameClashes++;
 			aMap.put(aKey, HIDDEN_NAME);
+			originalNameList.add(aKey);
+			replacementNameList.add(aValue);
 
 			try {
 				if (!messagesOutput.contains(aMessage)) {
@@ -327,6 +357,26 @@ public abstract class GeneralFaker {
 		nonDuplicatePut(aMap, aNameLowercase, aReplacement + "[lc]");
 
 	}
+	protected void putNameAndAlias(Map<String, String> aMap, String aName, String aReplacement, boolean addAlias) {
+		if (aName.length() == 1) { // No one letter names
+			return;
+		}
+		putNameAndLowerCase(aMap, aName, aReplacement);
+		List<String> anAliases = AliasesManagerFactory.getAliases(aName);
+		if (!addAlias) {
+			return;
+		}
+		for (String anAlias : anAliases) {
+//			if (anAlias.equals("mattdo")) {
+//				System.out.println("found offending text");
+//			}
+			if (anAlias.contains(" ")) {
+				putFullNameComponentsAndAliases(aMap, anAlias, aReplacement, false, false);
+			} else {
+			putNameAndLowerCase(aMap, anAlias, aReplacement + "[a]");
+			}
+		}
+	}
 
 	protected boolean localPhase = false;
 
@@ -388,6 +438,72 @@ public abstract class GeneralFaker {
 		}
 	}
 
+	protected void putFullNameComponentsAndAliases(Map<String, String> aMap, String aName, String aReplacement,
+			boolean isId,
+			boolean addAlias
+			) {
+//		if (aName.equals("kianw")) {
+//			System.out.println("found offending text");
+//		}
+//		boolean isAlias = aReplacement.endsWith("[a]");
+//		String aSuffix = isAlias ? "[a]" : "";
+
+		String[] aNameComponents = aName.split(" ");
+		String[] aReplacementComponents = aReplacement.split(" ");
+		putNameAndAlias(aMap, aName, aReplacement, addAlias);
+
+//		putNameAndLowerCase(aMap, aName, aReplacement);
+
+		if (aNameComponents.length == 1 || 
+				aReplacementComponents.length == 1 || 
+				isId) {
+//			putNameAndLowerCase(aMap, aName, aReplacement);
+			return;
+		}
+		
+
+		
+		
+//		if (addFullName)
+		String aFirstName = aNameComponents[0];
+		String aLastName = aNameComponents[aNameComponents.length - 1];
+		
+
+		String aReplacementFirst = aReplacementComponents[0];
+		String aReplacementLast = aReplacementComponents[aReplacementComponents.length - 1];
+
+		String aFullNameNoSpace = aFirstName + aLastName;
+		putNameAndAlias(aMap, aFullNameNoSpace, aReplacement+ "[ns]", addAlias);
+
+		
+		if (aNameComponents.length >= 3 && assignmentMetrics != null) {
+			assignmentMetrics.numMiddleNames++;
+			String aMiddleName = aNameComponents[1];
+			putMiddleNameAndAliases
+			(aMap, aFirstName, aMiddleName, aLastName, aReplacement, aReplacementFirst, aReplacementLast,
+					addAlias);
+
+		}
+//		String aFullReplacementNoSpace = aReplacementFirst + aReplacementLast;
+
+//		putNameAndLowerCase(aMap, aFullNameNoSpace, aFullReplacementNoSpace + "[ns]");
+//		putNameAndAlias(aMap, aFullNameNoSpace, aReplacement + "[ns]");
+
+//		putNameAndLowerCase(aMap, aFirstName, aReplacementFirst + "[f]" + aSuffix);
+//		putNameAndLowerCase(aMap, aLastName, aReplacementLast + "[l]");
+
+		putNameAndAlias(aMap, aFirstName, aReplacement + "[f]", addAlias );
+		putNameAndAlias(aMap, aLastName, aReplacement + "[l]", addAlias);
+
+//		if (aNameComponents.length >= 3 && assignmentMetrics != null) {
+//			assignmentMetrics.numMiddleNames++;
+//			String aMiddleName = aNameComponents[1];
+//			putMiddleName(aMap, aFirstName, aMiddleName, aLastName, aReplacement, aReplacementFirst, aReplacementLast,
+//					isAlias);
+//
+//		}
+	}
+
 	protected void putMiddleName(Map<String, String> aMap, String aFirstName, String aMiddleName, String aLastName,
 			String aReplacement, String aReplacementFirst, String aReplacementLast, boolean isAlias) {
 		String aSuffix = isAlias ? "[a]" : "";
@@ -404,7 +520,19 @@ public abstract class GeneralFaker {
 		putNameAndLowerCase(aMap, aMiddleName + " " + aLastName, aReplacement + "[ml]" + aSuffix);
 		putNameAndLowerCase(aMap, aFirstName + " " + aMiddleName, aReplacement + "[fm]" + aSuffix);
 		putNameAndLowerCase(aMap, aFirstName + " " + aLastName, aReplacement + "[fl]" + aSuffix);
-		putNameAndLowerCase(aMap, aFirstName + aMiddleName + aLastName, aReplacement + "[fml]" + aSuffix);
+		putNameAndLowerCase(aMap, aFirstName + " " + aMiddleName + " " + aLastName, aReplacement + "[fml]" + aSuffix);
+
+	}
+	protected void putMiddleNameAndAliases(Map<String, String> aMap, String aFirstName, String aMiddleName, String aLastName,
+			String aReplacement, String aReplacementFirst, String aReplacementLast, boolean addAlias) {
+//		String aSuffix = isAlias ? "[a]" : "";
+		
+		putNameAndAlias(aMap, aFirstName + aMiddleName + aLastName, aReplacement + "[fml]", addAlias ); // space version has been added
+		putNameAndAlias(aMap, aMiddleName + " " + aLastName, aReplacement + "[ml]", addAlias);
+		putNameAndAlias(aMap, aFirstName + " " + aMiddleName, aReplacement + "[fm]", addAlias);
+		putNameAndAlias(aMap, aFirstName + " " + aLastName, aReplacement + "[fl]", addAlias);
+		putNameAndAlias(aMap, aMiddleName, aReplacement + "[m]", addAlias );
+		
 
 	}
 
@@ -626,8 +754,11 @@ public abstract class GeneralFaker {
 
 //		if (!filterByOnyens() || (onyens != null && onyens.contains(aKey))) {
 		if (addFullName(aKey)) {
-			putFullNameAndAliases(fullNameToFakeFullName, aKey, vals[3], true);
-			putFullNameAndAliases(fullNameToFakeFullName, aKey2, vals[3], false);
+//			putFullNameAndAliases(fullNameToFakeFullName, aKey, vals[3], true);
+//			putFullNameAndAliases(fullNameToFakeFullName, aKey2, vals[3], false);
+			
+			putFullNameComponentsAndAliases(fullNameToFakeFullName, aKey, vals[3], true, true);
+			putFullNameComponentsAndAliases(fullNameToFakeFullName, aKey2, vals[3], false, true);
 		}
 	}
 	

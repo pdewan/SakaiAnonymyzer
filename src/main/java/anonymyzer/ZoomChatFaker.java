@@ -15,7 +15,9 @@ import java.util.regex.Pattern;
 import anonymyzer.factories.DoNotFakeFactory;
 import anonymyzer.factories.KeywordFactory;
 import anonymyzer.factories.LineReplacerFactory;
-
+//Will Lucia Walker
+//Moshe Bailey (she/her)
+//Will Jane Wilderman
 public class ZoomChatFaker extends GeneralFaker {
 
 	Pattern savedChatSpeakerPattern = Pattern.compile("\\d\\d:\\d\\d:\\d\\d From  (.*)  to  (.*):");
@@ -419,7 +421,7 @@ public class ZoomChatFaker extends GeneralFaker {
 				assignmentMetrics.numCharactersInLinesWithNames += numCharsInSegment;
 
 				aReplacedSegment = LineReplacerFactory.replaceLine(anIndex, aSegment, messagesOutput, specificLogger,
-						KeywordFactory.keywordsRegex(), originalNameList, replacementNameList, someNameToFakeAuthor,
+						KeywordFactory.keywordsRegex(aSegment), originalNameList, replacementNameList, someNameToFakeAuthor,
 						assignmentMetrics);
 			}
 			retVal.append(aReplacedSegment);

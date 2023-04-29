@@ -558,9 +558,9 @@ public class AnonUtil {
 
 	public static int replaceAll(StringBuffer aReplacementsWithContext, StringBuffer retVal, FileWriter aLogger,
 			String aString, Map<Integer, String> anIndexMap, Map<String, String> anOriginalToReplacement) {
+		
 		retVal.setLength(0);
-//		aReplacementsWithContext.setLength(0);
-//		aReplacementsWithContext.setLength(0);
+
 //		if (aString.contains("jilliand")) {
 //			System.out.println("found problemantic split");
 //		}
@@ -591,39 +591,18 @@ public class AnonUtil {
 					anIndex + anOriginalAtIndex.length());
 			aNumReplacements++;
 			String aReplacementMessage = "Replaced " + anOriginalWithContext + " with" + aReplacementWithContext + "\n";
-//			if (aReplacementMessage.contains("Replaced ...CDATA[(Jillian)...")) {
-//				System.out.println(" found context ");
-//			}
+
 			
 			aReplacementsWithContext.append(aReplacementMessage);
-////			aChanged = true;
-//			if (aLogger != null) {
-//				try {
-//					String aReplacementMessage ="Replaced " + anOriginalWithContext + " with" + aReplacementWithContext + "\n";
-//					aLogger.write(anIndex + ": " + aReplacementMessage);
-//					aLogger.flush();
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//			}
+
 			retVal.append(aPreMatchFragment);
 			retVal.append(aReplacementAtIndex);
 			aLastEndIndex = anIndex + anOriginalAtIndex.length();
 		}
-//		if (aLogger != null && !aChanged) {
-//			try {
-//				aLogger.write("Made no change\n");
-//				aLogger.flush();
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
+
 		String aRemainingString = aString.substring(aLastEndIndex, aString.length());
 		retVal.append(aRemainingString);
 		return aNumReplacements;
-//		return retVal.toString();		
 	}
 
 	static StringBuffer replaceAllResult = new StringBuffer();
@@ -642,9 +621,9 @@ public class AnonUtil {
 //		retVal.setLength(0);
 //		aReplacementsWithContext.setLength(0);
 //		aReplacementsWithContext.setLength(0);
-//		if (aString.contains("jilliand")) {
-//			System.out.println("found problemantic split");
-//		}
+		if (aString.contains("sun.nio")) {
+			System.out.println("found problemantic split");
+		}
 		List<Integer> aSortedDisjointWordIndices = getSortedDisjointIndices(aWordIndexMap);
 		List<Integer> aSortedDisjointFragmentIndices = getSortedDisjointIndices(aFragmentIndexMap);
 		
@@ -960,6 +939,16 @@ public class AnonUtil {
 		return aReplacedValue.toString();
 	}
 	
+	static String[] singleStringArray = {""};
+	public static String[] doSplit(String aLine, String aRegex) {
+		if (aRegex == null) {
+			singleStringArray[0] = aLine;
+			return singleStringArray;
+		}
+		return aLine.split(aRegex);
+		
+	}
+	
 	public static String replaceAllNonKeywords(
 			int aLineNumber, 
 			String aLine, 
@@ -970,45 +959,27 @@ public class AnonUtil {
 			List<String> aReplacements, 
 			Map<String, String> anOriginalToReplacement, 
 			AssignmentMetrics anAssignmentMetrics) {
-//		replacementsMessageList.setLength(0);
-		String[] aSplits = aLine.split(aKeywordsRegex);
+//		if (aLine.contains("William")) {
+//			System.out.println("found william");
+//		}
+//		String[] aSplits = aLine.split(aKeywordsRegex);
+		String[] aSplits = doSplit(aLine, aKeywordsRegex);
+
 		StringBuffer aReplacedValue = new StringBuffer();
 		int aLastEnd = 0;
 		int aLastStart = 0;
 		String aRemainingString = aLine;
-//		Map<String, String> anOriginalToReplacement = new HashMap();
-//		for (int index = 0; index < anOriginals.size(); index++) {
-//			anOriginalToReplacement.put(anOriginals.get(index), aReplacements.get(index));
-//		}
-//		StringBuffer aSplitSubstitution = new StringBuffer();
-//		int aNumActualChanges = 0;
-//		String anOriginalLowerCase = anOriginal.toLowerCase();
-		
-//		int aPreviousNumChanges = anAssignmentMetrics.numPossibleFalsePositives;
 		for (String aSplit : aSplits) {
-//			if (aSplit.contains("jilland")) {
-//				System.out.println("found problemantic split");
-//			}
-			
-			
-
 
 			Map<Integer, String> aSplitIndexWordKeysMap = indexToFragment(aSplit, anOriginals, true);
 			Map<Integer, String> aSplitIndexSubstringKeysMap = indexToFragment(aSplit, anOriginals, false);
 
-//			int aNumSubstringMatches = aSplitIndexSubstringKeysMap.size();
-//			int aNumWordMatches = aSplitIndexWordKeysMap.size();
-//			if (aNumSubstringMatches != aNumWordMatches) {
-//				String aMessage = aSplit + ": # substrings " + aNumSubstringMatches + " # words:" + aNumWordMatches;
-//				replacementsMessageList.append(aMessage);
-//			}
 
 
 			String aSplitSubstiution = StringReplacerFactory.replaceString(aLineNumber, aLine, aLogger, aMessagesOutput, aSplit, aSplitIndexWordKeysMap, aSplitIndexSubstringKeysMap, 
 					anOriginalToReplacement, anAssignmentMetrics);
 
-//			String aSplitSubstiution = replaceAll(aLineNumber, aLine, aLogger, aMessagesOutput, aSplit, aSplitIndexWordKeysMap, aSplitIndexSubstringKeysMap, anOriginalToReplacement);
-//			aRemainingString = aRemainingString.substring(aLastEnd);
+
 			aLastStart = aRemainingString.indexOf(aSplit);
 			aLastEnd = aLastStart + aSplit.length();
 			String aPreSplit = aRemainingString.substring(0, aLastStart);
@@ -1016,29 +987,7 @@ public class AnonUtil {
 			aRemainingString = aRemainingString.substring(aLastEnd);
 		}
 		aReplacedValue.append(aRemainingString);
-//		int aNewNumChanges = anAssignmentMetrics.numUniqueStructuredPositives++;
-//		if (aNewNumChanges > aPreviousNumChanges) {
-//			// at least one change in this line made by split processing code
-//			anAssignmentMetrics.numLinesChanged++;
-//		}
-//		if (aNumMaxMatches != aNumActualChanges) {
-//			replacementsMessageList
-//					.append("Maximum matches " + aNumMaxMatches + " != num actual changes " + aNumActualChanges + "\n");
-////				aLogger.write("Maximum matches " + aNumMaxMatches + " != num actual changes " + aNumActualChanges + "\n");
-//
-//		}
-//		String aReplacementsMessage = replacementsMessageList.toString();
-//		replacementsMessageList.append(aReplacementsMessage);
-//		if (!replacementsMessages.contains(aReplacementsMessage) && aLogger != null) {
-//			replacementsMessages.add(aReplacementsMessage);
-//			try {
-//				aLogger.write(aReplacementsMessage);
-//				aLogger.flush();
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
+
 		String aReplacedString = aReplacedValue.toString();
 		
 				String aReplacedStringWithoutEmail = replaceEmails(aReplacedString);
@@ -1052,7 +1001,6 @@ public class AnonUtil {
 				e.printStackTrace();
 			}
 		}
-//		return aReplacedValue.toString();
 		return aReplacedStringWithoutEmail;
 
 	}

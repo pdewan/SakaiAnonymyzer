@@ -374,91 +374,23 @@ public class AnonFaker extends Anon {
 		currentReplacementFullName= anOyenReplacement;
 		}
 		
-		putFullNameAndAliases(originalToReplacement, anOnyen, anOyenReplacement, true);
 		
+		
+		
+//		putFullNameAndAliases(originalToReplacement, anOnyen, anOyenReplacement, true);		
+//
+//		putFullNameAndAliases(originalToReplacement, aFullNameSpace, aFullReplacementSpace, false);
+//		processElements(originalToReplacement);
+		
+		putFullNameComponentsAndAliases(originalToReplacement, anOnyen, anOyenReplacement, true, true);
+	
+		putFullNameComponentsAndAliases(originalToReplacement, aFullNameSpace, aFullReplacementSpace, false, true);
 
-		
-		
+		processElementsNoListManipulation(originalToReplacement);
 
-		putFullNameAndAliases(originalToReplacement, aFullNameSpace, aFullReplacementSpace, false);
-		processElements(originalToReplacement);
-		
-//		putFullNameAndLiases(originalToReplacement, aName, aReplacement);
+//		putFullNameComponentsAndAliases(originalToReplacement, anOnyen, anOyenReplacement, true);
 
-		
-//		String aFullNameNoSpaces = aNames.get(1).replace(" ", "") + aNames.get(0).replace(" ", "");
-//
-//		
-//		String aFullNameSpaceLowerCase = aFullNameSpace.toLowerCase();
-//
-//
-//		String aFullReplacementNoSpaces = aDerivedReplacements.get(2) + aDerivedReplacements.get(0); // no middle name here
-////		String aFullReplacementSpace = aDerivedReplacements.get(2) + " " + aDerivedReplacements.get(0);
-//		String aFullReplacementSpaceLowerCase = aFullReplacementSpace.toLowerCase();
-//		String aFullReplacementNoSpacesLowerCase = aFullReplacementNoSpaces.toLowerCase();
-//		
-//
-//		
-//		
-//		
-//		
-////		String aFullReplacementNameNoSpaces = aDerivedReplacements.get(2) + aDerivedReplacements.get(0);
-//		aDerivedReplacements.add(aFullReplacementNoSpaces+"[NS]");
-//		aDerivedReplacements.add(aFullReplacementNoSpacesLowerCase+"[L]");
-//		for (int index = 0; index < aNames.size(); index++) {
-//			aDerivedNames.add(aNames.get(index));
-//			aDerivedNames.add(aNames.get(index).toLowerCase());
-//		} // a derived names consistent with names plus a lower case
-//		aDerivedNames.add(aFullNameNoSpaces);
-//		aDerivedNames.add(aFullNameNoSpaces.toLowerCase());
-//		super.deriveNamesAndReplacements(aDerivedNames);
-//		setNameReplacements(aDerivedReplacements);
-//		
-//		aDerivedNames.add(aFullNameSpace);
-//		aDerivedReplacements.add(aFullReplacementSpace);
-//		aDerivedNames.add(aFullNameSpaceLowerCase);
-//		aDerivedReplacements.add(aFullReplacementSpaceLowerCase);
-//		
-//		
-//		
-//		
-//		List<String> anOnyenAliases = AliasesManagerFactory.getAliases(anOnyen);
-//		for (String anOnyenAlias:anOnyenAliases) {
-//			aDerivedNames.add(anOnyenAlias);
-//			aDerivedReplacements.add(anOyenReplacement+"[A]");
-//		}
-//		
-//		List<String> aFullNameAliases = AliasesManagerFactory.getAliases(aFullNameSpace);
-//		for (String aFullNameAlias:aFullNameAliases) {			
-//			
-//			String aFullNameAliasLowerCase = aFullNameAlias.toLowerCase();
-//			
-//			String aFullNameAliasNoSpace = aFullNameAlias.replace(" ", "");
-//			String aFullNameAliasNoSpaceLowerCase = aFullNameAliasNoSpace.toLowerCase();
-//			
-//			aDerivedNames.add(aFullNameAlias);
-//			aDerivedReplacements.add(aFullReplacementSpace+"[A]");
-//			
-//			aDerivedNames.add(aFullNameAliasLowerCase);
-//			aDerivedReplacements.add(aFullReplacementSpaceLowerCase+"[A]");
-//			
-//			aDerivedNames.add(aFullNameAliasNoSpace);
-//			aDerivedReplacements.add(aFullReplacementNoSpaces+"[A]");
-//			
-//			aDerivedNames.add(aFullNameAliasNoSpaceLowerCase);
-//			aDerivedReplacements.add(aFullReplacementNoSpacesLowerCase+"[A]");
-//			
-//			
-//		}
-//		
-//		originalToReplacement = new HashMap();
-//		for (int index = 0; index < aDerivedNames.size(); index++) {
-//			originalToReplacement.put(aDerivedNames.get(index), aDerivedReplacements.get(index));
-//		}
-//		if (aUserName != null && !aDerivedNames.contains(aUserName)) {
-//			aDerivedNames.add(aUserName);
-//			aDerivedReplacements.add(aFullReplacementNameNoSpaces.toLowerCase());			
-//		}
+
 		
 	}
 	
@@ -576,7 +508,7 @@ public class AnonFaker extends Anon {
 		String aReplacedValue = LineReplacerFactory.replaceLine(line_num, aLine,
 				messagesOutput, 
 				specificLogger, 
-				KeywordFactory.keywordsRegex(), 
+				KeywordFactory.keywordsRegex(aLine), 
 				aDerivedNames, 
 				aDerivedReplacements, 
 				originalToReplacement,

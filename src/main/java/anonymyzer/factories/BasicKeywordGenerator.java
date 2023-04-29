@@ -2,8 +2,12 @@ package anonymyzer.factories;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
 
-public class BasicKeywordGenerator implements KeywordGenerator {	
+import anonymyzer.PiazzaFaker;
+
+public class BasicKeywordGenerator implements KeywordGenerator {
+	
 	static String[] keywords = { 
 //			"DiffBasedFileOpenCommand", 
 //			"docASTNodeCount", 
@@ -15,6 +19,7 @@ public class BasicKeywordGenerator implements KeywordGenerator {
 			"doc",
 			"random",
 			"will",
+			"sun",
 //			"Random",
 			"constant",
 			"distance",
@@ -87,7 +92,10 @@ public class BasicKeywordGenerator implements KeywordGenerator {
 	}
 	protected String keywordsRegex;
 	@Override
-	public String keywordsRegex() {
+	/**
+	 * Can return the regex depending on the line
+	 */
+	public String keywordsRegex(String aLine) {
 		if (keywordsRegex == null) {
 			StringBuffer aStringBuffer = new StringBuffer();
 			int anIndex = 0;
@@ -101,6 +109,17 @@ public class BasicKeywordGenerator implements KeywordGenerator {
 			}
 			keywordsRegex = aStringBuffer.toString();
 		}
+		
+//		Matcher matcher = PiazzaFaker.fullNamePattern.matcher(aLine);
+//
+//		//"Bill Luo(zhennanl@live.unc.edu)
+//		if (matcher.matches()) {
+//			return null;			
+//		}
 		return keywordsRegex;
 	}
+
+//public static void main (String[] args) {
+//	String[] aNullPattern = "hello world".split("");	
+//}
 }

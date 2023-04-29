@@ -7,7 +7,7 @@ public class AssignmentDriverPD {
 //						   "F:\\Hermes Data\\Assignment0.zip"};
 	static String[] arg = {"at", 
 			
-			 "D:\\sakaidownloads\\Comp401\\sum22\\Assignment 0.zip",			
+//			 "D:\\sakaidownloads\\Comp401\\sum22\\Assignment 0.zip",			
 
 //			"D:\\sakaidownloads\\Comp410\\S20\\Assignment 1_ LIST implemented at linked cells.zip",
 //			"D:\\sakaidownloads\\Comp410\\S20\\Assignment 2_ Binary Search Tree.zip",
@@ -45,14 +45,14 @@ public class AssignmentDriverPD {
 //			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 0.zip",			
 
 			
-//			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 0.zip",			
-//			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 1.zip",
-//			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 2.zip",	
-//			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 3.zip",
-//			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 4.zip",
-//			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 5.zip",
-//			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 6.zip",
-//			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 7.zip",
+			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 0.zip",			
+			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 1.zip",
+			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 2.zip",	
+			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 3.zip",
+			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 4.zip",
+			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 5.zip",
+			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 6.zip",
+			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 7.zip",
 //			
 //			"D:\\sakaidownloads\\Comp524\\F20\\Assignment 0-1.zip",
 //			"D:\\sakaidownloads\\Comp524\\F20\\Assignment 0-2.zip",

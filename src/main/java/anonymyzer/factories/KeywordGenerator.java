@@ -7,7 +7,7 @@ public interface KeywordGenerator {
 
 	Set<String> keywordsSet();
 
-	String keywordsRegex();
+	String keywordsRegex(String aLine);
 
 
 	void setKeywords(String[] newVal);

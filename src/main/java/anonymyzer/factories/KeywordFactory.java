@@ -20,8 +20,8 @@ public class KeywordFactory {
 		return keywordGenerator.keywordsSet();
 	}
 
-	public static String keywordsRegex() {
-		return keywordGenerator.keywordsRegex();
+	public static String keywordsRegex(String aLine) {
+		return keywordGenerator.keywordsRegex(aLine);
 
 	}
 	

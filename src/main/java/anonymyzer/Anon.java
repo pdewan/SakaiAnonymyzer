@@ -1287,8 +1287,10 @@ public class Anon extends GeneralFaker {
 		String orig_line = file.getPath();
 		List<String> names = NameExtractorFactory.extractNames(file, topFolderName);
 		if (!namesSeen.contains(names)) { // assume files of students are processed in order
+			userName = null;
 			namesSeen.add(names);
 			originalNameList.clear();
+			replacementNameList.clear();
 			someNameToFakeAuthor.clear();
 			originalToReplacement.clear();
 			fullNameToFakeFullName.clear();
@@ -1336,6 +1338,9 @@ public class Anon extends GeneralFaker {
 			String aReplacableLine = anOriginalLine;
 			if (aReplacableLine == null)
 				break;
+//			if (aReplacableLine.contains("leleo")) {
+//				System.out.println("found users");
+//			}
 			if (getUserName() == null) {
 //				aUserName = extractUserName(aReplacableLine);
 				aUserName = LoginNameExtractorFactory.extractLoginName(aReplacableLine);
