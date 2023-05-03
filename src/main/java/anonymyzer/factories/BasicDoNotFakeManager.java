@@ -18,9 +18,9 @@ public class BasicDoNotFakeManager implements DoNotFakeManager{
 			"white",
 //			"anIndex"
 	};
-	String[] hideWordArray = {
-			
-	};
+	String[] hideWordArray = 
+			{};			
+	
 	Set<String> doNotReplaceSet;
 	Set<String> hideWordSet;
 	public BasicDoNotFakeManager() {

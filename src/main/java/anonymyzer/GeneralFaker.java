@@ -41,6 +41,8 @@ public abstract class GeneralFaker {
 	FileWriter logger, specificLogger;
 	AssignmentMetrics assignmentMetrics;
 	public final static String HIDDEN_NAME = "[h]";
+//	public final static String HIDDEN_NAME = "";
+
 	Map<String, String> maybeQuotedNameToOnyen = new HashMap<>();
 	Map<String, String> nameToOnyen = new HashMap<>();
 	Map<String, String> storedNamesToOnyen = new HashMap<>();

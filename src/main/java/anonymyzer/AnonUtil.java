@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 import anonymyzer.factories.DoNotFakeFactory;
 import anonymyzer.factories.DoNotFakeManager;
 import anonymyzer.factories.FragmentsWithContextGeneratorFactory;
+import anonymyzer.factories.HideManagerFactory;
 import anonymyzer.factories.IndicesFinderFactory;
 import anonymyzer.factories.StringReplacerFactory;
 
@@ -621,9 +622,9 @@ public class AnonUtil {
 //		retVal.setLength(0);
 //		aReplacementsWithContext.setLength(0);
 //		aReplacementsWithContext.setLength(0);
-		if (aString.contains("sun.nio")) {
-			System.out.println("found problemantic split");
-		}
+//		if (aString.contains("sun.nio")) {
+//			System.out.println("found problemantic split");
+//		}
 		List<Integer> aSortedDisjointWordIndices = getSortedDisjointIndices(aWordIndexMap);
 		List<Integer> aSortedDisjointFragmentIndices = getSortedDisjointIndices(aFragmentIndexMap);
 		
@@ -962,13 +963,19 @@ public class AnonUtil {
 //		if (aLine.contains("William")) {
 //			System.out.println("found william");
 //		}
+		
 //		String[] aSplits = aLine.split(aKeywordsRegex);
+		String anOriginalLine = aLine;
+  		aLine = HideManagerFactory.hideOriginals(aLineNumber, aLine, aLogger, aMessagesOutput, anOriginals, anAssignmentMetrics);
 		String[] aSplits = doSplit(aLine, aKeywordsRegex);
 
 		StringBuffer aReplacedValue = new StringBuffer();
 		int aLastEnd = 0;
 		int aLastStart = 0;
 		String aRemainingString = aLine;
+//		if (aLine.contains("Lancaster")) {
+//			System.out.println("Found student");
+//		}
 		for (String aSplit : aSplits) {
 
 			Map<Integer, String> aSplitIndexWordKeysMap = indexToFragment(aSplit, anOriginals, true);
@@ -979,7 +986,9 @@ public class AnonUtil {
 			String aSplitSubstiution = StringReplacerFactory.replaceString(aLineNumber, aLine, aLogger, aMessagesOutput, aSplit, aSplitIndexWordKeysMap, aSplitIndexSubstringKeysMap, 
 					anOriginalToReplacement, anAssignmentMetrics);
 
-
+			if (aSplitSubstiution.contains("Will")) {
+				System.out.println("Found student replace line");
+			}
 			aLastStart = aRemainingString.indexOf(aSplit);
 			aLastEnd = aLastStart + aSplit.length();
 			String aPreSplit = aRemainingString.substring(0, aLastStart);

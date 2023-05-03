@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import anonymyzer.factories.DoNotFakeFactory;
 import anonymyzer.factories.KeywordFactory;
 import anonymyzer.factories.LineReplacerFactory;
+
 //Will Lucia Walker
 //Moshe Bailey (she/her)
 //Will Jane Wilderman
@@ -25,8 +26,8 @@ public class ZoomChatFaker extends GeneralFaker {
 	Pattern firstOrLastNamePattern = Pattern.compile("\\s*(\\S+).*");
 	Pattern vttPattern = Pattern.compile(
 			"(?m)^(\\d{2}:\\d{2}:\\d{2}\\.\\d+) +--> +(\\d{2}:\\d{2}:\\d{2}\\.\\d+).*[\\r\\n]+\\s*(?s)((?:(?!\\r?\\n\\r?\\n).)*)");
-	Pattern vttTimePattern = Pattern.compile(
-			"(?m)^(\\d{2}:\\d{2}:\\d{2}\\.\\d+) +--> +(\\d{2}:\\d{2}:\\d{2}\\.\\d+).*");
+	Pattern vttTimePattern = Pattern
+			.compile("(?m)^(\\d{2}:\\d{2}:\\d{2}\\.\\d+) +--> +(\\d{2}:\\d{2}:\\d{2}\\.\\d+).*");
 //	Pattern speakerPattern = Pattern.compile("([^:]*):.*");
 	Pattern speakerPattern = Pattern.compile("(^.+):(.*)");
 
@@ -52,7 +53,7 @@ public class ZoomChatFaker extends GeneralFaker {
 //		nameToFakeName = new HashMap<>();
 //		maybeQuotedNameToOnyen = new HashMap<>();
 	}
-	
+
 //	public  void checkGradesCSVAndOtherArg(String[] args, GeneralFaker faker, String folderPath) {
 //		String gradesCsvPath = args.length == 2 ? parseArg(args[1]) : faker.getGradesCsv(folderPath);
 //		if (gradesCsvPath.isEmpty()) {
@@ -112,7 +113,7 @@ public class ZoomChatFaker extends GeneralFaker {
 //			UpdateNameMap.main(args);
 //		}
 //	}
-	
+
 	public static void main(String[] args) throws IOException {
 		if (args.length != 1 && args.length != 2) {
 			System.err.println("Enter main args: path to Zoom chat files folder and grades.csv for the class");
@@ -183,20 +184,20 @@ public class ZoomChatFaker extends GeneralFaker {
 ////		putAliases(fullNameIdenMap, aKey, aValue);
 //
 //	}
-	
-	protected void processExecuteArg(Object args)  {
-		 if (!(args instanceof File[])) {
-				return;
-			}
-		 File[] files = (File[]) args;
-		 File zoomChatFolder = files[0];
-			try {
-				createSpecificLoggerAndMetrics(zoomChatFolder, false);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		
-	 }
+
+	protected void processExecuteArg(Object args) {
+		if (!(args instanceof File[])) {
+			return;
+		}
+		File[] files = (File[]) args;
+		File zoomChatFolder = files[0];
+		try {
+			createSpecificLoggerAndMetrics(zoomChatFolder, false);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
 
 	@Override
 	public void anonymize(Object args) {
@@ -322,14 +323,14 @@ public class ZoomChatFaker extends GeneralFaker {
 		}
 		return null;
 	}
-	
+
 	protected String getSpeakerFromSplit(String aChatLine) {
-		
+
 		String[] aChatParts = aChatLine.split(":");
 		if (aChatParts.length == 1) {
 			return null;
 		}
-		
+
 //		if (aChatParts[0].contains(",")) {
 //			return null;
 //		}
@@ -343,10 +344,10 @@ public class ZoomChatFaker extends GeneralFaker {
 			String aWord = aNames[0];
 			String aMessage;
 			if (DoNotFakeFactory.doNotReplaceWord(aWord)) {
-				maybeSpecificLogLine ("Not replacing: " + aWord);
-				return null;				
+				maybeSpecificLogLine("Not replacing: " + aWord);
+				return null;
 			}
-			maybeSpecificLogLine ("Single token name:" + aWord);
+			maybeSpecificLogLine("Single token name:" + aWord);
 //			 maybeSpecificLogLine(aMessage);
 //			if (!messagesOutput.contains(aMessage)) {
 //				messagesOutput.add(aMessage);
@@ -358,6 +359,7 @@ public class ZoomChatFaker extends GeneralFaker {
 		}
 		return aName.trim();
 	}
+
 	public void anonymizeChat(File chat) {
 		String chatString = chatMap.get(chat);
 		String chatName = chat.getName();
@@ -374,7 +376,6 @@ public class ZoomChatFaker extends GeneralFaker {
 		System.out.println("Anonymizing " + chatName);
 		String[] aChatLines = chatString.split("\r\n");
 
-
 		boolean lastLineWasTime = false;
 		for (int anIndex = 0; anIndex < aChatLines.length; anIndex++) {
 			String aChatLine = aChatLines[anIndex];
@@ -384,8 +385,7 @@ public class ZoomChatFaker extends GeneralFaker {
 			if (aTimeMatcher.matches()) {
 				lastLineWasTime = true;
 				continue;
-			} 
-
+			}
 
 			if (lastLineWasTime) {
 				lastLineWasTime = false;
@@ -393,7 +393,7 @@ public class ZoomChatFaker extends GeneralFaker {
 				if (aSpeaker != null) {
 					mapNameToFakeName(aSpeaker);
 
-				}				
+				}
 
 			}
 //			}
@@ -412,19 +412,59 @@ public class ZoomChatFaker extends GeneralFaker {
 			}
 			assignmentMetrics.numLinesProcessed++;
 			String aSegment = aChatLines[anIndex];
+			if (aSegment.contains("William")) {
+				System.out.println("found student");
+			}
 			int numCharsInSegment = aSegment.length();
 			assignmentMetrics.numCharactersProcessed += numCharsInSegment;
 			String aReplacedSegment = aSegment;
 			if (AnonUtil.hasName(aSegment, originalNameList)) {
 				hasName = true;
+				String aSpeaker = getSpeakerFromSplit(aSegment);
+				if (aSpeaker != null) {
+//					String[] aNames = aSpeaker.split(" ");
+					Set<String> aKeywords = KeywordFactory.keywordsSet();
+
+//					for (String aName : aNames) {
+//
+//						if (aKeywords.contains(aName)) {
+//							String aSpeakerReplacement = LineReplacerFactory.replaceLine(anIndex, aSpeaker,
+//									messagesOutput, specificLogger, null, originalNameList, replacementNameList,
+//									someNameToFakeAuthor, assignmentMetrics);
+//							retVal.append(aSpeakerReplacement);
+//							aSegment = aSegment.substring(aSpeaker.length());
+//							break;
+//						}
+//					}
+					
+					for (String aKeyword : aKeywords) {
+
+						if (aSpeaker.contains(aKeyword)) {
+							String aSpeakerReplacement = LineReplacerFactory.replaceLine(anIndex, aSpeaker,
+									messagesOutput, specificLogger, null, originalNameList, replacementNameList,
+									someNameToFakeAuthor, assignmentMetrics);
+							if (aSpeakerReplacement.contains("William")) {
+								System.out.println("found student");
+							}
+							retVal.append(aSpeakerReplacement);
+							aSegment = aSegment.substring(aSpeaker.length());
+							break;
+						}
+					}
+
+				}
 				assignmentMetrics.numLinesWithNames++;
 				assignmentMetrics.numCharactersInLinesWithNames += numCharsInSegment;
 
 				aReplacedSegment = LineReplacerFactory.replaceLine(anIndex, aSegment, messagesOutput, specificLogger,
-						KeywordFactory.keywordsRegex(aSegment), originalNameList, replacementNameList, someNameToFakeAuthor,
-						assignmentMetrics);
+						KeywordFactory.keywordsRegex(aSegment), originalNameList, replacementNameList,
+						someNameToFakeAuthor, assignmentMetrics);
+				if (aReplacedSegment.contains("William")) {
+					System.out.println("found student");
+				}
 			}
 			retVal.append(aReplacedSegment);
+			
 
 		}
 
@@ -455,6 +495,9 @@ public class ZoomChatFaker extends GeneralFaker {
 	}
 
 	public void mapNameToFakeName(String zoomName) {
+//		if (zoomName.contains("Lancaster")) {
+//			System.out.println(" found student ");
+//		}
 		if (nameToFakeName.containsKey(zoomName)) {// we do not know if two individuals have the same zoom name
 			return;
 		}
@@ -464,8 +507,9 @@ public class ZoomChatFaker extends GeneralFaker {
 			String firstName = matcher.group(1);
 			String lastName = matcher.group(3);
 			String fullName = firstName + " " + lastName;
+
 			for (String name : maybeQuotedNameToOnyen.keySet()) {
-  				if (name.contains(fullName)) {
+				if (name.contains(fullName)) {
 					String aMaybeQuotedOnyen = maybeQuotedNameToOnyen.get(name);
 					String aFakeName = getFakeName(aMaybeQuotedOnyen);
 //					nameToFakeName.put(zoomName, getFakeName(maybeQuotedNameToOnyen.get(name)));
@@ -525,7 +569,7 @@ public class ZoomChatFaker extends GeneralFaker {
 		if (firstName.equals(lastName)) {
 			System.out.println("first name == last name");
 		}
-		
+
 //		String fakeName = CommentsIdenMap.get(onyen);
 		String fakeName = getFakeOfNameOrPossiblyAlias(onyen);
 
@@ -544,7 +588,7 @@ public class ZoomChatFaker extends GeneralFaker {
 			String fakeOnyen = fakeFirstName + " " + fakeLastName + "?";
 			newPairs.put(concat(onyen, firstName, lastName), concat(fakeOnyen, fakeFirstName, fakeLastName));
 			fakeName = fakeOnyen;
-		} 
+		}
 //		else {
 //			fakeName = fakeName.substring(0, fakeName.indexOf(','));
 //		}
