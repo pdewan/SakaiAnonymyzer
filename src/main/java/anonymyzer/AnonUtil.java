@@ -986,9 +986,9 @@ public class AnonUtil {
 			String aSplitSubstiution = StringReplacerFactory.replaceString(aLineNumber, aLine, aLogger, aMessagesOutput, aSplit, aSplitIndexWordKeysMap, aSplitIndexSubstringKeysMap, 
 					anOriginalToReplacement, anAssignmentMetrics);
 
-			if (aSplitSubstiution.contains("Will")) {
-				System.out.println("Found student replace line");
-			}
+//			if (aSplitSubstiution.contains("Will")) {
+//				System.out.println("Found student replace line");
+//			}
 			aLastStart = aRemainingString.indexOf(aSplit);
 			aLastEnd = aLastStart + aSplit.length();
 			String aPreSplit = aRemainingString.substring(0, aLastStart);

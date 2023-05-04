@@ -8,11 +8,14 @@ public class PiazzaFakerDriverPD {
 //	public static final String  PIAZZA_FOLDER =
 //			"C:\\Users\\dewan\\Downloads\\PiazzaOutput\\Comp401f18";
 	public static final String  PIAZZA_FOLDER = 
-//			"D:\\PiazzaOutput\\Comp524f22";
-			"D:\\PiazzaOutput\\Comp533s21";
-//	static String GRADES_CSV_PATH = "D:\\ZoomChats\\533\\s21\\grades.csv";
-	static String GRADES_CSV_PATH = "D:\\PiazzaOutput\\Comp533s21\\grades.csv";
+			"D:\\PiazzaOutput\\Comp524f22";
+//			"D:\\PiazzaOutput\\Comp533s21";
+	static String GRADES_CSV_PATH = "D:\\ZoomChats\\533\\s21\\grades.csv";
+//	static String GRADES_CSV_PATH = "D:\\PiazzaOutput\\Comp533s21\\grades.csv";
 			
+//	public static final String  PIAZZA_FOLDER = 
+//			"D:\\PiazzaOutput\\Comp533s21";
+//	static String GRADES_CSV_PATH = "D:\\ZoomChats\\533\\s21\\grades.csv";
 
 //	public static final String  PIAZZA_FOLDER =
 //			"C:\\Users\\dewan\\Downloads\\PiazzaOutput\\Comp533s22"	;
