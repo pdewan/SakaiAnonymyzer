@@ -12,7 +12,8 @@ public class BasicAliasesManager implements AliasesManager{
 	String[][] aliasesArray = {
 			{"harrywh", "harrywang11"},
 			{"Rob Winslow", "Robert Winslow"},
-			{"Will Lancaster", "William Lancaster", "William H Lancaster", "Will H Lancaster"}
+			{"Will Lancaster", "William Lancaster", "William H Lancaster", "Will H Lancaster"},
+			{"Sam George", "Samuel George"},
 //			{"Matt Do", "Hoang Son Do"},
 //			{"Kian W", "Kian Watkins"},
 //			{"ajwortas@cs.unc.edu", "ajwortas@ad.unc.edu"},

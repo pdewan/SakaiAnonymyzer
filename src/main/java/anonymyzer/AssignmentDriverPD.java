@@ -43,6 +43,35 @@ public class AssignmentDriverPD {
 //			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 7.zip",
 			
 //			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 0.zip",			
+//
+//			   "D:\\sakaidownloads\\comp401\\ss21\\Assignment 0.zip",			
+//			   "D:\\sakaidownloads\\comp401\\ss21\\Assignment 1.zip",
+//			   "D:\\sakaidownloads\\comp401\\ss21\\Assignment 1",
+
+//			   "D:\\sakaidownloads\\comp401\\ss21\\Assignment 1_1.zip",			
+//			   "D:\\sakaidownloads\\comp401\\ss21\\Assignment 2.zip",			
+//			   "D:\\sakaidownloads\\comp401\\ss21\\Assignment 2_1.zip",			
+//			   "D:\\sakaidownloads\\comp401\\ss21\\Assignment 3.zip",			
+//			   "D:\\sakaidownloads\\comp401\\ss21\\Assignment 4.zip",	
+//			   "D:\\sakaidownloads\\comp401\\ss21\\Assignment 2",			
+
+//			   "D:\\sakaidownloads\\comp533\\s22\\Assignment 0.zip",			
+//			   "D:\\sakaidownloads\\comp533\\s22\\Assignment 1.zip",
+//			   "D:\\sakaidownloads\\comp533\\s22\\Assignment 2.zip",	
+//			   "D:\\sakaidownloads\\comp533\\s22\\Assignment 3.zip",
+//			   "D:\\sakaidownloads\\comp533\\s22\\Assignment 4.zip",
+//			   "D:\\sakaidownloads\\comp533\\s22\\Assignment 5.zip",
+//			   "D:\\sakaidownloads\\comp533\\s22\\Assignment 6.zip",
+//			   "D:\\sakaidownloads\\comp533\\s22\\Assignment 7.zip",
+
+//			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 0.zip",			
+			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 1.zip",
+			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 2.zip",	
+			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 3.zip",
+			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 4.zip",
+			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 5.zip",
+			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 6.zip",
+			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 7.zip",
 
 			
 //			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 0.zip",			
@@ -72,13 +101,18 @@ public class AssignmentDriverPD {
 //			"D:\\sakaidownloads\\Comp524\\F19\\Assignment 5.zip",
 //			"D:\\sakaidownloads\\Comp524\\F19\\Assignment 6.zip",
 			
-			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 0.zip",
+//			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 0.zip",
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 1.zip",
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 2.zip",
+//////			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 2",
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 3.zip",
+//			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 3",
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 4.zip",
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 5.zip",
-//			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 6.zip",
+//			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 5",
+//		"D:\\sakaidownloads\\Comp524\\F22\\Assignment 6.zip",
+//			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 6",
+
 			
 //			"D:\\sakaidownloads\\Comp524\\F21\\Assignment 0-1.zip",
 //			"D:\\sakaidownloads\\Comp524\\F21\\Assignment 1.zip",
@@ -92,6 +126,8 @@ public class AssignmentDriverPD {
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 2",
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 5",
 //			"D:\\sakaidownloads\\Comp524\\F19\\Assignment 6.zip",
+			
+			
 //			"D:\\sakaidownloads\\Comp401\\f18\\Assignment 1.zip",
 //			"D:\\sakaidownloads\\Comp401\\f18\\Assignment 2.zip",
 //			"D:\\sakaidownloads\\Comp401\\f18\\Assignment 3.zip",

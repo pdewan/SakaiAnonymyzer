@@ -102,8 +102,19 @@ public abstract class GeneralFaker {
 			if (anExistingValue != null) {
 				continue;
 			}
+//			if (aKey.contains("@")) {
+//				System.out.println("found @");
+//			}
+//			if (aKey.contains("Branson")) {
+//				System.out.println("Found student");
+//			}
+			
 			originalNameList.add(aKey);
 			replacementNameList.add(aValue);
+//			if (aKey.contains("Forrest McElroy(forrestm@live.unc.edu)")) {
+//				System.out.println("found normal student");
+//			}
+		
 			someNameToFakeAuthor.put(aKey, aValue);
 		}
 	}
@@ -161,8 +172,13 @@ public abstract class GeneralFaker {
 //			System.out.println("found problematic string");
 //		}
 		aMap.put(aKey, aValue);
+		
 		originalNameList.add(aKey);
 		replacementNameList.add(aValue);
+//		if (originalNameList.contains("Forrest McElroy(forrestm@live.unc.edu)")) {
+//			System.out.println("Found normal student");
+//
+//		}
 	}
 
 	protected void nonDuplicatePut(Map<String, String> aMap, String aKey, String aValue) {
@@ -185,9 +201,29 @@ public abstract class GeneralFaker {
 //		String[] anExistingValueComponents = anExistingValue.split("\\[");
 //		String anExistingValueNormalized = anExistingValueComponents[0];
 		if (anExistingValue == null) {
+//			if (aKey.contains("ranson") || aKey.contains("bspigg")) {
+//				System.out.println("Found student");
+//			}
+//			if (aKey.contains("bspigg@live.unc.edu")) {
+//				System.out.println("Found student");
+//			}
+//			if (aKey.contains("forrestm@live.unc.edu")) {
+//				System.out.println("Found normal student");
+//			}
+//			if (aKey.contains("Forrest McElroy(forrestm@live.unc.edu)")) {
+//				System.out.println("Found normal student");
+//
+//			}
 			aMap.put(aKey, aValue);
 			originalNameList.add(aKey);
+//			if (originalNameList.contains("Forrest McElroy(forrestm@live.unc.edu)")) {
+//				System.out.println("Found normal student");
+//
+//			}
 			replacementNameList.add(aValue);
+			someNameToFakeAuthor.put(aKey, aValue);
+
+			
 //			if (aValue.contains("[f]")) {
 //				System.out.println("Found first name \n");
 //			}

@@ -412,9 +412,9 @@ public class ZoomChatFaker extends GeneralFaker {
 			}
 			assignmentMetrics.numLinesProcessed++;
 			String aSegment = aChatLines[anIndex];
-			if (aSegment.contains("William")) {
-				System.out.println("found student");
-			}
+//			if (aSegment.contains("William")) {
+//				System.out.println("found student");
+//			}
 			int numCharsInSegment = aSegment.length();
 			assignmentMetrics.numCharactersProcessed += numCharsInSegment;
 			String aReplacedSegment = aSegment;
@@ -443,9 +443,9 @@ public class ZoomChatFaker extends GeneralFaker {
 							String aSpeakerReplacement = LineReplacerFactory.replaceLine(anIndex, aSpeaker,
 									messagesOutput, specificLogger, null, originalNameList, replacementNameList,
 									someNameToFakeAuthor, assignmentMetrics);
-							if (aSpeakerReplacement.contains("William")) {
-								System.out.println("found student");
-							}
+//							if (aSpeakerReplacement.contains("William")) {
+//								System.out.println("found student");
+//							}
 							retVal.append(aSpeakerReplacement);
 							aSegment = aSegment.substring(aSpeaker.length());
 							break;
@@ -459,9 +459,9 @@ public class ZoomChatFaker extends GeneralFaker {
 				aReplacedSegment = LineReplacerFactory.replaceLine(anIndex, aSegment, messagesOutput, specificLogger,
 						KeywordFactory.keywordsRegex(aSegment), originalNameList, replacementNameList,
 						someNameToFakeAuthor, assignmentMetrics);
-				if (aReplacedSegment.contains("William")) {
-					System.out.println("found student");
-				}
+//				if (aReplacedSegment.contains("White")) {
+//					System.out.println("found student");
+//				}
 			}
 			retVal.append(aReplacedSegment);
 			

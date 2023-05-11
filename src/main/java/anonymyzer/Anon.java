@@ -73,6 +73,29 @@ public class Anon extends GeneralFaker {
 	static final String USERNAME = "username";
 	HashMap<String, String> classNameMap;
 	static Map<String, String> hardwiredSubstitutions = new HashMap();
+	static String[] sourceFileSuffixes = {
+			".xml",
+			".java", 
+			".py", 
+			".pl", 
+			".sml", 
+			".lisp",
+			".c"
+			};
+	static final String[] deletionSuffixes = {
+			".project",
+			".classpath",
+			".text",
+			".txt", 
+			".html", 
+//			".class", 
+//			".out",
+//			".o",
+//			".jpg",
+//			".png",
+//			".PNG",
+//			".JPG"
+			};
 //	AssignmentMetrics assignmentMetrics;
 
 //	Set<String> messagesOutput = new HashSet();
@@ -867,14 +890,21 @@ public class Anon extends GeneralFaker {
 	// }
 	// }
 	// }
+	
+	static boolean hasDeletionSuffix(File aFile) {
+		return hasSuffix(aFile, deletionSuffixes);
+	}
 
+	
 	protected void findTXTAndHTMLFiles_Windows(File folder, String firstName, String lastName, String ID)
 			throws IOException {
 		if (folder.listFiles() == null) {
 			return;
 		}
 		for (File file : folder.listFiles()) {
-			if (deleteTXTAndHTML && (file.getName().endsWith(".txt") || file.getName().endsWith(".html"))) {
+			if (deleteTXTAndHTML && hasDeletionSuffix(file)) {
+
+//			if (deleteTXTAndHTML && (file.getName().endsWith(".txt") || file.getName().endsWith(".html"))) {
 				file.delete();
 				continue;
 			}
@@ -992,6 +1022,19 @@ public class Anon extends GeneralFaker {
 
 	protected String lastFileProcessed = null;
 	protected boolean lastFilePrinted = false;
+	
+	public static boolean isSourceFile (File aFile) {
+		return hasSuffix(aFile, sourceFileSuffixes);
+	}
+	
+	public static boolean hasSuffix (File aFile, String[] aSuffixes) {
+		for (String aSuffix:aSuffixes) {
+			if (aFile.getName().endsWith(aSuffix)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	protected void findJavaFiles_Windows(File folder, String topFolderName) throws IOException {
 		// File folder = new File(folderName);
@@ -1005,8 +1048,9 @@ public class Anon extends GeneralFaker {
 				specificLogger.flush();
 
 			} else {
+				if (isSourceFile(file)) {
 
-				if (file.getName().contains(".java") || file.getName().contains(".xml")) {
+//				if (file.getName().contains(".java") || file.getName().contains(".xml")) {
 					lastFileProcessed = file.getName();
 					lastFilePrinted = false;
 //					specificLogger.write("Anonymyzing file:" + file + "\n");
@@ -1020,7 +1064,7 @@ public class Anon extends GeneralFaker {
 
 	protected String previousLine;
 
-	public static boolean isCodeFole(File f) {
+	public static boolean isCodeFile(File f) {
 		String aName = f.getName();
 		return aName.endsWith(".c") || aName.endsWith(".java") || aName.endsWith(".py");
 	}

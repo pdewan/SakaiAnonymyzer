@@ -976,6 +976,7 @@ public class AnonUtil {
 //		if (aLine.contains("Lancaster")) {
 //			System.out.println("Found student");
 //		}
+//		{1=Daniel Chang(dswchang@ad.unc.edu), 17=chang, 18=ha, 24=d., 8=Chang, 9=ha, 14=dswchang@ad.unc.edu}
 		for (String aSplit : aSplits) {
 
 			Map<Integer, String> aSplitIndexWordKeysMap = indexToFragment(aSplit, anOriginals, true);
