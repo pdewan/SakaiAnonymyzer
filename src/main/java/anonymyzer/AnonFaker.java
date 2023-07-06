@@ -633,7 +633,9 @@ public class AnonFaker extends Anon {
 		if (tokens == null) {
 			return null;
 		}
-		return tokens[2] + ", " + tokens[1] + "(" + tokens[0] + ")";
+		return tokens[2] + ", " + tokens[1] + "(" + tokens[0].toLowerCase() + ")";
+
+//		return tokens[2] + ", " + tokens[1] + "(" + tokens[0] + ")";
 	}
 	
 	protected String getFakeOfNameOfPossiblyAlias(String aName) {

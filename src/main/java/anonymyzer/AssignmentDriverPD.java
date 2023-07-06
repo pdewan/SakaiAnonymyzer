@@ -66,12 +66,12 @@ public class AssignmentDriverPD {
 
 //			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 0.zip",			
 			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 1.zip",
-			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 2.zip",	
-			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 3.zip",
-			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 4.zip",
-			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 5.zip",
-			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 6.zip",
-			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 7.zip",
+//			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 2.zip",	
+//			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 3.zip",
+//			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 4.zip",
+//			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 5.zip",
+//			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 6.zip",
+//			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 7.zip",
 
 			
 //			   "D:\\sakaidownloads\\comp533\\s21\\Assignment 0.zip",			

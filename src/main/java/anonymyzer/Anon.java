@@ -624,11 +624,14 @@ public class Anon extends GeneralFaker {
 	public void Anon_ize_grades_Windows(String folderName) throws IOException, InterruptedException {
 		logger.write("CLEARING GRADES.CSV\n");
 		// get csv file
-		File csv = new File(folderName + "/grades.csv");
+//		File csv = new File(folderName + "/grades.csv");
+		File csv = new File(folderName + GRADES_FILE);
+
 		// reader for it
 		BufferedReader r = new BufferedReader(new FileReader(csv));
 		// file to be the anoncsv
-		File temp = new File(folderName + "/ANONGrades.csv");
+//		File temp = new File(folderName + "/ANONGrades.csv");
+		File temp = new File(folderName + ANON_GRADES_FILE);
 		temp.createNewFile();
 		// writer for it
 		BufferedWriter w = new BufferedWriter(new FileWriter(temp));
@@ -670,15 +673,22 @@ public class Anon extends GeneralFaker {
 		line = line.replaceAll(names[3], shuffle(names[3], "lName"));
 		return line;
 	}
+	private static final String GRADES_FILE = "/grades.csv";
 
+	private static final String ANON_GRADES_FILE = "/ANONGrades.csv";
+	
 	protected void Anon_ize_grades_Linux(String folderName) throws IOException, InterruptedException {
 		logger.write("CLEARING GRADES.CSV\n");
 		// get csv file
-		File csv = new File(folderName + "/grades.csv");
+//		File csv = new File(folderName + "/grades.csv");
+		File csv = new File(folderName + GRADES_FILE);
+
 		// reader for it
 		BufferedReader r = new BufferedReader(new FileReader(csv));
 		// file to be the anoncsv
-		File temp = new File(folderName + "/ANONGrades.csv");
+//		File temp = new File(folderName + "/ANONGrades.csv");
+		File temp = new File(folderName + ANON_GRADES_FILE);
+
 		temp.createNewFile();
 		// writer for it
 		BufferedWriter w = new BufferedWriter(new FileWriter(temp));
@@ -903,6 +913,9 @@ public class Anon extends GeneralFaker {
 		}
 		for (File file : folder.listFiles()) {
 			if (deleteTXTAndHTML && hasDeletionSuffix(file)) {
+				if (file.getName().equals("timestamp.txt")) {
+					continue; // do not delere or rename
+				}
 
 //			if (deleteTXTAndHTML && (file.getName().endsWith(".txt") || file.getName().endsWith(".html"))) {
 				file.delete();
