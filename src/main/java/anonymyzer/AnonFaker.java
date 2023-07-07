@@ -709,8 +709,12 @@ public class AnonFaker extends Anon {
 		if (tokens == null) {
 			return line;
 		}
-		line = line.replaceAll(names[0], tokens[0]);
-		line = line.replaceAll(names[1], tokens[0]);
+//		line = line.replaceAll(names[0], tokens[0]);
+//		line = line.replaceAll(names[1], tokens[0]);
+		
+		line = line.replaceAll(names[0], tokens[0].toLowerCase());
+		line = line.replaceAll(names[1], tokens[0].toLowerCase());
+		
 		line = line.replaceAll(names[2], tokens[1]);
 		line = line.replaceAll(names[3], tokens[2]);
 		return line;

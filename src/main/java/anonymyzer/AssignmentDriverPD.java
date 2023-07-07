@@ -65,7 +65,7 @@ public class AssignmentDriverPD {
 //			   "D:\\sakaidownloads\\comp533\\s22\\Assignment 7.zip",
 
 //			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 0.zip",			
-			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 1.zip",
+//			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 1.zip",
 //			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 2.zip",	
 //			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 3.zip",
 //			   "D:\\sakaidownloads\\comp533\\s20\\Assignment 4.zip",
@@ -104,14 +104,15 @@ public class AssignmentDriverPD {
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 0.zip",
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 1.zip",
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 2.zip",
-//////			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 2",
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 3.zip",
-//			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 3",
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 4.zip",
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 5.zip",
-//			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 5",
-//		"D:\\sakaidownloads\\Comp524\\F22\\Assignment 6.zip",
-//			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 6",
+//			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 6.zip",
+			
+			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 2",	// Gllian		
+			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 5",// andrew, Gillian
+			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 6",// andrew
+
 
 			
 //			"D:\\sakaidownloads\\Comp524\\F21\\Assignment 0-1.zip",
