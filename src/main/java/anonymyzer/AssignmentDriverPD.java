@@ -109,8 +109,8 @@ public class AssignmentDriverPD {
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 5.zip",
 //			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 6.zip",
 			
-			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 2",	// Gllian		
-			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 5",// andrew, Gillian
+//			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 2",	// Gllian		
+//			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 5",// andrew, Gillian
 			"D:\\sakaidownloads\\Comp524\\F22\\Assignment 6",// andrew
 
 

@@ -575,7 +575,7 @@ public class Anon extends GeneralFaker {
 	public void Anon_ize_Course_Windows(String folderName) throws IOException, InterruptedException {
 		// Process p = null;
 		logger.flush();
-		logger.write("PROCCESSING COURSE FOLDER\n");
+		logger.write("PROCESSING COURSE FOLDER\n");
 		logger.flush();
 		File courseFolder = new File(folderName);
 		for (File AssignmentFolder : courseFolder.listFiles()) {
